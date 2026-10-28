@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>👤 마이페이지 - 나의 보드게임 책장</title>
+  <style>
+    :root {
+      --bg-body: #f4f6f9;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f8fafc;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-main);
+      padding-bottom: 72px;
+    }
+
+    .page-wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    header.top-header {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .back-link {
+      text-decoration: none;
+      font-size: 1.2rem;
+      color: var(--text-main);
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+    }
+    header.top-header h1 { font-size: 1.25rem; font-weight: 800; }
+
+    /* 통계 카드 그리드 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .stat-label { font-size: 0.82rem; color: var(--text-muted); font-weight: 600; }
+    .stat-value { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+
+    .card-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .card-panel h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { background: var(--bg-subtle); }
+    .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .btn-danger { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+
+    .chip-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .tag-item {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 58px;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 900;
+    }
+    nav.bottom-nav a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    nav.bottom-nav a.active { color: var(--primary); }
+  </style>
+</head>
+<body>
+
+  <div class="page-wrap">
+    <header class="top-header">
+      <div class="header-left">
+        <a href="./" class="back-link" title="책장으로 돌아가기">←</a>
+        <h1>마이페이지</h1>
+      </div>
+      <button class="btn" onclick="copyShelfUrl()">🔗 내 책장 주소 복사</button>
+    </header>
+
+    <!-- 컬렉션 통계 요약 -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">보유 보드게임</span>
+        <span class="stat-value" id="statTotalGames">0개</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">누적 플레이 횟수</span>
+        <span class="stat-value" id="statTotalPlays">0회</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">미플레이 (망부석)</span>
+        <span class="stat-value" id="statUnplayed">0개</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">평균 난이도 (Weight)</span>
+        <span class="stat-value" id="statAvgWeight">0.0</span>
+      </div>
+    </section>
+
+    <!-- 커스텀 태그 관리 -->
+    <section class="card-panel">
+      <h2>🏷️ 사용 중인 커스텀 태그</h2>
+      <p style="font-size:0.84rem; color:var(--text-muted);">책장에 등록된 게임들에 부여된 태그 목록입니다. 클릭 시 해당 태그를 모든 게임에서 일괄 제거할 수 있습니다.</p>
+      <div id="myTagsContainer" class="chip-wrap"></div>
+    </section>
+
+    <!-- 저장된 참여자 관리 -->
+    <section class="card-panel">
+      <h2>👥 저장된 참여자 관리</h2>
+      <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <input type="text" id="mpNewPlayer" placeholder="새 참여자 이름 입력" style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; flex:1;" />
+        <button class="btn btn-primary" onclick="addSavedPlayer()">추가</button>
+      </div>
+      <div id="myPlayersContainer" class="chip-wrap"></div>
+    </section>
+
+    <!-- 통합 데이터 백업 & 복원 -->
+    <section class="card-panel">
+      <h2>💾 통합 데이터 백업 및 초기화 (myboardgames)</h2>
+      <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:14px;">
+        브라우저 캐시 삭제나 기기 변경에 대비하여 <strong>보유 게임 목록 + 게임 기록 + 참여자 명단</strong>을 하나의 JSON 파일로 백업하거나 복원할 수 있습니다.
+      </p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px;">
+        <button class="btn btn-primary" onclick="exportFullData()">📥 전체 데이터 JSON 백업</button>
+        <label class="btn" style="cursor:pointer;">
+          📤 전체 데이터 JSON 복원
+          <input type="file" accept=".json" style="display:none;" onchange="importFullData(event)" />
+        </label>
+        <button class="btn btn-danger" onclick="resetAllData()">⚠️ 전체 데이터 초기화</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- 하단 네비게이션 -->
+  <nav class="bottom-nav">
+    <a href="./" aria-label="책장">
+      <span>📚</span>
+      <span>책장</span>
+    </a>
+    <a href="./sessions.html" aria-label="게임 기록">
+      <span>📝</span>
+      <span>게임 기록</span>
+    </a>
+    <a href="./mypage.html" class="active" aria-label="마이페이지">
+      <span>👤</span>
+      <span>마이페이지</span>
+    </a>
+  </nav>
+
+  <script>
+    const STORAGE_KEY = "MY_BG_SHELF_DATA_V1";
+    const SESSIONS_KEY = "MY_BG_SESSIONS_V1";
+    const PLAYERS_KEY = "MY_BG_PLAYERS_V1";
+
+    let games = [];
+    let sessions = [];
+    let players = [];
+
+    function initMyPage() {
+      games = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      sessions = JSON.parse(localStorage.getItem(SESSIONS_KEY) || "[]");
+      players = JSON.parse(localStorage.getItem(PLAYERS_KEY) || '["나", "배우자", "아이", "보드게임 모임"]');
+
+      renderStats();
+      renderTags();
+      renderPlayers();
+    }
+
+    function renderStats() {
+      const total = games.length;
+      const totalPlays = games.reduce((acc, g) => acc + (Number(g.plays) || 0), 0);
+      const unplayed = games.filter(g => (Number(g.plays) || 0) === 0).length;
+      const avgWeight = total > 0
+        ? (games.reduce((acc, g) => acc + (Number(g.weight) || 0), 0) / total).toFixed(2)
+        : "0.0";
+
+      document.getElementById("statTotalGames").textContent = `${total}개`;
+      document.getElementById("statTotalPlays").textContent = `${totalPlays}회`;
+      document.getElementById("statUnplayed").textContent = `${unplayed}개`;
+      document.getElementById("statAvgWeight").textContent = avgWeight;
+    }
+
+    function renderTags() {
+      const tagMap = {};
+      games.forEach(g => {
+        (g.tags || []).forEach(t => {
+          tagMap[t] = (tagMap[t] || 0) + 1;
+        });
+      });
+
+      const container = document.getElementById("myTagsContainer");
+      const entries = Object.entries(tagMap);
+      if (entries.length === 0) {
+        container.innerHTML = `<span style="font-size:0.84rem; color:var(--text-muted);">등록된 태그가 없습니다.</span>`;
+        return;
+      }
+
+      container.innerHTML = entries.map(([tag, count]) => `
+        <span class="tag-item">
+          #${tag} <small style="color:var(--primary);">(${count})</small>
+          <button style="border:none; background:none; cursor:pointer; color:#dc2626; font-weight:700;" onclick="removeTagEverywhere('${tag}')">✕</button>
+        </span>
+      `).join("");
+    }
+
+    function removeTagEverywhere(tag) {
+      if (!confirm(`모든 게임에서 '#${tag}' 태그를 제거할까요?`)) return;
+      games.forEach(g => {
+        g.tags = (g.tags || []).filter(t => t !== tag);
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+      renderTags();
+    }
+
+    function renderPlayers() {
+      const container = document.getElementById("myPlayersContainer");
+      container.innerHTML = players.map(p => `
+        <span class="tag-item">
+          👤 ${p}
+          <button style="border:none; background:none; cursor:pointer; color:#dc2626; font-weight:700;" onclick="removePlayer('${p}')">✕</button>
+        </span>
+      `).join("");
+    }
+
+    function addSavedPlayer() {
+      const input = document.getElementById("mpNewPlayer");
+      const name = input.value.trim();
+      if (!name) return;
+      if (!players.includes(name)) {
+        players.push(name);
+        localStorage.setItem(PLAYERS_KEY, JSON.stringify(players));
+      }
+      input.value = "";
+      renderPlayers();
+    }
+
+    function removePlayer(name) {
+      players = players.filter(p => p !== name);
+      localStorage.setItem(PLAYERS_KEY, JSON.stringify(players));
+      renderPlayers();
+    }
+
+    function exportFullData() {
+      const fullPayload = {
+        exportedAt: new Date().toISOString(),
+        repository: "myboardgames",
+        games,
+        sessions,
+        players
+      };
+      const blob = new Blob([JSON.stringify(fullPayload, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `myboardgames_full_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+    }
+
+    function importFullData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (Array.isArray(data)) {
+            // 단일 게임 배열 백업본인 경우 호환 처리
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          } else if (data.games) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data.games || []));
+            if (data.sessions) localStorage.setItem(SESSIONS_KEY, JSON.stringify(data.sessions));
+            if (data.players) localStorage.setItem(PLAYERS_KEY, JSON.stringify(data.players));
+          }
+          alert("데이터 복원이 완료되었습니다!");
+          initMyPage();
+        } catch (err) {
+          alert("올바른 JSON 백업 파일이 아닙니다.");
+        }
+      };
+      reader.readAsDataURL ? reader.readAsText(file) : null;
+    }
+
+    function resetAllData() {
+      if (!confirm("정말로 모든 책장 게임과 플레이 기록을 초기화하시겠습니까? (백업 권장)")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(SESSIONS_KEY);
+      localStorage.removeItem(PLAYERS_KEY);
+      alert("초기화되었습니다.");
+      initMyPage();
+    }
+
+    function copyShelfUrl() {
+      const baseUrl = window.location.href.replace(/\/mypage\.html.*$/, "/");
+      navigator.clipboard.writeText(baseUrl);
+      alert(`내 보드게임 책장 주소(${baseUrl})가 복사되었습니다!`);
+    }
+
+    window.addEventListener("DOMContentLoaded", initMyPage);
+  </script>
+</body>
+</html>

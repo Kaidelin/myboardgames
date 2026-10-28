@@ -1,513 +1,285 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📝 게임 기록 - 나의 보드게임 책장</title>
-  <style>
-    :root {
-      --bg-body: #f4f6f9;
-      --bg-surface: #ffffff;
-      --bg-subtle: #f8fafc;
-      --text-main: #1e293b;
-      --text-muted: #64748b;
-      --primary: #4f46e5;
-      --primary-hover: #4338ca;
-      --border: #e2e8f0;
-      --radius: 12px;
-      --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
-      background: var(--bg-body);
-      color: var(--text-main);
-      padding-bottom: 72px;
-    }
-
-    .page-wrap { max-width: 1280px; margin: 0 auto; padding: 20px; }
-
-    header.top-header {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px 20px;
-      box-shadow: var(--shadow);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .header-left { display: flex; align-items: center; gap: 12px; }
-    .back-link {
-      text-decoration: none;
-      font-size: 1.2rem;
-      color: var(--text-main);
-      padding: 6px 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--bg-subtle);
-    }
-    header.top-header h1 { font-size: 1.25rem; font-weight: 800; }
-
-    .sessions-layout {
-      display: grid;
-      grid-template-columns: 1fr 1.15fr;
-      gap: 20px;
-      align-items: start;
-    }
-    .panel {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow);
-    }
-
-    .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .cal-title { font-weight: 700; font-size: 1.05rem; }
-    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; margin-bottom: 20px; }
-    .cal-day-name { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); padding: 4px 0; }
-    .cal-cell { padding: 8px 4px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; border: 1px solid transparent; }
-    .cal-cell:hover { background: var(--bg-subtle); }
-    .cal-cell.selected { border-color: var(--primary); background: #eef2ff; font-weight: 700; color: var(--primary); }
-    .cal-dot { width: 6px; height: 6px; background: var(--primary); border-radius: 50%; margin: 2px auto 0; }
-
-    .session-list { display: flex; flex-direction: column; gap: 12px; max-height: 460px; overflow-y: auto; }
-    .session-card { border: 1px solid var(--border); border-radius: 10px; padding: 14px; background: var(--bg-subtle); display: flex; flex-direction: column; gap: 8px; }
-    .session-card-head { display: flex; justify-content: space-between; align-items: center; font-size: 0.84rem; color: var(--text-muted); }
-    .session-games { display: flex; flex-wrap: wrap; gap: 6px; font-weight: 700; font-size: 0.95rem; }
-    .session-players { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.8rem; }
-    .player-badge { background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
-
-    .form-section { margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-    .form-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    .section-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-
-    .btn { padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; border: 1px solid var(--border); background: var(--bg-surface); color: var(--text-main); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-    .btn:hover { background: var(--bg-subtle); }
-    .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
-
-    .input-box, textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--bg-subtle); }
-    .chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-    .chip { background: #eef2ff; color: var(--primary); border: 1px solid #c7d2fe; padding: 4px 10px; border-radius: 999px; font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
-    .chip button { border: none; background: none; color: var(--primary); cursor: pointer; font-weight: 700; }
-
-    .star-group { display: inline-flex; gap: 4px; }
-    .star-btn { font-size: 1.4rem; background: none; border: none; cursor: pointer; color: #cbd5e1; }
-    .star-btn.active { color: #f59e0b; }
-
-    .photo-preview { margin-top: 10px; max-height: 160px; border-radius: 8px; display: none; object-fit: cover; }
-    .bottom-actions { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
-
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 16px; }
-    .modal-backdrop.open { display: flex; }
-    .modal-box { background: var(--bg-surface); border-radius: 16px; max-width: 480px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 22px; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-weight: 700; font-size: 1.1rem; }
-
-    nav.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 58px; background: var(--bg-surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 900; }
-    nav.bottom-nav a { text-decoration: none; color: var(--text-muted); font-size: 0.78rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-    nav.bottom-nav a.active { color: var(--primary); }
-
-    @media (max-width: 900px) { .sessions-layout { grid-template-columns: 1fr; } }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>게임 기록 - 나의 보드게임 책장</title>
+    <link rel="stylesheet" href="style.css?v=19">
+    <style>
+        .sessions-fullscreen-layout { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; background: var(--bg-main); }
+        .sessions-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--bg-card); border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+        .sessions-header h1 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+        .sessions-body { flex: 1; overflow-y: auto; padding: 1rem; }
+        #sessions-list-view { display: flex; flex-direction: column; gap: 0.875rem; padding-bottom: 2rem; max-width: 34rem; margin: 0 auto; }
+        #sessions-edit-view { display: none; max-width: 34rem; margin: 0 auto; }
+        #sessions-edit-view.active { display: flex; flex-direction: column; gap: 1rem; }
+        .edit-section { background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border-color); }
+        .edit-section-title { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.75rem; }
+        .player-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
+        .player-input-row { display: flex; gap: 0.5rem; }
+        .small-btn { padding: 0.45rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--text-primary); }
+        .small-btn.primary { background: var(--md-primary); color: #fff; border-color: var(--md-primary); }
+        .add-game-result-btn { width: 100%; padding: 0.65rem; border: 1.5px dashed var(--md-primary); border-radius: 10px; background: none; cursor: pointer; color: var(--md-primary); font-weight: 700; }
+        .edit-actions { display: flex; gap: 0.75rem; padding: 1rem; background: var(--bg-card); border-top: 1px solid var(--border-color); }
+        .edit-actions button { flex: 1; padding: 0.75rem; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; }
+        .bottom-sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; }
+        .bottom-sheet-overlay.open { display: block; }
+        .bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-radius: 16px 16px 0 0; max-height: 70vh; display: flex; flex-direction: column; z-index: 201; padding: 1rem; }
+        .bottom-sheet-list { overflow-y: auto; flex: 1; margin-top: 0.5rem; }
+        .bottom-sheet-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 8px; cursor: pointer; }
+        .bottom-sheet-item:hover { background: var(--bg-secondary); }
+        .bottom-sheet-item img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
+    </style>
 </head>
 <body>
+    <div class="sessions-fullscreen-layout">
+        <header class="sessions-header">
+            <a href="./" class="action-icon-btn" title="책장으로 돌아가기">←</a>
+            <h1 id="header-title">게임 기록</h1>
+            <button id="add-session-btn" class="action-icon-btn" title="새 기록 추가">＋</button>
+        </header>
 
-  <div class="page-wrap">
-    <header class="top-header">
-      <div class="header-left">
-        <a href="./" class="back-link" title="책장으로 돌아가기">←</a>
-        <h1>게임 기록</h1>
-      </div>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <span id="sessionSyncBadge" style="font-size:0.78rem; color:var(--text-muted); font-weight:600;"></span>
-        <button class="btn" onclick="resetSessionForm()">🔄 새 기록 초기화</button>
-      </div>
-    </header>
-
-    <div class="sessions-layout">
-      <div class="panel">
-        <div>
-          <div class="cal-header">
-            <button class="btn" onclick="changeMonth(-1)">◀</button>
-            <div class="cal-title" id="calMonthLabel">2026년 10월</div>
-            <button class="btn" onclick="changeMonth(1)">▶</button>
-          </div>
-          <div class="cal-grid" id="calendarGrid"></div>
-        </div>
-
-        <div style="border-top:1px solid var(--border); padding-top:14px;">
-          <div class="section-title">
-            <span>플레이 기록 내역 (<span id="sessionCount">0</span>건)</span>
-            <button class="btn" style="padding:4px 8px; font-size:0.75rem;" onclick="filterDate=null; renderSessions();">전체 보기</button>
-          </div>
-          <div id="sessionListContainer" class="session-list"></div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="form-section">
-          <div class="section-title">날짜</div>
-          <div style="display:flex; gap:8px;">
-            <input type="date" id="sessionDate" class="input-box" />
-            <button class="btn" onclick="setToday()">오늘</button>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <div class="section-title">
-            <span>참여자</span>
-            <button class="btn" style="padding:4px 10px; font-size:0.78rem;" onclick="openModal('savedPlayersModal')">👥 저장된 참여자</button>
-          </div>
-          <div id="selectedPlayersBox" class="chip-list"></div>
-          <div style="display:flex; gap:8px;">
-            <input type="text" id="newPlayerInput" class="input-box" placeholder="참여자 이름 입력" onkeydown="if(event.key==='Enter') addParticipant()" />
-            <button class="btn" onclick="addParticipant()">추가</button>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <div class="section-title">
-            <span>게임</span>
-            <button class="btn btn-primary" style="padding:5px 12px; font-size:0.8rem;" onclick="openGameSelectModal()">🎲 게임 선택</button>
-          </div>
-          <div id="selectedGamesBox" class="chip-list"></div>
-        </div>
-
-        <div class="form-section">
-          <div class="section-title">평점 &amp; 메모</div>
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-            <span style="font-size:0.85rem; color:var(--text-muted);">세션 만족도:</span>
-            <div class="star-group" id="starGroup">
-              <button type="button" class="star-btn active" onclick="setStars(1)">★</button>
-              <button type="button" class="star-btn active" onclick="setStars(2)">★</button>
-              <button type="button" class="star-btn active" onclick="setStars(3)">★</button>
-              <button type="button" class="star-btn active" onclick="setStars(4)">★</button>
-              <button type="button" class="star-btn active" onclick="setStars(5)">★</button>
+        <div class="sessions-body">
+            <div id="sessions-list-view">
+                <div id="sessions-list-container"></div>
             </div>
-          </div>
-          <textarea id="sessionMemo" rows="3" placeholder="승리자, 최종 점수나 재미있었던 순간을 기록해 보세요."></textarea>
+
+            <div id="sessions-edit-view">
+                <div class="edit-section">
+                    <div class="edit-section-title">날짜</div>
+                    <input type="date" id="session-date" class="filter-input">
+                </div>
+
+                <div class="edit-section">
+                    <div class="edit-section-title">참여자</div>
+                    <div class="player-chips" id="player-chips"></div>
+                    <div class="player-input-row">
+                        <input type="text" id="player-name-input" class="filter-input" placeholder="이름 입력 후 추가">
+                        <button class="small-btn" id="add-player-btn">추가</button>
+                        <button class="small-btn" id="open-player-book-btn">주소록</button>
+                    </div>
+                </div>
+
+                <div class="edit-section">
+                    <div class="edit-section-title">플레이한 게임</div>
+                    <div id="game-result-cards" style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:0.75rem;"></div>
+                    <button class="add-game-result-btn" id="add-game-result-btn">+ 내 책장에서 게임 선택</button>
+                </div>
+
+                <div class="edit-section">
+                    <div class="edit-section-title">평점 (1~5) &amp; 메모</div>
+                    <input type="number" id="session-rating" class="filter-input" min="1" max="5" value="5" style="margin-bottom:0.5rem;">
+                    <textarea id="session-memo" class="memo-box" placeholder="이 날의 승리자나 소감을 남겨보세요..." rows="3"></textarea>
+                </div>
+            </div>
         </div>
 
-        <div class="form-section">
-          <div class="section-title">사진</div>
-          <input type="file" id="sessionPhotoInput" accept="image/*" class="input-box" onchange="previewPhoto(event)" />
-          <img id="photoPreview" class="photo-preview" alt="미리보기" />
+        <div class="edit-actions" id="edit-actions" style="display:none;">
+            <button id="cancel-edit-btn" style="background:var(--bg-secondary); color:var(--text-primary);">취소</button>
+            <button id="save-session-btn" style="background:var(--md-primary); color:#fff;">저장</button>
         </div>
+    </div>
 
-        <div class="bottom-actions">
-          <button class="btn" onclick="resetSessionForm()">초기화</button>
-          <button class="btn btn-primary" onclick="saveSession()">💾 기록 저장하기</button>
+    <!-- 참여자 주소록 시트 -->
+    <div class="bottom-sheet-overlay" id="player-book-overlay">
+        <div class="bottom-sheet">
+            <h3>저장된 참여자</h3>
+            <div class="bottom-sheet-list" id="player-book-list"></div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <div id="savedPlayersModal" class="modal-backdrop">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div>저장된 참여자</div>
-        <button class="btn" style="padding:2px 8px;" onclick="closeModal('savedPlayersModal')">✕</button>
-      </div>
-      <div id="savedPlayersList" class="chip-list"></div>
+    <!-- 게임 선택 시트 -->
+    <div class="bottom-sheet-overlay" id="game-picker-overlay">
+        <div class="bottom-sheet">
+            <h3>내 책장 게임 선택</h3>
+            <input type="text" id="game-picker-search" class="filter-input" placeholder="게임 이름 검색..." style="margin-top:0.5rem;">
+            <div class="bottom-sheet-list" id="game-picker-list"></div>
+        </div>
     </div>
-  </div>
 
-  <div id="gameSelectModal" class="modal-backdrop">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div>게임 선택</div>
-        <button class="btn" style="padding:2px 8px;" onclick="closeModal('gameSelectModal')">✕</button>
-      </div>
-      <div style="margin-bottom:12px;">
-        <input type="text" id="modalGameSearch" class="input-box" placeholder="내 책장 게임 검색..." oninput="renderGameSelectList()" />
-      </div>
-      <div id="modalGameList" style="max-height:320px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
-    </div>
-  </div>
+    <nav class="mobile-bottom-nav">
+        <a href="./" class="nav-item"><span>책장</span></a>
+        <a href="./sessions.html" class="nav-item active"><span>게임 기록</span></a>
+        <a href="./mypage.html" class="nav-item"><span>마이페이지</span></a>
+    </nav>
 
-  <nav class="bottom-nav">
-    <a href="./" aria-label="책장"><span>📚</span><span>책장</span></a>
-    <a href="./sessions.html" class="active" aria-label="게임 기록"><span>📝</span><span>게임 기록</span></a>
-    <a href="./mypage.html" aria-label="마이페이지"><span>👤</span><span>마이페이지</span></a>
-  </nav>
+    <script>
+        const GAMES_STORAGE_KEY = "MY_BG_SHELF_DATA_V1";
+        const SESSIONS_STORAGE_KEY = "MY_BG_SESSIONS_V1";
+        const PLAYERS_STORAGE_KEY = "MY_BG_PLAYERS_V1";
 
-  <script>
-    const STORAGE_KEY = "MY_BG_SHELF_DATA_V1";
-    const SESSIONS_KEY = "MY_BG_SESSIONS_V1";
-    const PLAYERS_KEY = "MY_BG_PLAYERS_V1";
-    const GIST_CONFIG_KEY = "MY_BG_GIST_CONFIG_V1";
-    const GIST_FILENAME = "myboardgames_db.json";
+        let myGames = [];
+        let allSessions = [];
+        let allPlayers = [];
+        let editPlayers = ['나'];
+        let editGames = [];
 
-    let shelfGames = [];
-    let sessions = [];
-    let savedPlayers = [];
-
-    let currentPlayers = ["나"];
-    let currentGames = [];
-    let currentStars = 5;
-    let currentPhotoData = "";
-
-    let calYear = new Date().getFullYear();
-    let calMonth = new Date().getMonth();
-    let filterDate = null;
-
-    function getGistConfig() {
-      try { return JSON.parse(localStorage.getItem(GIST_CONFIG_KEY) || "{}"); }
-      catch (e) { return {}; }
-    }
-
-    async function syncWithGist(isPush = false) {
-      const cfg = getGistConfig();
-      if (!cfg.token || !cfg.gistId || cfg.autoSync === false) return;
-      const badge = document.getElementById("sessionSyncBadge");
-      try {
-        if (isPush) {
-          badge.textContent = "⏳ 클라우드 저장 중...";
-          await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
-            method: "PATCH",
-            headers: {
-              "Authorization": `Bearer ${cfg.token}`,
-              "Accept": "application/vnd.github+json",
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              files: {
-                [GIST_FILENAME]: {
-                  content: JSON.stringify({ updatedAt: new Date().toISOString(), games: shelfGames, sessions, players: savedPlayers }, null, 2)
-                }
-              }
-            })
-          });
-          badge.textContent = "☁️ 클라우드 동기화됨";
-        } else {
-          const resp = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
-            headers: { "Authorization": `Bearer ${cfg.token}`, "Accept": "application/vnd.github+json" }
-          });
-          if (resp.ok) {
-            const data = await resp.json();
-            const fileObj = data.files[GIST_FILENAME] || Object.values(data.files)[0];
-            const parsed = JSON.parse(fileObj.content);
-            if (Array.isArray(parsed.games)) localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed.games));
-            if (Array.isArray(parsed.sessions)) localStorage.setItem(SESSIONS_KEY, JSON.stringify(parsed.sessions));
-            if (Array.isArray(parsed.players)) localStorage.setItem(PLAYERS_KEY, JSON.stringify(parsed.players));
-            badge.textContent = "☁️ 클라우드 연동됨";
-          }
+        function loadAll() {
+            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+            myGames = JSON.parse(localStorage.getItem(GAMES_STORAGE_KEY) || '[]');
+            allSessions = JSON.parse(localStorage.getItem(SESSIONS_STORAGE_KEY) || '[]');
+            allPlayers = JSON.parse(localStorage.getItem(PLAYERS_STORAGE_KEY) || '["나", "배우자", "아이", "모임원"]');
+            renderSessions();
         }
-      } catch (e) {}
-    }
 
-    async function initSessionsPage() {
-      await syncWithGist(false);
-      shelfGames = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      sessions = JSON.parse(localStorage.getItem(SESSIONS_KEY) || "[]");
-      savedPlayers = JSON.parse(localStorage.getItem(PLAYERS_KEY) || '["나", "배우자", "아이", "보드게임 모임"]');
+        function renderSessions() {
+            const box = document.getElementById('sessions-list-container');
+            if (allSessions.length === 0) {
+                box.innerHTML = '<div style="text-align:center; padding:4rem 1rem; color:var(--text-secondary);">아직 게임 기록이 없어요.<br><br><button class="small-btn primary" onclick="openEdit()">+ 첫 기록 남기기</button></div>';
+                return;
+            }
+            box.innerHTML = allSessions.map(s => {
+                const gList = s.games || [];
+                const firstGame = gList[0] || {};
+                const bgStyle = firstGame.gameThumbnail
+                    ? `background-image:url('${firstGame.gameThumbnail}');`
+                    : 'background:linear-gradient(135deg,#6750A4,#7D5260);';
+                return `
+                    <div class="session-card-v2" style="margin-bottom:1rem;">
+                        <div class="session-card-header">
+                            <div class="session-card-avatar">🎲</div>
+                            <div class="session-card-header-info">
+                                <span class="session-date">${s.date}</span>
+                            </div>
+                            <button class="small-btn" style="color:var(--error-color);" onclick="deleteSession('${s.id}')">삭제</button>
+                        </div>
+                        <div class="session-media" style="aspect-ratio:16/9;">
+                            <div class="session-slide game-slide" style="${bgStyle} width:100%; height:100%;">
+                                <div class="session-slide-overlay">
+                                    <div class="session-slide-game-name">${gList.map(g => g.gameName || g).join(', ')}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="session-card-body">
+                            ${(s.players && s.players.length) ? `<div class="session-info-row">👥 <span>${s.players.join(', ')}</span></div>` : ''}
+                            ${s.memo ? `<p class="session-memo">${s.memo}</p>` : ''}
+                            <div class="session-rating-row">
+                                <span class="session-rating-label">오늘의 평점</span>
+                                <span class="session-rating-stars">${'★'.repeat(s.rating || 5)}</span>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
 
-      setToday();
-      renderCurrentPlayers();
-      renderCurrentGames();
-      renderCalendar();
-      renderSessions();
-    }
+        function openEdit() {
+            document.getElementById('sessions-list-view').style.display = 'none';
+            document.getElementById('sessions-edit-view').classList.add('active');
+            document.getElementById('edit-actions').style.display = 'flex';
+            document.getElementById('session-date').value = new Date().toISOString().slice(0, 10);
+            editPlayers = ['나'];
+            editGames = [];
+            renderEditForm();
+        }
 
-    function setToday() {
-      document.getElementById("sessionDate").value = new Date().toISOString().slice(0, 10);
-    }
+        function closeEdit() {
+            document.getElementById('sessions-edit-view').classList.remove('active');
+            document.getElementById('edit-actions').style.display = 'none';
+            document.getElementById('sessions-list-view').style.display = 'flex';
+        }
 
-    function setStars(n) {
-      currentStars = n;
-      document.querySelectorAll("#starGroup .star-btn").forEach((btn, idx) => btn.classList.toggle("active", idx < n));
-    }
+        function renderEditForm() {
+            document.getElementById('player-chips').innerHTML = editPlayers.map(p => `
+                <span class="player-chip active">${p} <button type="button" style="border:none;background:none;color:#fff;margin-left:4px;cursor:pointer;" onclick="removePlayer('${p}')">×</button></span>
+            `).join('');
 
-    function addParticipant(nameArg) {
-      const input = document.getElementById("newPlayerInput");
-      const name = (nameArg || input.value).trim();
-      if (!name) return;
-      if (!currentPlayers.includes(name)) currentPlayers.push(name);
-      if (!savedPlayers.includes(name)) {
-        savedPlayers.push(name);
-        localStorage.setItem(PLAYERS_KEY, JSON.stringify(savedPlayers));
-      }
-      if (!nameArg) input.value = "";
-      renderCurrentPlayers();
-    }
+            document.getElementById('game-result-cards').innerHTML = editGames.map((g, idx) => `
+                <div style="display:flex; align-items:center; gap:0.6rem; padding:0.5rem; border:1px solid var(--border-color); border-radius:8px;">
+                    <img src="${g.gameThumbnail || ''}" style="width:36px; height:36px; object-fit:cover; border-radius:6px;">
+                    <strong style="flex:1;">${g.gameName}</strong>
+                    <button type="button" class="small-btn" onclick="editGames.splice(${idx},1); renderEditForm();">제거</button>
+                </div>
+            `).join('');
+        }
 
-    function removeParticipant(name) {
-      currentPlayers = currentPlayers.filter(p => p !== name);
-      renderCurrentPlayers();
-    }
+        function removePlayer(name) {
+            editPlayers = editPlayers.filter(p => p !== name);
+            renderEditForm();
+        }
 
-    function renderCurrentPlayers() {
-      document.getElementById("selectedPlayersBox").innerHTML = currentPlayers.map(p => `
-        <span class="chip">${p} <button type="button" onclick="removeParticipant('${p}')">✕</button></span>
-      `).join("");
-    }
+        function deleteSession(id) {
+            if (!confirm('이 기록을 삭제할까요?')) return;
+            allSessions = allSessions.filter(s => s.id !== id);
+            localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(allSessions));
+            renderSessions();
+        }
 
-    function openModal(id) {
-      if (id === "savedPlayersModal") {
-        document.getElementById("savedPlayersList").innerHTML = savedPlayers.map(p => `
-          <button class="btn" onclick="addParticipant('${p}'); closeModal('savedPlayersModal');">+ ${p}</button>
-        `).join("");
-      }
-      document.getElementById(id).classList.add("open");
-    }
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAll();
+            document.getElementById('add-session-btn').onclick = openEdit;
+            document.getElementById('cancel-edit-btn').onclick = closeEdit;
 
-    function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+            document.getElementById('add-player-btn').onclick = () => {
+                const val = document.getElementById('player-name-input').value.trim();
+                if (!val) return;
+                if (!editPlayers.includes(val)) editPlayers.push(val);
+                if (!allPlayers.includes(val)) {
+                    allPlayers.push(val);
+                    localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(allPlayers));
+                }
+                document.getElementById('player-name-input').value = '';
+                renderEditForm();
+            };
 
-    function openGameSelectModal() {
-      document.getElementById("modalGameSearch").value = "";
-      renderGameSelectList();
-      openModal("gameSelectModal");
-    }
+            document.getElementById('open-player-book-btn').onclick = () => {
+                const overlay = document.getElementById('player-book-overlay');
+                document.getElementById('player-book-list').innerHTML = allPlayers.map(p => `
+                    <div class="bottom-sheet-item" onclick="if(!editPlayers.includes('${p}')) editPlayers.push('${p}'); renderEditForm(); document.getElementById('player-book-overlay').classList.remove('open');">👤 ${p}</div>
+                `).join('');
+                overlay.classList.add('open');
+            };
+            document.getElementById('player-book-overlay').onclick = (e) => {
+                if (e.target.id === 'player-book-overlay') e.target.classList.remove('open');
+            };
 
-    function renderGameSelectList() {
-      const q = document.getElementById("modalGameSearch").value.trim().toLowerCase();
-      const box = document.getElementById("modalGameList");
-      const filtered = shelfGames.filter(g => g.title.toLowerCase().includes(q));
-      box.innerHTML = filtered.length
-        ? filtered.map(g => `
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; border:1px solid var(--border); border-radius:8px;">
-              <span style="font-size:0.9rem; font-weight:600;">${g.title}</span>
-              <button class="btn btn-primary" style="padding:4px 10px; font-size:0.78rem;" onclick="selectGameForSession('${g.title.replace(/'/g, "")}')">선택</button>
-            </div>
-          `).join("")
-        : `<p style="font-size:0.85rem; color:var(--text-muted);">일치하는 책장 게임이 없습니다.</p>`;
-    }
+            const renderPicker = () => {
+                const q = document.getElementById('game-picker-search').value.toLowerCase();
+                document.getElementById('game-picker-list').innerHTML = myGames
+                    .filter(g => (g.name || g.title || '').toLowerCase().includes(q))
+                    .map(g => {
+                        const name = g.name || g.title;
+                        const thumb = (g.customFields && g.customFields['대표 이미지']) || g.image || '';
+                        return `<div class="bottom-sheet-item" onclick="editGames.push({ gameId:'${g.id}', gameName:'${name.replace(/'/g, "")}', gameThumbnail:'${thumb}', rounds:[{}] }); renderEditForm(); document.getElementById('game-picker-overlay').classList.remove('open');">
+                            <img src="${thumb}" onerror="this.style.display='none'">
+                            <span>${name}</span>
+                        </div>`;
+                    }).join('');
+            };
 
-    function selectGameForSession(title) {
-      if (!currentGames.includes(title)) currentGames.push(title);
-      renderCurrentGames();
-      closeModal("gameSelectModal");
-    }
+            document.getElementById('add-game-result-btn').onclick = () => {
+                document.getElementById('game-picker-search').value = '';
+                renderPicker();
+                document.getElementById('game-picker-overlay').classList.add('open');
+            };
+            document.getElementById('game-picker-search').oninput = renderPicker;
+            document.getElementById('game-picker-overlay').onclick = (e) => {
+                if (e.target.id === 'game-picker-overlay') e.target.classList.remove('open');
+            };
 
-    function removeSelectedGame(title) {
-      currentGames = currentGames.filter(g => g !== title);
-      renderCurrentGames();
-    }
+            document.getElementById('save-session-btn').onclick = () => {
+                if (editGames.length === 0) { alert('게임을 1개 이상 선택해주세요.'); return; }
+                const newRec = {
+                    id: `s_${Date.now()}`,
+                    date: document.getElementById('session-date').value,
+                    players: [...editPlayers],
+                    games: [...editGames],
+                    rating: parseInt(document.getElementById('session-rating').value, 10) || 5,
+                    memo: document.getElementById('session-memo').value.trim()
+                };
+                allSessions.unshift(newRec);
+                localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(allSessions));
 
-    function renderCurrentGames() {
-      const box = document.getElementById("selectedGamesBox");
-      box.innerHTML = currentGames.length
-        ? currentGames.map(g => `<span class="chip">🎲 ${g} <button type="button" onclick="removeSelectedGame('${g}')">✕</button></span>`).join("")
-        : `<span style="font-size:0.82rem; color:var(--text-muted);">선택된 게임이 없습니다.</span>`;
-    }
+                // 책장 게임 플레이 횟수 +1 연동
+                editGames.forEach(eg => {
+                    const target = myGames.find(mg => mg.id === eg.gameId || (mg.name || mg.title) === eg.gameName);
+                    if (target) target.plays = (Number(target.plays) || 0) + 1;
+                });
+                localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(myGames));
 
-    function previewPhoto(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = e => {
-        currentPhotoData = e.target.result;
-        const img = document.getElementById("photoPreview");
-        img.src = currentPhotoData;
-        img.style.display = "block";
-      };
-      reader.readAsDataURL(file);
-    }
-
-    async function saveSession() {
-      const date = document.getElementById("sessionDate").value;
-      const memo = document.getElementById("sessionMemo").value.trim();
-      if (!date) { alert("날짜를 선택해 주세요."); return; }
-      if (currentGames.length === 0) { alert("플레이한 게임을 최소 1개 선택해 주세요."); return; }
-
-      sessions.unshift({
-        id: "s_" + Date.now(),
-        date,
-        players: [...currentPlayers],
-        games: [...currentGames],
-        stars: currentStars,
-        memo,
-        photo: currentPhotoData
-      });
-      localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
-
-      shelfGames.forEach(g => {
-        if (currentGames.includes(g.title)) g.plays = (Number(g.plays) || 0) + 1;
-      });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(shelfGames));
-
-      resetSessionForm();
-      renderCalendar();
-      renderSessions();
-      await syncWithGist(true);
-      alert("플레이 기록이 저장되었으며 클라우드와 동기화되었습니다!");
-    }
-
-    async function deleteSession(id) {
-      if (!confirm("이 플레이 기록을 삭제할까요?")) return;
-      sessions = sessions.filter(s => s.id !== id);
-      localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
-      renderCalendar();
-      renderSessions();
-      await syncWithGist(true);
-    }
-
-    function resetSessionForm() {
-      setToday();
-      currentPlayers = ["나"];
-      currentGames = [];
-      currentPhotoData = "";
-      setStars(5);
-      document.getElementById("sessionMemo").value = "";
-      document.getElementById("sessionPhotoInput").value = "";
-      document.getElementById("photoPreview").style.display = "none";
-      renderCurrentPlayers();
-      renderCurrentGames();
-    }
-
-    function changeMonth(delta) {
-      calMonth += delta;
-      if (calMonth < 0) { calMonth = 11; calYear--; }
-      if (calMonth > 11) { calMonth = 0; calYear++; }
-      renderCalendar();
-    }
-
-    function renderCalendar() {
-      document.getElementById("calMonthLabel").textContent = `${calYear}년 ${calMonth + 1}월`;
-      const grid = document.getElementById("calendarGrid");
-      let html = ["일", "월", "화", "수", "목", "금", "토"].map(d => `<div class="cal-day-name">${d}</div>`).join("");
-      const firstDay = new Date(calYear, calMonth, 1).getDay();
-      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-      for (let i = 0; i < firstDay; i++) html += `<div></div>`;
-      for (let d = 1; d <= daysInMonth; d++) {
-        const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-        const hasRecord = sessions.some(s => s.date === dateStr);
-        html += `<div class="cal-cell ${filterDate === dateStr ? 'selected' : ''}" onclick="selectCalendarDate('${dateStr}')"><div>${d}</div>${hasRecord ? '<div class="cal-dot"></div>' : ''}</div>`;
-      }
-      grid.innerHTML = html;
-    }
-
-    function selectCalendarDate(dateStr) {
-      filterDate = (filterDate === dateStr) ? null : dateStr;
-      document.getElementById("sessionDate").value = dateStr;
-      renderCalendar();
-      renderSessions();
-    }
-
-    function renderSessions() {
-      const container = document.getElementById("sessionListContainer");
-      const list = filterDate ? sessions.filter(s => s.date === filterDate) : sessions;
-      document.getElementById("sessionCount").textContent = list.length;
-      container.innerHTML = list.length
-        ? list.map(s => `
-            <div class="session-card">
-              <div class="session-card-head">
-                <span>📅 ${s.date} | <strong style="color:#f59e0b;">${"★".repeat(s.stars)}</strong></span>
-                <button class="btn" style="padding:2px 8px; font-size:0.75rem; color:#dc2626;" onclick="deleteSession('${s.id}')">삭제</button>
-              </div>
-              <div class="session-games">${s.games.map(g => `<span>🎲 ${g}</span>`).join(", ")}</div>
-              <div class="session-players">${s.players.map(p => `<span class="player-badge">👤 ${p}</span>`).join("")}</div>
-              ${s.memo ? `<p style="font-size:0.85rem;">${s.memo}</p>` : ""}
-              ${s.photo ? `<img src="${s.photo}" style="max-height:140px; border-radius:8px; object-fit:cover;" />` : ""}
-            </div>
-          `).join("")
-        : `<p style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:24px;">등록된 게임 기록이 없습니다.</p>`;
-    }
-
-    window.addEventListener("DOMContentLoaded", initSessionsPage);
-  </script>
+                closeEdit();
+                renderSessions();
+            };
+        });
+    </script>
 </body>
 </html>

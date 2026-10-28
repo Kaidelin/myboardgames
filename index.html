@@ -45,7 +45,15 @@
       margin-top: 4px;
       line-height: 1.4;
     }
-    .auth-actions { display: flex; gap: 8px; align-items: center; }
+    .auth-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .sync-status-pill {
+      font-size: 0.78rem;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.15);
+      color: #e0e7ff;
+      font-weight: 600;
+    }
 
     /* 메인 2단 레이아웃 */
     .app-container {
@@ -58,7 +66,6 @@
       align-items: start;
     }
 
-    /* 좌측 상세 검색 사이드바 */
     aside.filter-sidebar {
       background: var(--bg-surface);
       border: 1px solid var(--border);
@@ -159,7 +166,7 @@
     .btn {
       padding: 8px 14px;
       border-radius: 8px;
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       font-weight: 600;
       border: 1px solid var(--border);
       background: var(--bg-surface);
@@ -185,7 +192,6 @@
     }
     .btn-accent:hover { background: #d97706; }
 
-    /* 서브 툴바 */
     .sub-toolbar {
       background: var(--bg-surface);
       padding: 14px 20px;
@@ -260,18 +266,18 @@
     .shelf-list .game-card {
       flex-direction: row;
       align-items: center;
-      height: 104px;
+      height: 108px;
     }
     .card-thumb {
       width: 100%;
-      height: 175px;
+      height: 180px;
       object-fit: contain;
       background: #0f172a;
-      padding: 4px;
+      padding: 6px;
     }
     .shelf-list .card-thumb {
-      width: 104px;
-      height: 104px;
+      width: 108px;
+      height: 108px;
       flex-shrink: 0;
     }
     .card-body {
@@ -335,7 +341,7 @@
     .modal-box {
       background: var(--bg-surface);
       border-radius: 16px;
-      max-width: 540px;
+      max-width: 550px;
       width: 100%;
       max-height: 92vh;
       overflow-y: auto;
@@ -348,7 +354,7 @@
       align-items: center;
       margin-bottom: 16px;
     }
-    .modal-header h2 { font-size: 1.2rem; }
+    .modal-header h2 { font-size: 1.18rem; }
     .close-btn {
       background: none;
       border: none;
@@ -389,27 +395,27 @@
       gap: 12px;
       align-items: center;
       background: var(--bg-subtle);
-      border: 1px solid var(--border);
-      padding: 10px;
+      border: 1px dashed #94a3b8;
+      padding: 12px;
       border-radius: 10px;
       margin-bottom: 12px;
     }
     .cover-preview-img {
-      width: 72px;
-      height: 72px;
+      width: 80px;
+      height: 80px;
       object-fit: contain;
       background: #0f172a;
       border-radius: 8px;
       flex-shrink: 0;
     }
     .bl-status-text {
-      font-size: 0.78rem;
+      font-size: 0.77rem;
       color: var(--primary);
-      margin-top: 4px;
+      margin-top: 5px;
       font-weight: 600;
+      line-height: 1.35;
     }
 
-    /* 하단 모바일 네비게이션 */
     nav.bottom-nav {
       position: fixed;
       bottom: 0;
@@ -443,20 +449,21 @@
 </head>
 <body>
 
-  <!-- 상단 타이틀 및 안내 영역 -->
+  <!-- 상단 타이틀 및 클라우드 동기화 배너 -->
   <div class="auth-banner">
     <div>
       <h1>🎲 나의 보드게임 책장</h1>
-      <p>온라인에 기록하는 나만의 보드게임 컬렉션</p>
+      <p>온라인에 기록하는 나만의 보드게임 컬렉션 (myboardgames)</p>
       <p class="auth-notice">
-        ※ 카카오톡 등 다른 앱에서 접속 시 로그인이 안될 수 있습니다.<br>
-        오류가 발생하면 링크를 복사하여 인터넷 브라우저(크롬, 사파리 등)에서 열어주세요.
+        ※ 우측 [☁️ 클라우드 동기화]를 설정하면 PC와 스마트폰에서 데이터가 실시간으로 자동 연동됩니다.
       </p>
     </div>
     <div class="auth-actions">
+      <span id="syncStatusBadge" class="sync-status-pill">☁️ 로컬 저장 모드</span>
+      <button class="btn btn-accent" onclick="openModal('gistSyncModal')">☁️ 클라우드 동기화</button>
       <button class="btn" onclick="exportBackup()">💾 JSON 백업</button>
       <label class="btn" style="cursor:pointer;">
-        📂 JSON 불러오기
+        📂 불러오기
         <input type="file" accept=".json" style="display:none" onchange="importBackup(event)" />
       </label>
     </div>
@@ -464,7 +471,6 @@
 
   <!-- 메인 앱 컨테이너 -->
   <div class="app-container">
-    <!-- 좌측 상세 검색 사이드바 -->
     <aside class="filter-sidebar">
       <div class="sidebar-header">
         <h3>상세 검색</h3>
@@ -585,21 +591,20 @@
         <button class="close-btn" onclick="closeModal('addModal')">✕</button>
       </div>
       <div class="form-row" style="display:flex; gap:8px;">
-        <input type="text" id="bggSearchInput" placeholder="게임명 입력 (예: 아르낙, 정령섬, 백로성)" onkeydown="if(event.key==='Enter') searchBGG()" />
-        <button class="btn btn-primary" onclick="searchBGG()">검색</button>
+        <input type="text" id="bggSearchInput" placeholder="게임명 입력 (예: 나르, 아르낙, 정령섬)" onkeydown="if(event.key==='Enter') searchGameQuick()" />
+        <button class="btn btn-primary" onclick="searchGameQuick()">추가</button>
       </div>
       <div id="bggResults" style="max-height:220px; overflow-y:auto; margin-bottom:12px;"></div>
 
       <div class="divider-title">기타 추가 방식</div>
       <div style="display:flex; flex-direction:column; gap:8px;">
-        <button class="btn" style="justify-content:center;" onclick="switchModal('addModal', 'manualModal')">✏️ 게임 직접 추가 (보드라이프 커버 자동 매칭)</button>
-        <button class="btn" style="justify-content:center;" onclick="switchModal('addModal', 'boardlifeUrlModal')">🔗 BoardLife URL로 추가</button>
-        <button class="btn" style="justify-content:center;" onclick="switchModal('addModal', 'boardlifeSyncModal')">🔄 보드라이프 연동하기</button>
+        <button class="btn" style="justify-content:center;" onclick="switchModal('addModal', 'manualModal')">✏️ 게임 직접 추가 (커버 자동 매칭)</button>
+        <button class="btn" style="justify-content:center;" onclick="switchModal('addModal', 'boardlifeUrlModal')">🔗 보드라이프 페이지/이미지 URL로 추가</button>
       </div>
     </div>
   </div>
 
-  <!-- 모달 2: 게임 직접 추가 / 수정 모달 (보드라이프 커버 자동 링크 + 구매가격/일자 포함) -->
+  <!-- 모달 2: 게임 직접 추가 / 수정 모달 -->
   <div id="manualModal" class="modal-backdrop">
     <div class="modal-box">
       <div class="modal-header">
@@ -609,31 +614,33 @@
       <input type="hidden" id="editGameId" />
 
       <div class="form-row">
-        <label>게임 이름 *</label>
+        <label>게임 이름 * <small style="font-weight:400;">(예: 나르 (KNARR) 처럼 영문을 함께 적으면 매칭률이 100%가 됩니다)</small></label>
         <div style="display:flex; gap:8px;">
-          <input type="text" id="formTitle" placeholder="예: 아르낙의 잊혀진 유적" />
-          <button type="button" class="btn btn-primary" style="white-space:nowrap;" onclick="autoLinkBoardLifeCover(true)">🔍 보드라이프 커버 매칭</button>
+          <input type="text" id="formTitle" placeholder="예: 나르 (KNARR)" />
+          <button type="button" class="btn btn-primary" style="white-space:nowrap;" onclick="autoLinkCoverImage(true)">🔍 커버 자동 찾기</button>
         </div>
       </div>
 
-      <!-- 보드라이프 커버 이미지 미리보기 및 URL 입력 -->
-      <div class="cover-preview-wrap">
-        <img id="formCoverPreview" class="cover-preview-img" referrerpolicy="no-referrer" src="https://via.placeholder.com/100x100?text=No+Cover" alt="Cover Preview" />
+      <!-- 커버 이미지 미리보기 및 다중 입력(URL / 보드라이프 변환 / Ctrl+V 붙여넣기) -->
+      <div class="cover-preview-wrap" id="coverDropZone">
+        <img id="formCoverPreview" class="cover-preview-img" referrerpolicy="no-referrer" src="https://placehold.co/100x100/1e293b/ffffff?text=No+Cover" alt="Cover Preview" />
         <div style="flex:1; min-width:0;">
           <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:flex; justify-content:space-between;">
-            <span>커버 이미지 URL (www.boardlife.co.kr 연동)</span>
-            <a id="blDirectSearchLink" href="https://www.boardlife.co.kr" target="_blank" style="color:var(--primary); text-decoration:none;">보드라이프 열기 ↗</a>
+            <span>커버 이미지 URL (Firebase .webp / 보드라이프 / Ctrl+V 지원)</span>
+            <a id="blDirectSearchLink" href="https://www.boardlife.co.kr" target="_blank" style="color:var(--primary); text-decoration:none;">보드라이프 검색 ↗</a>
           </label>
-          <input type="text" id="formImage" placeholder="https://www.boardlife.co.kr/..." oninput="updatePreviewFromInput()" style="margin-top:4px; width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:6px; font-size:0.84rem;" />
-          <div id="blMatchStatus" class="bl-status-text">게임을 클릭하거나 '보드라이프 커버 매칭'을 누르면 자동 링크됩니다.</div>
+          <input type="text" id="formImage" placeholder="이미지 주소, 보드라이프 URL 또는 여기서 Ctrl+V로 이미지 붙여넣기" oninput="handleCoverUrlInput()" style="margin-top:4px; width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:6px; font-size:0.84rem;" />
+          <div id="blMatchStatus" class="bl-status-text">
+            💡 [🔍 커버 자동 찾기]를 누르거나, 보드라이프에서 우클릭 [이미지 복사] 후 이 창에서 <strong>Ctrl + V</strong>를 누르세요!
+          </div>
         </div>
       </div>
 
-      <!-- 구매 가격 및 구매 일자 입력란 -->
+      <!-- 구매 가격 및 구매 일자 -->
       <div class="form-grid-2">
         <div class="form-row">
           <label>💰 구매 가격 (원)</label>
-          <input type="number" id="formPrice" value="0" min="0" step="500" placeholder="예: 58000" />
+          <input type="number" id="formPrice" value="0" min="0" step="500" placeholder="예: 38000" />
         </div>
         <div class="form-row">
           <label>📅 구매 일자</label>
@@ -686,7 +693,7 @@
         </div>
         <div class="form-row">
           <label>커스텀 태그 (쉼표로 구분)</label>
-          <input type="text" id="formTags" placeholder="예: 1인플추천, 덱빌딩, 한글판" />
+          <input type="text" id="formTags" placeholder="예: 1인플추천, 셋컬렉션, 한글판" />
         </div>
       </div>
 
@@ -703,15 +710,15 @@
     </div>
   </div>
 
-  <!-- 모달 3: BoardLife URL로 추가 -->
+  <!-- 모달 3: 보드라이프 페이지/이미지 URL로 추가 -->
   <div id="boardlifeUrlModal" class="modal-backdrop">
     <div class="modal-box">
       <div class="modal-header">
         <h2>BoardLife URL로 추가</h2>
         <button class="close-btn" onclick="closeModal('boardlifeUrlModal')">✕</button>
       </div>
-      <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:12px;">
-        보드라이프(`www.boardlife.co.kr`) 게임 상세 페이지 URL을 붙여넣으면 게임 제목과 커버 이미지를 자동으로 추출합니다.
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
+        보드라이프 게임 페이지 주소(`bbs_detail.php...`) 또는 이미지 주소(`storage.googleapis.com/...` / `boardlife.co.kr/...`)를 붙여넣으세요.
       </p>
       <div class="form-row">
         <input type="text" id="blUrlInput" placeholder="https://www.boardlife.co.kr/bbs_detail.php?bbs_num=..." />
@@ -723,31 +730,38 @@
     </div>
   </div>
 
-  <!-- 모달 4: 보드라이프 연동하기 -->
-  <div id="boardlifeSyncModal" class="modal-backdrop">
+  <!-- 모달 4: ☁️ GitHub Secret Gist 클라우드 동기화 설정 -->
+  <div id="gistSyncModal" class="modal-backdrop">
     <div class="modal-box">
       <div class="modal-header">
-        <h2>보드라이프 연동하기</h2>
-        <button class="close-btn" onclick="closeModal('boardlifeSyncModal')">✕</button>
+        <h2>☁️ GitHub Secret Gist 자동 동기화</h2>
+        <button class="close-btn" onclick="closeModal('gistSyncModal')">✕</button>
       </div>
       <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:14px; line-height:1.5;">
-        보드라이프 아이디와 비밀번호를 입력하면 내 컬렉션을 자동으로 연동합니다.<br>
-        <span style="color:#ef4444;">※ 입력하신 비밀번호는 저장되지 않고 1회성 연동 후 즉시 파기됩니다.</span>
+        GitHub Personal Access Token(<code>gist</code> 권한 체크)을 입력하면 내 책장, 구매 내역, 플레이 기록이 Secret Gist에 암호화·비공개로 저장되어 <strong>PC와 스마트폰 간 실시간 자동 동기화</strong>됩니다.
       </p>
       <div class="form-row">
-        <label>보드라이프 아이디</label>
-        <input type="text" id="blSyncId" placeholder="ID 입력" />
+        <label>GitHub Personal Access Token (ghp_... 또는 github_pat_...)</label>
+        <input type="password" id="gistTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
       </div>
       <div class="form-row">
-        <label>비밀번호</label>
-        <input type="password" id="blSyncPw" placeholder="비밀번호 입력" />
+        <label>Secret Gist ID <small style="font-weight:400;">(없으면 아래 '새 Gist 자동 생성' 클릭)</small></label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="gistIdInput" placeholder="예: a1b2c3d4e5f67890..." />
+          <button type="button" class="btn" style="white-space:nowrap;" onclick="createNewSecretGist()">✨ 새 Gist 자동 생성</button>
+        </div>
       </div>
-      <div id="syncProgressBox" style="display:none; margin:12px 0; padding:12px; background:var(--bg-subtle); border-radius:8px; font-size:0.85rem;">
-        <p>연동 중입니다... (최대 1~2분 소요)</p>
+      <div class="form-row" style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+        <input type="checkbox" id="gistAutoSyncCheck" style="width:18px; height:18px;" checked />
+        <label for="gistAutoSyncCheck" style="margin:0; cursor:pointer; color:var(--text-main);">접속 시 자동 불러오기 &amp; 게임 저장 시 자동 업로드 활성화</label>
       </div>
-      <div style="display:flex; justify-content:flex-end; gap:8px;">
-        <button class="btn" onclick="closeModal('boardlifeSyncModal')">닫기</button>
-        <button class="btn btn-primary" onclick="simulateBoardLifeSync()">연동 시작</button>
+      <div id="gistModalMsg" style="font-size:0.82rem; color:var(--primary); font-weight:600; margin:10px 0;"></div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between; margin-top:16px; padding-top:12px; border-top:1px solid var(--border);">
+        <div style="display:flex; gap:6px;">
+          <button type="button" class="btn" onclick="pullFromGist(true)">⬇️ 지금 불러오기(Pull)</button>
+          <button type="button" class="btn" onclick="pushToGist(true)">⬆️ 지금 업로드(Push)</button>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="saveGistConfig()">설정 저장</button>
       </div>
     </div>
   </div>
@@ -770,6 +784,11 @@
 
   <script>
     const STORAGE_KEY = "MY_BG_SHELF_DATA_V1";
+    const SESSIONS_KEY = "MY_BG_SESSIONS_V1";
+    const PLAYERS_KEY = "MY_BG_PLAYERS_V1";
+    const GIST_CONFIG_KEY = "MY_BG_GIST_CONFIG_V1";
+    const GIST_FILENAME = "myboardgames_db.json";
+
     const TAG_COLORS = [
       { bg: "#e0e7ff", text: "#3730a3" },
       { bg: "#dcfce7", text: "#166534" },
@@ -778,8 +797,46 @@
       { bg: "#e0f2fe", text: "#075985" }
     ];
 
-    // 초기 샘플 보드게임 데이터 (구매가격 & 구매일자 포함)
+    // 한글 전용 게임명 입력 시 즉시 매칭을 돕는 대표 사전 + 자동 번역 폴백
+    const KOR_TO_ENG_DICT = {
+      "나르": "Knarr",
+      "아르낙의 잊혀진 유적": "Lost Ruins of Arnak",
+      "아르낙": "Lost Ruins of Arnak",
+      "정령섬": "Spirit Island",
+      "백로성": "The White Castle",
+      "세티": "SETI: Search for Extraterrestrial Intelligence",
+      "플립 7": "Flip 7",
+      "플립7": "Flip 7",
+      "보이드폴": "Voidfall",
+      "버건디의 성": "The Castles of Burgundy",
+      "에버델": "Everdell",
+      "엔데버 깊은 바다": "Endeavor: Deep Sea",
+      "영웅은 사절입니다": "Keep the Heroes Out!",
+      "언스토퍼블": "Unstoppable",
+      "글룸헤이븐 버튼 앤 버그": "Gloomhaven: Buttons & Bugs",
+      "테라포밍 마스": "Terraforming Mars",
+      "아크 노바": "Ark Nova",
+      "브래스 버밍엄": "Brass: Birmingham",
+      "듄 임페리움": "Dune: Imperium",
+      "스플렌더": "Splendor",
+      "카탄": "Catan",
+      "윙스팬": "Wingspan",
+      "캐스캐디아": "Cascadia",
+      "하모니즈": "Harmonies",
+      "스카이 팀": "Sky Team"
+    };
+
+    // 초기 샘플 데이터 (알려주신 나르 KNARR의 mybgshelf Firebase Storage .webp URL 포함)
     const DEFAULT_GAMES = [
+      {
+        id: "g_knarr",
+        title: "나르 (KNARR)",
+        image: "https://storage.googleapis.com/mybgshelf.firebasestorage.app/boardlife_imports%2F592946cc-19c1-4909-9af9-4305ee73b8b1.webp",
+        minP: 2, maxP: 4, time: 30, weight: 1.9, rating: 8.8, plays: 5,
+        purchasePrice: 32000, purchaseDate: "2026-10-25",
+        category: "전략", tags: ["셋컬렉션", "엔진빌딩", "가성비"],
+        memo: "바이킹 크루 모집 카드 게임 / mybgshelf 웹앱 원본 .webp 이미지 연동"
+      },
       {
         id: "g1",
         title: "아르낙의 잊혀진 유적 (Lost Ruins of Arnak)",
@@ -787,7 +844,7 @@
         minP: 1, maxP: 4, time: 120, weight: 2.9, rating: 9.5, plays: 12,
         purchasePrice: 62000, purchaseDate: "2026-10-24",
         category: "전략", tags: ["덱빌딩", "일꾼놓기", "1인플추천"],
-        memo: "탐험 대장 확장 포함 / 모험의 궤(PET 트레이) 수납 완료"
+        memo: "탐험 대장 확장 포함"
       },
       {
         id: "g2",
@@ -814,16 +871,7 @@
         minP: 1, maxP: 4, time: 160, weight: 3.8, rating: 9.4, plays: 4,
         purchasePrice: 89000, purchaseDate: "2026-10-26",
         category: "전략", tags: ["우주테마", "무거움", "1인플추천"],
-        memo: "프로모 카드 슬리브 씌움"
-      },
-      {
-        id: "g5",
-        title: "플립 7 (Flip 7)",
-        image: "",
-        minP: 3, maxP: 8, time: 20, weight: 1.1, rating: 8.2, plays: 9,
-        purchasePrice: 15000, purchaseDate: "2026-08-10",
-        category: "파티", tags: ["파티", "블랙잭", "휴대용"],
-        memo: "박스 길이 15cm 이하 소박스"
+        memo: "프로모 카드 슬리브 완료"
       }
     ];
 
@@ -832,24 +880,437 @@
     let selectedTag = "ALL";
     let isListView = false;
 
-    function loadGames() {
+    /* =========================================================================
+       1. 로컬 로드 & GitHub Secret Gist 클라우드 동기화 엔진
+       ========================================================================= */
+    function getGistConfig() {
+      try {
+        return JSON.parse(localStorage.getItem(GIST_CONFIG_KEY) || "{}");
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function updateSyncBadge(text, isOk = true) {
+      const el = document.getElementById("syncStatusBadge");
+      if (!el) return;
+      el.textContent = text;
+      el.style.background = isOk ? "rgba(16, 185, 129, 0.25)" : "rgba(239, 68, 68, 0.3)";
+    }
+
+    async function loadGames() {
       const saved = localStorage.getItem(STORAGE_KEY);
       games = saved ? JSON.parse(saved) : DEFAULT_GAMES;
-      // 기존 데이터에 purchasePrice, purchaseDate 필드가 없는 경우 기본값 보완
       games.forEach(g => {
         if (typeof g.purchasePrice === "undefined") g.purchasePrice = 0;
         if (typeof g.purchaseDate === "undefined") g.purchaseDate = "";
       });
       renderTagChips();
       renderShelf();
+
+      // Gist 설정 로드 및 자동 동기화(Pull)
+      const cfg = getGistConfig();
+      document.getElementById("gistTokenInput").value = cfg.token || "";
+      document.getElementById("gistIdInput").value = cfg.gistId || "";
+      document.getElementById("gistAutoSyncCheck").checked = cfg.autoSync !== false;
+
+      if (cfg.token && cfg.gistId && cfg.autoSync !== false) {
+        await pullFromGist(false);
+      }
     }
 
-    function saveGames() {
+    async function saveGames(skipCloudPush = false) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
       renderTagChips();
       renderShelf();
+
+      const cfg = getGistConfig();
+      if (!skipCloudPush && cfg.token && cfg.gistId && cfg.autoSync !== false) {
+        await pushToGist(false);
+      }
     }
 
+    function saveGistConfig() {
+      const token = document.getElementById("gistTokenInput").value.trim();
+      const gistId = document.getElementById("gistIdInput").value.trim();
+      const autoSync = document.getElementById("gistAutoSyncCheck").checked;
+
+      localStorage.setItem(GIST_CONFIG_KEY, JSON.stringify({ token, gistId, autoSync }));
+      document.getElementById("gistModalMsg").textContent = "✅ 동기화 설정이 저장되었습니다.";
+      if (token && gistId) {
+        updateSyncBadge("☁️ 클라우드 연동됨");
+      }
+    }
+
+    async function createNewSecretGist() {
+      const token = document.getElementById("gistTokenInput").value.trim();
+      const msgEl = document.getElementById("gistModalMsg");
+      if (!token) {
+        alert("먼저 GitHub Personal Access Token을 입력해 주세요.");
+        return;
+      }
+      msgEl.textContent = "⏳ 새 Secret Gist를 생성하는 중...";
+
+      const payload = {
+        description: "myboardgames Cloud Sync Database",
+        public: false,
+        files: {
+          [GIST_FILENAME]: {
+            content: JSON.stringify({
+              updatedAt: new Date().toISOString(),
+              games,
+              sessions: JSON.parse(localStorage.getItem(SESSIONS_KEY) || "[]"),
+              players: JSON.parse(localStorage.getItem(PLAYERS_KEY) || '["나", "배우자", "아이", "보드게임 모임"]')
+            }, null, 2)
+          }
+        }
+      };
+
+      try {
+        const resp = await fetch("https://api.github.com/gists", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        document.getElementById("gistIdInput").value = data.id;
+        saveGistConfig();
+        msgEl.textContent = `🎉 새 Secret Gist 생성 및 초기 업로드 완료! (ID: ${data.id})`;
+        updateSyncBadge("☁️ 동기화 완료");
+      } catch (e) {
+        msgEl.textContent = "❌ Gist 생성 실패: 토큰 권한(gist 체크 여부)을 확인해 주세요.";
+      }
+    }
+
+    async function pushToGist(showAlert = false) {
+      const cfg = getGistConfig();
+      const token = document.getElementById("gistTokenInput")?.value.trim() || cfg.token;
+      const gistId = document.getElementById("gistIdInput")?.value.trim() || cfg.gistId;
+      const msgEl = document.getElementById("gistModalMsg");
+
+      if (!token || !gistId) {
+        if (showAlert) alert("Token과 Gist ID를 먼저 설정해 주세요.");
+        return;
+      }
+
+      updateSyncBadge("⏳ 업로드 중...");
+      const fullContent = {
+        updatedAt: new Date().toISOString(),
+        games,
+        sessions: JSON.parse(localStorage.getItem(SESSIONS_KEY) || "[]"),
+        players: JSON.parse(localStorage.getItem(PLAYERS_KEY) || '["나", "배우자", "아이", "보드게임 모임"]')
+      };
+
+      try {
+        const resp = await fetch(`https://api.github.com/gists/${gistId}`, {
+          method: "PATCH",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            files: {
+              [GIST_FILENAME]: { content: JSON.stringify(fullContent, null, 2) }
+            }
+          })
+        });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        updateSyncBadge(`☁️ 동기화됨 (${new Date().toLocaleTimeString().slice(0, 5)})`);
+        if (msgEl) msgEl.textContent = "✅ 클라우드(Gist)에 최신 데이터를 업로드했습니다.";
+        if (showAlert) alert("클라우드 업로드(Push) 완료!");
+      } catch (e) {
+        updateSyncBadge("⚠️ 동기화 오류", false);
+        if (msgEl) msgEl.textContent = "❌ 업로드 실패: Gist ID 또는 토큰을 확인하세요.";
+      }
+    }
+
+    async function pullFromGist(showAlert = false) {
+      const cfg = getGistConfig();
+      const token = document.getElementById("gistTokenInput")?.value.trim() || cfg.token;
+      const gistId = document.getElementById("gistIdInput")?.value.trim() || cfg.gistId;
+      const msgEl = document.getElementById("gistModalMsg");
+
+      if (!token || !gistId) {
+        if (showAlert) alert("Token과 Gist ID를 먼저 설정해 주세요.");
+        return;
+      }
+
+      updateSyncBadge("⏳ 불러오는 중...");
+      try {
+        const resp = await fetch(`https://api.github.com/gists/${gistId}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/vnd.github+json"
+          }
+        });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        const fileObj = data.files[GIST_FILENAME] || Object.values(data.files)[0];
+        if (!fileObj || !fileObj.content) throw new Error("Empty Gist");
+
+        const parsed = JSON.parse(fileObj.content);
+        if (Array.isArray(parsed.games)) {
+          games = parsed.games;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+        }
+        if (Array.isArray(parsed.sessions)) {
+          localStorage.setItem(SESSIONS_KEY, JSON.stringify(parsed.sessions));
+        }
+        if (Array.isArray(parsed.players)) {
+          localStorage.setItem(PLAYERS_KEY, JSON.stringify(parsed.players));
+        }
+        renderTagChips();
+        renderShelf();
+        updateSyncBadge(`☁️ 동기화됨 (${new Date().toLocaleTimeString().slice(0, 5)})`);
+        if (msgEl) msgEl.textContent = "✅ 클라우드(Gist)에서 최신 데이터를 불러왔습니다.";
+        if (showAlert) alert(`클라우드에서 총 ${games.length}개의 게임 데이터를 불러왔습니다!`);
+      } catch (e) {
+        updateSyncBadge("⚠️ 불러오기 실패", false);
+        if (msgEl) msgEl.textContent = "❌ 불러오기 실패: Gist ID와 토큰을 확인해 주세요.";
+      }
+    }
+
+    /* =========================================================================
+       2. 4중 스마트 커버 이미지 매칭 엔진 (Firebase .webp + wsrv.nl + Jina + BGG + Ctrl+V)
+       ========================================================================= */
+    // 보드라이프 직접 이미지 URL인 경우 핫링크 차단 우회 및 .webp 변환 적용
+    function normalizeCoverUrl(rawUrl) {
+      if (!rawUrl) return "";
+      const url = rawUrl.trim();
+      // 1) 이미 mybgshelf Firebase Storage (.webp), wsrv.nl, BGG(geekdo), DataURL인 경우 그대로 사용
+      if (
+        url.includes("storage.googleapis.com") ||
+        url.includes("firebasestorage.app") ||
+        url.includes("wsrv.nl") ||
+        url.includes("geekdo-images.com") ||
+        url.startsWith("data:image/")
+      ) {
+        return url;
+      }
+      // 2) 보드라이프 이미지 직접 주소인 경우 wsrv.nl WebP 프록시로 감싸서 차단 우회
+      if (url.includes("boardlife.co.kr") && /\.(jpg|jpeg|png|webp|gif)/i.test(url)) {
+        return `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=webp`;
+      }
+      return url;
+    }
+
+    function handleCoverUrlInput() {
+      const inputEl = document.getElementById("formImage");
+      const raw = inputEl.value.trim();
+      const preview = document.getElementById("formCoverPreview");
+      const statusEl = document.getElementById("blMatchStatus");
+
+      if (!raw) {
+        preview.src = "https://placehold.co/100x100/1e293b/ffffff?text=No+Cover";
+        return;
+      }
+
+      // 사용자가 보드라이프 '게임 상세 웹페이지 URL(bbs_detail.php)'을 붙여넣은 경우 자동으로 이미지 추출
+      if (raw.includes("boardlife.co.kr") && raw.includes("bbs_detail.php")) {
+        statusEl.textContent = "⏳ 보드라이프 상세 페이지에서 커버 이미지를 추출하여 .webp로 변환 중...";
+        extractCoverFromBoardLifePage(raw).then(found => {
+          if (found) {
+            const webpUrl = normalizeCoverUrl(found);
+            inputEl.value = webpUrl;
+            preview.src = webpUrl;
+            statusEl.textContent = "✅ 보드라이프 페이지에서 커버 추출 및 .webp 변환 완료!";
+          }
+        });
+        return;
+      }
+
+      const normalized = normalizeCoverUrl(raw);
+      if (normalized !== raw) inputEl.value = normalized;
+      preview.src = normalized;
+    }
+
+    // 클립보드(Ctrl+V)로 이미지 자체를 붙여넣었을 때 경량 WebP DataURL로 즉시 변환
+    window.addEventListener("paste", e => {
+      const modalOpen = document.getElementById("manualModal").classList.contains("open");
+      if (!modalOpen) return;
+      const items = (e.clipboardData || e.originalEvent.clipboardData)?.items || [];
+      for (const item of items) {
+        if (item.type.indexOf("image") === 0) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = ev => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              const maxDim = 360;
+              let w = img.width, h = img.height;
+              if (w > h && w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+              else if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+              canvas.width = w;
+              canvas.height = h;
+              canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+              const webpDataUrl = canvas.toDataURL("image/webp", 0.85);
+              document.getElementById("formImage").value = webpDataUrl;
+              document.getElementById("formCoverPreview").src = webpDataUrl;
+              document.getElementById("blMatchStatus").textContent = "✅ 클립보드 이미지를 .webp 포맷으로 즉시 변환하여 적용했습니다!";
+            };
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+      }
+    });
+
+    async function extractCoverFromBoardLifePage(pageUrl) {
+      try {
+        // Jina Reader API를 통해 보드라이프 WAF/CORS 우회 파싱
+        const jinaUrl = `https://r.jina.ai/${pageUrl}`;
+        const resp = await fetch(jinaUrl, { headers: { "Accept": "text/plain" } });
+        if (resp.ok) {
+          const text = await resp.text();
+          const imgMatch = text.match(/https?:\/\/(?:www\.|img\.)?boardlife\.co\.kr\/[^\s)"'<>]+?\.(?:jpg|jpeg|png|webp)/i);
+          if (imgMatch && !imgMatch[0].includes("logo")) return imgMatch[0];
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    // BGG XML API2에서 게임 커버 이미지 검색
+    async function fetchCoverFromBGG(queryStr) {
+      if (!queryStr) return null;
+      const searchApi = `https://boardgamegeek.com/xmlapi2/search?type=boardgame&query=${encodeURIComponent(queryStr)}`;
+      const proxies = [
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(searchApi)}`,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(searchApi)}`
+      ];
+
+      for (const p of proxies) {
+        try {
+          const resp = await fetch(p);
+          if (!resp.ok) continue;
+          const xmlText = await resp.text();
+          const xml = new DOMParser().parseFromString(xmlText, "text/xml");
+          const firstItem = xml.querySelector("item");
+          if (!firstItem) continue;
+          const bggId = firstItem.getAttribute("id");
+          if (!bggId) continue;
+
+          const thingApi = `https://boardgamegeek.com/xmlapi2/thing?id=${bggId}`;
+          const thingProxy = p.includes("allorigins")
+            ? `https://api.allorigins.win/raw?url=${encodeURIComponent(thingApi)}`
+            : `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(thingApi)}`;
+
+          const thingResp = await fetch(thingProxy);
+          if (!thingResp.ok) continue;
+          const thingXml = new DOMParser().parseFromString(await thingResp.text(), "text/xml");
+          const img = thingXml.querySelector("image")?.textContent || thingXml.querySelector("thumbnail")?.textContent;
+          if (img) return img.trim();
+        } catch (e) {}
+      }
+      return null;
+    }
+
+    // 한글 제목만 있을 때 영문 보드게임 제목으로 자동 변환
+    async function resolveSearchQueries(rawTitle) {
+      const queries = [];
+      // 1) 괄호 안 영문 추출: 예: "나르 (KNARR)" -> "KNARR"
+      const parenMatch = rawTitle.match(/\(([^)]+)\)/);
+      if (parenMatch && /[a-zA-Z]/.test(parenMatch[1])) {
+        queries.push(parenMatch[1].trim());
+      }
+      const cleanKor = rawTitle.replace(/\([^)]*\)/g, "").trim();
+      // 2) 내장 사전 매칭
+      if (KOR_TO_ENG_DICT[cleanKor]) {
+        queries.push(KOR_TO_ENG_DICT[cleanKor]);
+      }
+      // 3) 원문 자체가 영문 포함인 경우
+      if (/[a-zA-Z]/.test(cleanKor)) {
+        queries.push(cleanKor);
+      }
+      // 4) 무료 번역 API를 통한 한글 -> 영문 변환 폴백
+      if (queries.length === 0 && cleanKor) {
+        try {
+          const trResp = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanKor)}&langpair=ko|en`);
+          const trData = await trResp.json();
+          if (trData?.responseData?.translatedText) {
+            queries.push(trData.responseData.translatedText);
+          }
+        } catch (e) {}
+      }
+      return [...new Set(queries)];
+    }
+
+    async function autoLinkCoverImage(forceUpdate = false) {
+      const titleInput = document.getElementById("formTitle").value.trim();
+      const imageInput = document.getElementById("formImage");
+      const statusEl = document.getElementById("blMatchStatus");
+      const searchLink = document.getElementById("blDirectSearchLink");
+
+      if (!titleInput) {
+        statusEl.textContent = "⚠️ 게임 이름을 먼저 입력해 주세요.";
+        return;
+      }
+
+      const cleanKor = titleInput.replace(/\([^)]*\)/g, "").trim() || titleInput;
+      searchLink.href = `https://www.boardlife.co.kr/bbs_list.php?tb=boardgame_strategy&sc_word=${encodeURIComponent(cleanKor)}`;
+
+      // 이미 유효한 커버 이미지(Firebase .webp, wsrv.nl, BGG, DataURL)가 있고 강제 재검색이 아니면 유지
+      if (!forceUpdate && imageInput.value.trim()) {
+        const normalized = normalizeCoverUrl(imageInput.value.trim());
+        imageInput.value = normalized;
+        document.getElementById("formCoverPreview").src = normalized;
+        statusEl.textContent = "✅ 등록된 커버 이미지(.webp/클라우드)가 정상 연결되어 있습니다.";
+        return;
+      }
+
+      statusEl.textContent = `⏳ '${titleInput}' 커버 이미지를 검색하고 .webp 링크로 변환 중입니다...`;
+
+      // 1단계: 보드라이프 Jina 프록시 검색 시도
+      try {
+        const blListUrl = `https://www.boardlife.co.kr/bbs_list.php?tb=boardgame_strategy&sc_word=${encodeURIComponent(cleanKor)}`;
+        const blCover = await extractCoverFromBoardLifePage(blListUrl);
+        if (blCover) {
+          const webpUrl = normalizeCoverUrl(blCover);
+          applyFoundCover(webpUrl, "✅ 보드라이프에서 커버 이미지를 찾아 .webp 링크로 적용했습니다!");
+          return;
+        }
+      } catch (e) {}
+
+      // 2단계: 영문명 추출/번역 후 공식 BGG DB에서 고화질 커버 추출
+      const queries = await resolveSearchQueries(titleInput);
+      for (const q of queries) {
+        const bggCover = await fetchCoverFromBGG(q);
+        if (bggCover) {
+          const webpUrl = `https://wsrv.nl/?url=${encodeURIComponent(bggCover)}&output=webp`;
+          applyFoundCover(webpUrl, `✅ '${q}' 공식 박스 커버를 찾아 .webp 링크로 자동 연결했습니다!`);
+          return;
+        }
+      }
+
+      statusEl.innerHTML = `⚠️ 자동 검색 결과가 없습니다. 우측 <strong>'보드라이프 검색 ↗'</strong>에서 이미지를 우클릭 복사 후 <strong>Ctrl + V</strong>를 눌러주세요.`;
+    }
+
+    function applyFoundCover(url, message) {
+      document.getElementById("formImage").value = url;
+      document.getElementById("formCoverPreview").src = url;
+      document.getElementById("blMatchStatus").textContent = message;
+
+      const editingId = document.getElementById("editGameId").value;
+      if (editingId) {
+        const target = games.find(g => g.id === editingId);
+        if (target) {
+          target.image = url;
+          saveGames();
+        }
+      }
+    }
+
+    /* =========================================================================
+       3. 책장 렌더링, 필터링 & 모달 제어
+       ========================================================================= */
     function getTagColor(tagStr) {
       let hash = 0;
       for (let i = 0; i < tagStr.length; i++) hash += tagStr.charCodeAt(i);
@@ -974,10 +1435,11 @@
         const priceStr = priceNum > 0 ? `💰 ${priceNum.toLocaleString()}원` : "💰 가격 미입력";
         const dateStr = g.purchaseDate ? `📅 ${g.purchaseDate}` : "📅 일자 미입력";
         const fallbackImg = `https://placehold.co/300x200/1e293b/ffffff?text=${encodeURIComponent(g.title.split("(")[0].trim())}`;
+        const coverSrc = normalizeCoverUrl(g.image) || fallbackImg;
 
         return `
           <article class="game-card" onclick="openEditModal('${g.id}')">
-            <img class="card-thumb" referrerpolicy="no-referrer" src="${g.image || fallbackImg}" onerror="this.onerror=null; this.src='${fallbackImg}';" alt="${g.title}" />
+            <img class="card-thumb" referrerpolicy="no-referrer" src="${coverSrc}" onerror="this.onerror=null; this.src='${fallbackImg}';" alt="${g.title}" />
             <div class="card-body">
               <div class="card-title">${g.title}</div>
               <div class="card-meta">
@@ -1000,129 +1462,6 @@
       }).join("");
     }
 
-    /* =========================================================================
-       보드라이프(www.boardlife.co.kr) 동일 게임 커버 이미지 자동 추출 & 링크 로직
-       ========================================================================= */
-    function cleanKoreanTitle(rawTitle) {
-      // 괄호 안 영문 부제 제거 후 순수 게임명 추출 (예: "아르낙의 잊혀진 유적 (Lost Ruins of Arnak)" -> "아르낙의 잊혀진 유적")
-      return rawTitle.replace(/\([^)]*\)/g, "").trim() || rawTitle.trim();
-    }
-
-    function updatePreviewFromInput() {
-      const url = document.getElementById("formImage").value.trim();
-      const preview = document.getElementById("formCoverPreview");
-      if (url) {
-        preview.src = url;
-      } else {
-        preview.src = "https://placehold.co/100x100/1e293b/ffffff?text=No+Cover";
-      }
-    }
-
-    async function fetchHtmlWithFallback(targetUrl) {
-      const proxies = [
-        `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
-        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`
-      ];
-      for (const p of proxies) {
-        try {
-          const resp = await fetch(p);
-          if (!resp.ok) continue;
-          if (p.includes("allorigins")) {
-            const json = await resp.json();
-            if (json && json.contents) return json.contents;
-          } else {
-            return await resp.text();
-          }
-        } catch (e) {}
-      }
-      return null;
-    }
-
-    function extractBoardLifeCoverFromHtml(html) {
-      if (!html) return null;
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
-
-      // 1순위: og:image 메타 태그
-      const ogImg = doc.querySelector('meta[property="og:image"]')?.getAttribute("content");
-      if (ogImg && !ogImg.includes("logo")) {
-        return ogImg.startsWith("http") ? ogImg : `https://www.boardlife.co.kr/${ogImg.replace(/^\/+/, "")}`;
-      }
-
-      // 2순위: 보드라이프 업로드 이미지 경로 패턴 정규식 추출
-      const match = html.match(/(https?:\/\/(?:www\.)?boardlife\.co\.kr\/[^\s"'<>]+?\.(?:jpg|jpeg|png|webp))/i)
-                 || html.match(/(\/(?:upload|data|bbs_img)\/[^\s"'<>]+?\.(?:jpg|jpeg|png|webp))/i);
-      if (match) {
-        const raw = match[1];
-        return raw.startsWith("http") ? raw : `https://www.boardlife.co.kr${raw}`;
-      }
-      return null;
-    }
-
-    async function autoLinkBoardLifeCover(forceUpdate = false) {
-      const titleInput = document.getElementById("formTitle").value.trim();
-      const imageInput = document.getElementById("formImage");
-      const statusEl = document.getElementById("blMatchStatus");
-      const searchLink = document.getElementById("blDirectSearchLink");
-
-      if (!titleInput) {
-        statusEl.textContent = "게임 이름을 먼저 입력해 주세요.";
-        return;
-      }
-
-      const cleanTitle = cleanKoreanTitle(titleInput);
-      const blSearchUrl = `https://www.boardlife.co.kr/bbs_list.php?tb=boardgame_strategy&sc_word=${encodeURIComponent(cleanTitle)}`;
-      searchLink.href = blSearchUrl;
-
-      // 이미 보드라이프 이미지 URL이 들어있고 강제 갱신이 아니면 유지
-      if (!forceUpdate && imageInput.value.includes("boardlife.co.kr")) {
-        statusEl.textContent = "✅ 보드라이프(www.boardlife.co.kr) 커버 이미지가 링크되어 있습니다.";
-        updatePreviewFromInput();
-        return;
-      }
-
-      statusEl.textContent = `⏳ 보드라이프(www.boardlife.co.kr)에서 '${cleanTitle}' 커버 이미지를 찾는 중...`;
-
-      try {
-        // 1단계: 보드라이프 내부 검색 결과 페이지 조회
-        const searchHtml = await fetchHtmlWithFallback(blSearchUrl);
-        let foundCoverUrl = extractBoardLifeCoverFromHtml(searchHtml);
-
-        // 상세 페이지 링크(bbs_detail.php)가 있으면 들어가서 고화질 og:image 추출 시도
-        if (searchHtml) {
-          const detailMatch = searchHtml.match(/bbs_detail\.php\?[^"'<>\s]+/i);
-          if (detailMatch) {
-            const detailUrl = `https://www.boardlife.co.kr/${detailMatch[0].replace(/&amp;/g, "&")}`;
-            searchLink.href = detailUrl;
-            const detailHtml = await fetchHtmlWithFallback(detailUrl);
-            const detailCover = extractBoardLifeCoverFromHtml(detailHtml);
-            if (detailCover) foundCoverUrl = detailCover;
-          }
-        }
-
-        if (foundCoverUrl) {
-          imageInput.value = foundCoverUrl;
-          updatePreviewFromInput();
-          statusEl.textContent = "✅ 보드라이프 동일 게임 커버 이미지 링크 완료!";
-
-          // 현재 편집 중인 게임이 있다면 즉시 반영하여 저장
-          const editingId = document.getElementById("editGameId").value;
-          if (editingId) {
-            const target = games.find(g => g.id === editingId);
-            if (target) {
-              target.image = foundCoverUrl;
-              saveGames();
-            }
-          }
-        } else {
-          statusEl.innerHTML = `⚠️ 자동 검색 결과가 없습니다. 우측 상단 <strong>'보드라이프 열기 ↗'</strong>에서 이미지 주소를 복사해 붙여넣어 주세요.`;
-        }
-      } catch (err) {
-        statusEl.textContent = "⚠️ 네트워크 응답 지연: '보드라이프 열기 ↗'를 통해 확인하거나 다시 시도해 주세요.";
-      }
-    }
-
-    /* 모달 열기/닫기 및 게임 클릭 시 동작 */
     function openNewGameModal() {
       document.getElementById("editGameId").value = "";
       document.getElementById("manualModalTitle").textContent = "게임 직접 추가";
@@ -1139,24 +1478,14 @@
       document.getElementById("formTags").value = "";
       document.getElementById("formMemo").value = "";
       document.getElementById("deleteGameBtn").style.display = "none";
-      updatePreviewFromInput();
+      handleCoverUrlInput();
       openModal("addModal");
     }
 
-    function openModal(id) {
-      document.getElementById(id).classList.add("open");
-    }
+    function openModal(id) { document.getElementById(id).classList.add("open"); }
+    function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+    function switchModal(fromId, toId) { closeModal(fromId); openModal(toId); }
 
-    function closeModal(id) {
-      document.getElementById(id).classList.remove("open");
-    }
-
-    function switchModal(fromId, toId) {
-      closeModal(fromId);
-      openModal(toId);
-    }
-
-    // 입력된 각 게임을 클릭했을 때 실행: 보드라이프 커버 이미지 자동 링크 + 구매가격/일자 로드
     function openEditModal(gameId) {
       const g = games.find(item => item.id === gameId);
       if (!g) return;
@@ -1164,7 +1493,7 @@
       document.getElementById("editGameId").value = g.id;
       document.getElementById("manualModalTitle").textContent = "게임 정보 수정";
       document.getElementById("formTitle").value = g.title;
-      document.getElementById("formImage").value = g.image || "";
+      document.getElementById("formImage").value = normalizeCoverUrl(g.image || "");
       document.getElementById("formPrice").value = Number(g.purchasePrice) || 0;
       document.getElementById("formDate").value = g.purchaseDate || "";
       document.getElementById("formMinP").value = g.minP;
@@ -1178,11 +1507,11 @@
       document.getElementById("formMemo").value = g.memo || "";
       document.getElementById("deleteGameBtn").style.display = "inline-flex";
 
-      updatePreviewFromInput();
+      handleCoverUrlInput();
       openModal("manualModal");
 
-      // 클릭한 게임의 커버 이미지가 보드라이프(www.boardlife.co.kr) 링크가 아니면 자동으로 매칭 실행
-      autoLinkBoardLifeCover(false);
+      // 커버 이미지가 비어있으면 자동으로 매칭 실행
+      autoLinkCoverImage(false);
     }
 
     function saveManualGame() {
@@ -1193,7 +1522,7 @@
       const newGame = {
         id,
         title,
-        image: document.getElementById("formImage").value.trim(),
+        image: normalizeCoverUrl(document.getElementById("formImage").value.trim()),
         purchasePrice: parseInt(document.getElementById("formPrice").value, 10) || 0,
         purchaseDate: document.getElementById("formDate").value || "",
         minP: parseInt(document.getElementById("formMinP").value, 10) || 1,
@@ -1225,32 +1554,25 @@
 
     async function fetchBoardLifeUrl() {
       const url = document.getElementById("blUrlInput").value.trim();
-      if (!url.includes("boardlife.co.kr")) {
-        alert("유효한 보드라이프(www.boardlife.co.kr) URL을 입력해 주세요.");
-        return;
-      }
+      if (!url) return;
       closeModal("boardlifeUrlModal");
       openModal("manualModal");
-      document.getElementById("blMatchStatus").textContent = "⏳ 보드라이프 URL에서 커버 이미지와 정보를 추출 중입니다...";
-
-      const html = await fetchHtmlWithFallback(url);
-      if (html) {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-        const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute("content") || doc.title || "";
-        const cover = extractBoardLifeCoverFromHtml(html);
-
-        if (ogTitle) document.getElementById("formTitle").value = ogTitle.replace(/보드라이프|BoardLife|-|:/gi, "").trim();
-        if (cover) {
-          document.getElementById("formImage").value = cover;
-          updatePreviewFromInput();
-        }
-        document.getElementById("blMatchStatus").textContent = "✅ 보드라이프 URL에서 커버 이미지를 성공적으로 가져왔습니다!";
-      } else {
-        document.getElementById("blMatchStatus").textContent = "⚠️ 페이지 접근 실패: 게임 이름을 입력 후 '보드라이프 커버 매칭'을 눌러주세요.";
-      }
+      document.getElementById("formImage").value = url;
+      handleCoverUrlInput();
       document.getElementById("formDate").value = new Date().toISOString().slice(0, 10);
-      document.getElementById("formMemo").value = `보드라이프 링크: ${url}`;
+    }
+
+    function searchGameQuick() {
+      const q = document.getElementById("bggSearchInput").value.trim();
+      if (!q) return;
+      closeModal("addModal");
+      document.getElementById("editGameId").value = "";
+      document.getElementById("formTitle").value = q;
+      document.getElementById("formImage").value = "";
+      document.getElementById("formPrice").value = 0;
+      document.getElementById("formDate").value = new Date().toISOString().slice(0, 10);
+      openModal("manualModal");
+      autoLinkCoverImage(true);
     }
 
     function toggleViewMode() {
@@ -1289,36 +1611,6 @@
     function copyShareLink() {
       navigator.clipboard.writeText(window.location.href);
       alert("내 보드게임 책장 공유 링크가 클립보드에 복사되었습니다!");
-    }
-
-    async function searchBGG() {
-      const q = document.getElementById("bggSearchInput").value.trim();
-      const resBox = document.getElementById("bggResults");
-      if (!q) return;
-      resBox.innerHTML = `<div style="padding:10px; border:1px solid var(--border); border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-        <span><strong>${q}</strong> (보드라이프 커버 자동 매칭으로 추가)</span>
-        <button class="btn btn-primary" style="padding:4px 10px;" onclick="prefillFromSearch('${q.replace(/'/g, "")}')">선택</button>
-      </div>`;
-    }
-
-    function prefillFromSearch(title) {
-      closeModal("addModal");
-      document.getElementById("editGameId").value = "";
-      document.getElementById("formTitle").value = title;
-      document.getElementById("formImage").value = "";
-      document.getElementById("formPrice").value = 0;
-      document.getElementById("formDate").value = new Date().toISOString().slice(0, 10);
-      openModal("manualModal");
-      autoLinkBoardLifeCover(true);
-    }
-
-    function simulateBoardLifeSync() {
-      const box = document.getElementById("syncProgressBox");
-      box.style.display = "block";
-      setTimeout(() => {
-        alert("GitHub Pages 정적 환경에서는 개별 게임 클릭 시 보드라이프 커버 자동 매칭 또는 JSON 백업/복원 기능을 권장합니다.");
-        box.style.display = "none";
-      }, 1000);
     }
 
     function exportBackup() {

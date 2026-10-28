@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎲 나의 보드게임 책장</title>
+  <style>
+    :root {
+      --bg-body: #f4f6f9;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f8fafc;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-main);
+      padding-bottom: 64px;
+    }
+
+    /* 1. 상단 로그인/안내 배너 (원본 구조 복제) */
+    .auth-banner {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+      color: #fff;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .auth-banner h1 { font-size: 1.35rem; margin-bottom: 4px; }
+    .auth-banner p { font-size: 0.85rem; color: #cbd5e1; }
+    .auth-notice {
+      font-size: 0.75rem;
+      color: #fde047;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+    .auth-actions { display: flex; gap: 8px; align-items: center; }
+
+    /* 2. 메인 2단 레이아웃 (aside + main) */
+    .app-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* 좌측 상세 검색 사이드바 */
+    aside.filter-sidebar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 20px;
+    }
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-header h3 { font-size: 1.05rem; font-weight: 700; }
+    .filter-group { margin-bottom: 16px; }
+    .filter-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .filter-input, .filter-select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      background: var(--bg-subtle);
+    }
+    .tag-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag-chip {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-weight: 600;
+      opacity: 0.75;
+      transition: all 0.15s;
+    }
+    .tag-chip.active {
+      opacity: 1;
+      transform: scale(1.03);
+      box-shadow: 0 0 0 2px var(--text-main);
+    }
+
+    /* 범위 슬라이더 (난이도 1.0~5.0 / 시간 0~240분+) */
+    .range-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .dual-inputs { display: flex; gap: 8px; align-items: center; }
+    .dual-inputs input[type="range"] { width: 100%; accent-color: var(--primary); }
+    .range-values {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    /* 우측 메인 영역 */
+    main.shelf-main {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 0;
+    }
+    header.shelf-header {
+      background: var(--bg-surface);
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .shelf-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .count-badge {
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 2px 10px;
+      border-radius: 999px;
+    }
+    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* 버튼 공통 스타일 */
+    .btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .btn:hover { background: var(--bg-subtle); }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-accent {
+      background: #f59e0b;
+      color: #fff;
+      border-color: #f59e0b;
+    }
+    .btn-accent:hover { background: #d97706; }
+
+    /* 서브 툴바 & 인원 탭 리스트 */
+    .sub-toolbar {
+      background: var(--bg-surface);
+      padding: 14px 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .quick-search {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      min-width: 220px;
+    }
+    .quick-search input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .player-tablist {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-subtle);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 6px 12px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* 보드게임 카드 그리드 / 리스트 뷰 */
+    .shelf-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 16px;
+    }
+    .shelf-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .game-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.15s;
+      cursor: pointer;
+    }
+    .game-card:hover { transform: translateY(-3px); }
+    .shelf-list .game-card {
+      flex-direction: row;
+      align-items: center;
+      height: 96px;
+    }
+    .card-thumb {
+      width: 100%;
+      height: 170px;
+      object-fit: cover;
+      background: #1e293b;
+    }
+    .shelf-list .card-thumb {
+      width: 96px;
+      height: 96px;
+      flex-shrink: 0;
+    }
+    .card-body {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+    .card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .card-badges {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: auto;
+    }
+    .badge {
+      font-size: 0.72rem;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    /* 모달 시스템 공통 */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-box {
+      background: var(--bg-surface);
+      border-radius: 16px;
+      max-width: 520px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .modal-header h2 { font-size: 1.2rem; }
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .form-row { margin-bottom: 12px; }
+    .form-row label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-muted);
+    }
+    .form-row input, .form-row select, .form-row textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .divider-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin: 16px 0 10px;
+      position: relative;
+    }
+
+    /* 하단 모바일 네비게이션 */
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 58px;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 900;
+    }
+    nav.bottom-nav a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    nav.bottom-nav a.active { color: var(--primary); }
+
+    @media (max-width: 900px) {
+      .app-container { grid-template-columns: 1fr; }
+      aside.filter-sidebar { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. 상단 타이틀 및 안내 영역 -->
+  <div class="auth-banner">
+    <div>
+      <h1>🎲 나의 보드게임 책장</h1>
+      <p>온라인에 기록하는 나만의 보드게임 컬렉션</p>
+      <p class="auth-notice">
+        ※ 카카오톡 등 다른 앱에서 접속 시 로그인이 안될 수 있습니다.<br>
+        오류가 발생하면 링크를 복사하여 인터넷 브라우저(크롬, 사파리 등)에서 열어주세요.
+      </p>
+    </div>
+    <div class="auth-actions">
+      <button class="btn" onclick="exportBackup()">💾 JSON 백업</button>
+      <label class="btn" style="cursor:pointer;">
+        📂 JSON 불러오기
+        <input type="file" accept=".json" style="display:none" onchange="importBackup(event)" />
+      </label>
+    </div>
+  </div>
+
+  <!-- 2. 메인 앱 컨테이너 -->
+  <div class="app-container">
+    <!-- 좌측 상세 검색 사이드바 -->
+    <aside class="filter-sidebar">
+      <div class="sidebar-header">
+        <h3>상세 검색</h3>
+        <button class="btn" style="padding:4px 8px; font-size:0.78rem;" onclick="resetFilters()">초기화</button>
+      </div>
+
+      <div>
+        <!-- 정렬 기준 -->
+        <div class="filter-group">
+          <label class="filter-label">정렬 기준</label>
+          <select id="sortSelect" class="filter-select" onchange="renderShelf()">
+            <option value="title_asc">이름 오름차순 (가나다)</option>
+            <option value="rating_desc">내 평점 높은순 (★)</option>
+            <option value="weight_desc">난이도(Weight) 높은순</option>
+            <option value="weight_asc">난이도(Weight) 낮은순</option>
+            <option value="plays_desc">플레이 횟수 많은순</option>
+          </select>
+        </div>
+
+        <!-- 카테고리 필터 -->
+        <div class="filter-group">
+          <label class="filter-label">카테고리</label>
+          <select id="categoryFilter" class="filter-select" onchange="renderShelf()">
+            <option value="ALL">전체 카테고리</option>
+            <option value="전략">전략 / 유로</option>
+            <option value="테마">테마 / 협력</option>
+            <option value="파티">파티 / 패밀리</option>
+            <option value="추리">추리 / 추상</option>
+          </select>
+        </div>
+
+        <!-- 커스텀 태그 필터 -->
+        <div class="filter-group">
+          <label class="filter-label">커스텀 태그</label>
+          <div id="tagFilterContainer" class="tag-chips"></div>
+        </div>
+
+        <!-- 플레이 여부 -->
+        <div class="filter-group">
+          <label class="filter-label">플레이 상태</label>
+          <select id="playStateFilter" class="filter-select" onchange="renderShelf()">
+            <option value="ALL">전체 게임</option>
+            <option value="PLAYED">플레이 완료 (1회 이상)</option>
+            <option value="UNPLAYED">미플레이 (망부석 0회)</option>
+          </select>
+        </div>
+
+        <!-- 난이도 (Weight) 1.0 ~ 5.0 -->
+        <div class="filter-group">
+          <label class="filter-label">난이도 (Weight)</label>
+          <div class="range-wrap">
+            <div class="dual-inputs">
+              <input type="range" id="weightMin" min="1.0" max="5.0" step="0.1" value="1.0" oninput="syncSliders()" />
+              <input type="range" id="weightMax" min="1.0" max="5.0" step="0.1" value="5.0" oninput="syncSliders()" />
+            </div>
+            <div class="range-values">
+              <span id="weightMinLabel">1.0</span> - <span id="weightMaxLabel">5.0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 플레이 시간 0분 ~ 240분+ -->
+        <div class="filter-group">
+          <label class="filter-label">플레이 시간</label>
+          <div class="range-wrap">
+            <div class="dual-inputs">
+              <input type="range" id="timeMin" min="0" max="240" step="15" value="0" oninput="syncSliders()" />
+              <input type="range" id="timeMax" min="0" max="240" step="15" value="240" oninput="syncSliders()" />
+            </div>
+            <div class="range-values">
+              <span id="timeMinLabel">0분</span> - <span id="timeMaxLabel">240분+</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 우측 메인 콘텐츠 -->
+    <main class="shelf-main">
+      <header class="shelf-header">
+        <h1 class="shelf-title">
+          <span>📚 보드게임 책장</span>
+          <span id="totalCountBadge" class="count-badge">0</span>
+        </h1>
+        <div class="header-actions">
+          <button class="btn btn-accent" onclick="drawRandomGame()">🎲 제비뽑기</button>
+          <button class="btn" onclick="copyShareLink()">🔗 공유 링크</button>
+          <button class="btn btn-primary" onclick="openModal('addModal')">＋ 게임 추가</button>
+        </div>
+      </header>
+
+      <!-- 서브 툴바: 검색창 & 플레이 인원 탭 리스트 -->
+      <div class="sub-toolbar">
+        <div class="quick-search">
+          <input type="text" id="searchInput" placeholder="게임 이름, 태그, 메모 검색..." oninput="renderShelf()" />
+          <button class="btn" id="viewToggleBtn" onclick="toggleViewMode()">📋 리스트 뷰</button>
+        </div>
+
+        <div class="player-tablist" aria-label="플레이 인원" role="tablist" id="playerTabs">
+          <button class="tab-btn active" onclick="setPlayerFilter('ALL', this)">전체</button>
+          <button class="tab-btn" onclick="setPlayerFilter(1, this)">1인</button>
+          <button class="tab-btn" onclick="setPlayerFilter(2, this)">2인</button>
+          <button class="tab-btn" onclick="setPlayerFilter(3, this)">3인</button>
+          <button class="tab-btn" onclick="setPlayerFilter(4, this)">4인</button>
+          <button class="tab-btn" onclick="setPlayerFilter(5, this)">5인</button>
+          <button class="tab-btn" onclick="setPlayerFilter(6, this)">6인+</button>
+        </div>
+      </div>
+
+      <!-- 게임 목록 섹션 -->
+      <section>
+        <div id="shelfContainer" class="shelf-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 모달 1: 통합 게임 추가 모달 -->
+  <div id="addModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>게임 추가</h2>
+        <button class="close-btn" onclick="closeModal('addModal')">✕</button>
+      </div>
+      <div class="form-row" style="display:flex; gap:8px;">
+        <input type="text" id="bggSearchInput" placeholder="BGG 영문/국문 게임명 검색 (예: Arnak, Spirit Island)" />
+        <button class="btn btn-primary" onclick="searchBGG()">검색</button>
+      </div>
+      <div id="bggResults" style="max-height:220px; overflow-y:auto; margin-bottom:12px;"></div>
+
+      <div class="divider-title">기타 추가 방식</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="btn" style="justify-content:center;" onclick="switchModal('addModal', 'manualModal')">✏️ 게임 직접 추가</button>
+        <button class="btn" style="justify-content:center;" onclick="switchModal('addModal', 'boardlifeUrlModal')">🔗 BoardLife URL로 추가</button>
+        <button class="btn" style="justify-content:center;" onclick="switchModal('addModal', 'boardlifeSyncModal')">🔄 보드라이프 연동하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모달 2: 게임 직접 추가 / 수정 모달 -->
+  <div id="manualModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="manualModalTitle">게임 직접 추가</h2>
+        <button class="close-btn" onclick="closeModal('manualModal')">✕</button>
+      </div>
+      <input type="hidden" id="editGameId" />
+      <div class="form-row">
+        <label>게임 이름 *</label>
+        <input type="text" id="formTitle" placeholder="예: 아르낙의 잊혀진 유적" />
+      </div>
+      <div class="form-row">
+        <label>커버 이미지 URL</label>
+        <input type="text" id="formImage" placeholder="https://..." />
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>최소 인원</label>
+          <input type="number" id="formMinP" value="1" min="1" max="20" />
+        </div>
+        <div class="form-row">
+          <label>최대 인원</label>
+          <input type="number" id="formMaxP" value="4" min="1" max="20" />
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>플레이 시간 (분)</label>
+          <input type="number" id="formTime" value="60" step="5" />
+        </div>
+        <div class="form-row">
+          <label>난이도 (Weight: 1.0 ~ 5.0)</label>
+          <input type="number" id="formWeight" value="2.5" min="1.0" max="5.0" step="0.1" />
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>내 평점 (1.0 ~ 10.0)</label>
+          <input type="number" id="formRating" value="8.5" min="1.0" max="10.0" step="0.5" />
+        </div>
+        <div class="form-row">
+          <label>플레이 횟수</label>
+          <input type="number" id="formPlays" value="1" min="0" />
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>카테고리</label>
+          <select id="formCategory">
+            <option value="전략">전략 / 유로</option>
+            <option value="테마">테마 / 협력</option>
+            <option value="파티">파티 / 패밀리</option>
+            <option value="추리">추리 / 추상</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>커스텀 태그 (쉼표로 구분)</label>
+          <input type="text" id="formTags" placeholder="예: 1인플추천, 덱빌딩, 한글판" />
+        </div>
+      </div>
+      <div class="form-row">
+        <label>메모 / 슬리브·오거나이저 기록</label>
+        <textarea id="formMemo" rows="2" placeholder="슬리브 사이즈, 확장 포함 여부 등 메모"></textarea>
+      </div>
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px;">
+        <button class="btn" id="deleteGameBtn" style="color:#dc2626; display:none; margin-right:auto;" onclick="deleteCurrentGame()">삭제</button>
+        <button class="btn" onclick="closeModal('manualModal')">취소</button>
+        <button class="btn btn-primary" onclick="saveManualGame()">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모달 3: BoardLife URL로 추가 -->
+  <div id="boardlifeUrlModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>BoardLife URL로 추가</h2>
+        <button class="close-btn" onclick="closeModal('boardlifeUrlModal')">✕</button>
+      </div>
+      <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:12px;">
+        BoardLife 게임 페이지의 주소(URL)를 아래에 붙여넣으세요.
+      </p>
+      <div class="form-row">
+        <input type="text" id="blUrlInput" placeholder="https://boardlife.co.kr/bbs_detail.php?..." />
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn" onclick="closeModal('boardlifeUrlModal')">취소</button>
+        <button class="btn btn-primary" onclick="fetchBoardLifeUrl()">가져오기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모달 4: 보드라이프 연동하기 -->
+  <div id="boardlifeSyncModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>보드라이프 연동하기</h2>
+        <button class="close-btn" onclick="closeModal('boardlifeSyncModal')">✕</button>
+      </div>
+      <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:14px; line-height:1.5;">
+        보드라이프 아이디와 비밀번호를 입력하면 내 컬렉션을 자동으로 연동합니다.<br>
+        <span style="color:#ef4444;">※ 입력하신 비밀번호는 저장되지 않고 1회성 연동 후 즉시 파기됩니다.</span>
+      </p>
+      <div class="form-row">
+        <label>보드라이프 아이디</label>
+        <input type="text" id="blSyncId" placeholder="ID 입력" />
+      </div>
+      <div class="form-row">
+        <label>비밀번호</label>
+        <input type="password" id="blSyncPw" placeholder="비밀번호 입력" />
+      </div>
+      <div id="syncProgressBox" style="display:none; margin:12px 0; padding:12px; background:var(--bg-subtle); border-radius:8px; font-size:0.85rem;">
+        <p>연동 중입니다... (최대 1~2분 소요)</p>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn" onclick="closeModal('boardlifeSyncModal')">닫기</button>
+        <button class="btn btn-primary" onclick="simulateBoardLifeSync()">연동 시작</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 하단 모바일 네비게이션 -->
+  <nav class="bottom-nav">
+    <a href="./" class="active" aria-label="책장">
+      <span>📚</span>
+      <span>책장</span>
+    </a>
+    <a href="#sessions" onclick="alert('게임 기록(sessions.html) 탭입니다.')" aria-label="게임 기록">
+      <span>📝</span>
+      <span>게임 기록</span>
+    </a>
+    <a href="#mypage" onclick="alert('마이페이지(mypage.html) 탭입니다.')" aria-label="마이페이지">
+      <span>👤</span>
+      <span>마이페이지</span>
+    </a>
+  </nav>
+
+  <script>
+    const STORAGE_KEY = "MY_BG_SHELF_DATA_V1";
+    const TAG_COLORS = [
+      { bg: "#e0e7ff", text: "#3730a3" },
+      { bg: "#dcfce7", text: "#166534" },
+      { bg: "#fef3c7", text: "#92400e" },
+      { bg: "#fce7f3", text: "#9d174d" },
+      { bg: "#e0f2fe", text: "#075985" }
+    ];
+
+    // 초기 샘플 보드게임 데이터
+    const DEFAULT_GAMES = [
+      {
+        id: "g1",
+        title: "아르낙의 잊혀진 유적 (Lost Ruins of Arnak)",
+        image: "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=600&q=80",
+        minP: 1, maxP: 4, time: 120, weight: 2.9, rating: 9.5, plays: 12,
+        category: "전략", tags: ["덱빌딩", "일꾼놓기", "1인플추천"],
+        memo: "탐험 대장 확장 포함 / 모험의 궤(PET 트레이) 수납 완료"
+      },
+      {
+        id: "g2",
+        title: "정령섬 (Spirit Island)",
+        image: "https://images.unsplash.com/photo-1632501641765-e568d28b0015?auto=format&fit=crop&w=600&q=80",
+        minP: 1, maxP: 4, time: 120, weight: 4.1, rating: 9.8, plays: 18,
+        category: "테마", tags: ["협력", "1인플추천", "무거움"],
+        memo: "가지와 발톱 + 찢어진 대지 포함"
+      },
+      {
+        id: "g3",
+        title: "백로성 (The White Castle)",
+        image: "https://images.unsplash.com/photo-1585504198199-20277593b94f?auto=format&fit=crop&w=600&q=80",
+        minP: 1, maxP: 4, time: 80, weight: 3.0, rating: 9.0, plays: 7,
+        category: "전략", tags: ["주사위일꾼", "콤보", "가성비"],
+        memo: "말차 확장 포함"
+      },
+      {
+        id: "g4",
+        title: "세티 (SETI: Search for Extraterrestrial Intelligence)",
+        image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+        minP: 1, maxP: 4, time: 160, weight: 3.8, rating: 9.4, plays: 4,
+        category: "전략", tags: ["우주테마", "무거움", "1인플추천"],
+        memo: "프로모 카드 슬리브 씌움"
+      },
+      {
+        id: "g5",
+        title: "플립 7 (Flip 7)",
+        image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80",
+        minP: 3, maxP: 8, time: 20, weight: 1.1, rating: 8.2, plays: 9,
+        category: "파티", tags: ["파티", "블랙잭", "휴대용"],
+        memo: "박스 길이 15cm 이하 소박스"
+      }
+    ];
+
+    let games = [];
+    let selectedPlayerCount = "ALL";
+    let selectedTag = "ALL";
+    let isListView = false;
+
+    function loadGames() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      games = saved ? JSON.parse(saved) : DEFAULT_GAMES;
+      renderTagChips();
+      renderShelf();
+    }
+
+    function saveGames() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+      renderTagChips();
+      renderShelf();
+    }
+
+    function getTagColor(tagStr) {
+      let hash = 0;
+      for (let i = 0; i < tagStr.length; i++) hash += tagStr.charCodeAt(i);
+      return TAG_COLORS[hash % TAG_COLORS.length];
+    }
+
+    function renderTagChips() {
+      const container = document.getElementById("tagFilterContainer");
+      const allTags = new Set();
+      games.forEach(g => (g.tags || []).forEach(t => allTags.add(t)));
+
+      let html = `<span class="tag-chip ${selectedTag === 'ALL' ? 'active' : ''}" 
+        style="background:#e2e8f0; color:#1e293b;" onclick="selectTag('ALL')">전체</span>`;
+
+      allTags.forEach(tag => {
+        const c = getTagColor(tag);
+        const activeClass = selectedTag === tag ? "active" : "";
+        html += `<span class="tag-chip ${activeClass}" 
+          style="background:${c.bg}; color:${c.text};" onclick="selectTag('${tag}')">#${tag}</span>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function selectTag(tag) {
+      selectedTag = tag;
+      renderTagChips();
+      renderShelf();
+    }
+
+    function setPlayerFilter(count, btnEl) {
+      selectedPlayerCount = count;
+      document.querySelectorAll("#playerTabs .tab-btn").forEach(b => b.classList.remove("active"));
+      btnEl.classList.add("active");
+      renderShelf();
+    }
+
+    function syncSliders() {
+      let wMin = parseFloat(document.getElementById("weightMin").value);
+      let wMax = parseFloat(document.getElementById("weightMax").value);
+      if (wMin > wMax) { [wMin, wMax] = [wMax, wMin]; }
+      document.getElementById("weightMinLabel").textContent = wMin.toFixed(1);
+      document.getElementById("weightMaxLabel").textContent = wMax.toFixed(1);
+
+      let tMin = parseInt(document.getElementById("timeMin").value, 10);
+      let tMax = parseInt(document.getElementById("timeMax").value, 10);
+      if (tMin > tMax) { [tMin, tMax] = [tMax, tMin]; }
+      document.getElementById("timeMinLabel").textContent = `${tMin}분`;
+      document.getElementById("timeMaxLabel").textContent = tMax >= 240 ? "240분+" : `${tMax}분`;
+
+      renderShelf();
+    }
+
+    function getFilteredGames() {
+      const q = document.getElementById("searchInput").value.trim().toLowerCase();
+      const cat = document.getElementById("categoryFilter").value;
+      const playState = document.getElementById("playStateFilter").value;
+      const sortBy = document.getElementById("sortSelect").value;
+
+      let wMin = parseFloat(document.getElementById("weightMin").value);
+      let wMax = parseFloat(document.getElementById("weightMax").value);
+      if (wMin > wMax) [wMin, wMax] = [wMax, wMin];
+
+      let tMin = parseInt(document.getElementById("timeMin").value, 10);
+      let tMax = parseInt(document.getElementById("timeMax").value, 10);
+      if (tMin > tMax) [tMin, tMax] = [tMax, tMin];
+
+      let list = games.filter(g => {
+        if (q) {
+          const hay = `${g.title} ${(g.tags || []).join(" ")} ${g.memo || ""}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        if (cat !== "ALL" && g.category !== cat) return false;
+        if (selectedTag !== "ALL" && !(g.tags || []).includes(selectedTag)) return false;
+        if (playState === "PLAYED" && g.plays <= 0) return false;
+        if (playState === "UNPLAYED" && g.plays > 0) return false;
+        if (selectedPlayerCount !== "ALL") {
+          const p = Number(selectedPlayerCount);
+          if (p === 6) {
+            if (g.maxP < 6) return false;
+          } else {
+            if (p < g.minP || p > g.maxP) return false;
+          }
+        }
+        if (g.weight < wMin || g.weight > wMax) return false;
+        if (g.time < tMin || (tMax < 240 && g.time > tMax)) return false;
+        return true;
+      });
+
+      list.sort((a, b) => {
+        if (sortBy === "title_asc") return a.title.localeCompare(b.title, "ko");
+        if (sortBy === "rating_desc") return b.rating - a.rating;
+        if (sortBy === "weight_desc") return b.weight - a.weight;
+        if (sortBy === "weight_asc") return a.weight - b.weight;
+        if (sortBy === "plays_desc") return b.plays - a.plays;
+        return 0;
+      });
+
+      return list;
+    }
+
+    function renderShelf() {
+      const container = document.getElementById("shelfContainer");
+      const filtered = getFilteredGames();
+      document.getElementById("totalCountBadge").textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:48px; color:var(--text-muted);">
+          조건에 맞는 보드게임이 없습니다. 필터를 초기화하거나 새 게임을 추가해 보세요.
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(g => {
+        const tagHtml = (g.tags || []).map(t => {
+          const c = getTagColor(t);
+          return `<span class="badge" style="background:${c.bg}; color:${c.text};">#${t}</span>`;
+        }).join("");
+
+        return `
+          <article class="game-card" onclick="openEditModal('${g.id}')">
+            <img class="card-thumb" src="${g.image || 'https://via.placeholder.com/300x200?text=Board+Game'}" alt="${g.title}" />
+            <div class="card-body">
+              <div class="card-title">${g.title}</div>
+              <div class="card-meta">
+                <span>👥 ${g.minP}~${g.maxP}인</span>
+                <span>⏱️ ${g.time}분</span>
+                <span>⚙️ ${Number(g.weight).toFixed(1)}</span>
+              </div>
+              <div class="card-meta">
+                <span style="color:#f59e0b; font-weight:700;">★ ${Number(g.rating).toFixed(1)}</span>
+                <span>🎲 플레이 ${g.plays}회</span>
+              </div>
+              <div class="card-badges">${tagHtml}</div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function toggleViewMode() {
+      isListView = !isListView;
+      const container = document.getElementById("shelfContainer");
+      const btn = document.getElementById("viewToggleBtn");
+      container.className = isListView ? "shelf-list" : "shelf-grid";
+      btn.textContent = isListView ? "🎴 그리드 뷰" : "📋 리스트 뷰";
+    }
+
+    function resetFilters() {
+      document.getElementById("searchInput").value = "";
+      document.getElementById("categoryFilter").value = "ALL";
+      document.getElementById("playStateFilter").value = "ALL";
+      document.getElementById("sortSelect").value = "title_asc";
+      document.getElementById("weightMin").value = 1.0;
+      document.getElementById("weightMax").value = 5.0;
+      document.getElementById("timeMin").value = 0;
+      document.getElementById("timeMax").value = 240;
+      selectedTag = "ALL";
+      setPlayerFilter("ALL", document.querySelector("#playerTabs .tab-btn"));
+      syncSliders();
+      renderTagChips();
+    }
+
+    function drawRandomGame() {
+      const filtered = getFilteredGames();
+      if (filtered.length === 0) {
+        alert("추첨할 게임이 없습니다. 필터 조건을 완화해 주세요!");
+        return;
+      }
+      const picked = filtered[Math.floor(Math.random() * filtered.length)];
+      alert(`🎲 오늘의 추천 보드게임 제비뽑기 결과!\n\n[${picked.title}]\n• 인원: ${picked.minP}~${picked.maxP}인 | 시간: ${picked.time}분 | 난이도: ${picked.weight}`);
+    }
+
+    function copyShareLink() {
+      navigator.clipboard.writeText(window.location.href);
+      alert("내 보드게임 책장 공유 링크가 클립보드에 복사되었습니다!");
+    }
+
+    /* 모달 제어 함수 */
+    function openModal(id) {
+      if (id === "manualModal" && !document.getElementById("editGameId").value) {
+        document.getElementById("manualModalTitle").textContent = "게임 직접 추가";
+        document.getElementById("deleteGameBtn").style.display = "none";
+      }
+      document.getElementById(id).classList.add("open");
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("open");
+      if (id === "manualModal") document.getElementById("editGameId").value = "";
+    }
+    function switchModal(fromId, toId) {
+      closeModal(fromId);
+      openModal(toId);
+    }
+
+    function openEditModal(gameId) {
+      const g = games.find(item => item.id === gameId);
+      if (!g) return;
+      document.getElementById("editGameId").value = g.id;
+      document.getElementById("manualModalTitle").textContent = "게임 정보 수정";
+      document.getElementById("formTitle").value = g.title;
+      document.getElementById("formImage").value = g.image || "";
+      document.getElementById("formMinP").value = g.minP;
+      document.getElementById("formMaxP").value = g.maxP;
+      document.getElementById("formTime").value = g.time;
+      document.getElementById("formWeight").value = g.weight;
+      document.getElementById("formRating").value = g.rating;
+      document.getElementById("formPlays").value = g.plays;
+      document.getElementById("formCategory").value = g.category || "전략";
+      document.getElementById("formTags").value = (g.tags || []).join(", ");
+      document.getElementById("formMemo").value = g.memo || "";
+      document.getElementById("deleteGameBtn").style.display = "inline-flex";
+      openModal("manualModal");
+    }
+
+    function saveManualGame() {
+      const id = document.getElementById("editGameId").value || "g_" + Date.now();
+      const title = document.getElementById("formTitle").value.trim();
+      if (!title) { alert("게임 이름을 입력해 주세요."); return; }
+
+      const newGame = {
+        id,
+        title,
+        image: document.getElementById("formImage").value.trim(),
+        minP: parseInt(document.getElementById("formMinP").value, 10) || 1,
+        maxP: parseInt(document.getElementById("formMaxP").value, 10) || 4,
+        time: parseInt(document.getElementById("formTime").value, 10) || 60,
+        weight: parseFloat(document.getElementById("formWeight").value) || 2.5,
+        rating: parseFloat(document.getElementById("formRating").value) || 8.0,
+        plays: parseInt(document.getElementById("formPlays").value, 10) || 0,
+        category: document.getElementById("formCategory").value,
+        tags: document.getElementById("formTags").value.split(",").map(s => s.trim()).filter(Boolean),
+        memo: document.getElementById("formMemo").value.trim()
+      };
+
+      const idx = games.findIndex(item => item.id === id);
+      if (idx >= 0) games[idx] = newGame;
+      else games.unshift(newGame);
+
+      saveGames();
+      closeModal("manualModal");
+    }
+
+    function deleteCurrentGame() {
+      const id = document.getElementById("editGameId").value;
+      if (!id || !confirm("이 게임을 책장에서 삭제할까요?")) return;
+      games = games.filter(item => item.id !== id);
+      saveGames();
+      closeModal("manualModal");
+    }
+
+    /* BGG API 검색 연동 */
+    async function searchBGG() {
+      const q = document.getElementById("bggSearchInput").value.trim();
+      const resBox = document.getElementById("bggResults");
+      if (!q) return;
+      resBox.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted);">BGG 검색 중...</p>`;
+      try {
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent('https://boardgamegeek.com/xmlapi2/search?type=boardgame&query=' + q)}`;
+        const resp = await fetch(proxyUrl);
+        const data = await resp.json();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(data.contents, "text/xml");
+        const items = Array.from(xml.querySelectorAll("item")).slice(0, 8);
+
+        if (items.length === 0) {
+          resBox.innerHTML = `<p style="font-size:0.85rem;">검색 결과가 없습니다. 직접 추가를 이용해 주세요.</p>`;
+          return;
+        }
+        resBox.innerHTML = items.map(item => {
+          const name = item.querySelector("name")?.getAttribute("value") || "Unknown";
+          const year = item.querySelector("yearpublished")?.getAttribute("value") || "";
+          return `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid var(--border); font-size:0.88rem;">
+            <span><strong>${name}</strong> (${year})</span>
+            <button class="btn" style="padding:4px 8px;" onclick="prefillFromBGG('${name.replace(/'/g, "")}')">선택</button>
+          </div>`;
+        }).join("");
+      } catch (e) {
+        resBox.innerHTML = `<p style="font-size:0.84rem; color:#ef4444;">BGG 프록시 응답 지연: 하단 '게임 직접 추가'를 이용해 주세요.</p>`;
+      }
+    }
+
+    function prefillFromBGG(title) {
+      closeModal("addModal");
+      document.getElementById("editGameId").value = "";
+      document.getElementById("formTitle").value = title;
+      openModal("manualModal");
+    }
+
+    function fetchBoardLifeUrl() {
+      const url = document.getElementById("blUrlInput").value.trim();
+      if (!url.includes("boardlife.co.kr")) {
+        alert("유효한 보드라이프 URL을 입력해 주세요.");
+        return;
+      }
+      closeModal("boardlifeUrlModal");
+      document.getElementById("formTitle").value = "보드라이프 가져온 게임";
+      document.getElementById("formMemo").value = `출처: ${url}`;
+      openModal("manualModal");
+    }
+
+    function simulateBoardLifeSync() {
+      const box = document.getElementById("syncProgressBox");
+      box.style.display = "block";
+      setTimeout(() => {
+        alert("GitHub Pages 정적 환경에서는 CORS 정책상 백엔드 프록시(Cloudflare Worker 등) 연결 후 자동 스크래핑이 활성화됩니다. JSON 불러오기 기능을 권장합니다.");
+        box.style.display = "none";
+      }, 1200);
+    }
+
+    /* JSON 파일 백업 및 복원 */
+    function exportBackup() {
+      const blob = new Blob([JSON.stringify(games, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `mybgshelf_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+    }
+
+    function importBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (Array.isArray(parsed)) {
+            games = parsed;
+            saveGames();
+            alert(`총 ${games.length}개의 보드게임 컬렉션을 성공적으로 불러왔습니다!`);
+          }
+        } catch (err) {
+          alert("올바른 JSON 백업 파일이 아닙니다.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    window.addEventListener("DOMContentLoaded", loadGames);
+  </script>
+</body>
+</html>

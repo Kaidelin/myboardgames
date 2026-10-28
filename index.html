@@ -702,143 +702,89 @@
         // 이름으로 boardlifeGames에서 가장 일치하는 1개 문서를 즉시 찾아 반환 (클릭 시 커버 자동 매칭용)
         async function findBestBoardLifeGameByName(rawTitle) {
             if (!rawTitle) return null;
-            // 괄호 부제 제거 (예: "보이드폴 (Voidfall)" -> "보이드폴")
+            const dbList = await ensureLocalBoardLifeDb();
             const cleanName = rawTitle.replace(/\([^)]*\)/g, '').trim() || rawTitle.trim();
             const Sk = window.SearchKeywords;
-            const built = Sk.buildSearchKey(cleanName);
             const normQ = Sk.normalizeQuery(cleanName);
 
-            try {
-                const tasks = [getBoardLifeNameMatches(cleanName)];
-                if (built.key) {
-                    tasks.push(
-                        getBoardLifeSearchSnapshot(
-                            db.collection('boardlifeGames').where('searchKeywords', 'array-contains', built.key).limit(10)
-                        ).then(s => s.docs).catch(() => [])
-                    );
-                }
-                const res = await Promise.all(tasks);
-                const docsMap = new Map();
-                res.flat().forEach(d => {
-                    if (!docsMap.has(d.id)) docsMap.set(d.id, { id: d.id, ...d.data() });
-                });
-                const list = Array.from(docsMap.values());
-                if (list.length === 0) return null;
-                list.sort((a, b) => boardLifeMatchRank(a.name, normQ) - boardLifeMatchRank(b.name, normQ));
-                return list[0];
-            } catch (e) {
-                return null;
-            }
-        }
+            const matches = dbList.filter(g => {
+                const n = Sk.normalizeQuery(g.name || '');
+                return n === normQ || n.includes(normQ) || normQ.includes(n);
+    });
 
-        async function handleBoardLifeDBSearch(isLoadMore = false) {
-            const mySeq = ++_searchSeq;
-            const queryField = ($('#bl-db-search-input')?.value || '');
-            const Sk = window.SearchKeywords;
-            const built = Sk.buildSearchKey(queryField);
+            if (matches.length === 0) return null;
+            matches.sort((a, b) => boardLifeMatchRank(a.name, normQ) - boardLifeMatchRank(b.name, normQ));
+            return matches[0];
+
+         async function handleBoardLifeDBSearch() {
+            const queryField = ($('#bl-db-search-input')?.value || '').trim();
             const resultsEl = $('#bl-db-search-results');
             if (!resultsEl) return;
 
-            if (!built.key) {
-                resultsEl.innerHTML = built.reason === 'too_short'
-                    ? '<p style="text-align:center; color:var(--text-light); padding:1rem;">2글자 이상 입력해주세요.</p>'
-                    : '';
-                currentSearchCursor = null;
-                _lastBoardLifeSearchKey = null;
+            if (queryField.length < 1) {
+                resultsEl.innerHTML = '';
                 return;
             }
-            const query = built.key;
+
+            resultsEl.innerHTML = '<div class="spinner" style="margin: 1rem auto;"></div>';
+            const dbList = await ensureLocalBoardLifeDb();
+
+            if (dbList.length === 0) {
+                resultsEl.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:1rem;">저장소에 boardlife_db.json 파일을 업로드해 주세요.</p>';
+            return;
+            }
+
+            const Sk = window.SearchKeywords;
             const normQ = Sk.normalizeQuery(queryField);
-            if (!isLoadMore && normQ === _lastBoardLifeSearchKey) return;
+            const jamoQ = Sk.decomposeHangul(normQ);
 
-            if (!isLoadMore) {
-                currentSearchCursor = null;
-                _shownBoardLifeIds = new Set();
-                resultsEl.innerHTML = '<div class="spinner" style="margin: 1rem auto;"></div>';
-            } else {
-                const loadBtn = resultsEl.querySelector('#load-more-btn');
-                if (loadBtn) loadBtn.remove();
+            const matched = dbList.filter(g => {
+                const normName = Sk.normalizeQuery(g.name || '');
+                if (normName.includes(normQ)) return true;
+                // 초성 또는 자모 검색 지원
+                const jamoName = Sk.decomposeHangul(normName);
+                return jamoName.includes(jamoQ);
+            });
+
+            matched.sort((a, b) => {
+                const sa = boardLifeMatchRank(a.name, normQ);
+                const sb = boardLifeMatchRank(b.name, normQ);
+                if (sa !== sb) return sa - sb;
+                return (a.name || '').length - (b.name || '').length;
+            });
+
+            const topDocs = matched.slice(0, 30);
+            if (topDocs.length === 0) {
+                resultsEl.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:1rem;">검색 결과가 없습니다.</p>';
+                return;
             }
 
-            try {
-                let dbQuery = db.collection('boardlifeGames').where('searchKeywords', 'array-contains', query).limit(20);
-                if (currentSearchCursor) dbQuery = dbQuery.startAfter(currentSearchCursor);
+            resultsEl.innerHTML = '';
+            topDocs.forEach(g => {
+                const dbNumId = getBlNumId(g);
+                const isAdded = (dbNumId && allUserGames.some(ug => getBlNumId(ug) === dbNumId)) || allUserGames.some(ug => ug.id === g.id);
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.style.cssText = 'display:grid; grid-template-columns:40px 1fr auto; gap:10px; align-items:center;';
 
-                const [snap, nameDocs] = await Promise.all([
-                    getBoardLifeSearchSnapshot(dbQuery),
-                    isLoadMore ? Promise.resolve([]) : getBoardLifeNameMatches(queryField),
-                ]);
+                const thumbUrl = g.image || g.thumbnail || './placeholder.png';
+                item.innerHTML = `
+                    <img src="${thumbUrl}" alt="${escapeHtmlSafe(g.name)}" referrerpolicy="no-referrer" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid var(--border-color);">
+                    <div style="display:flex; flex-direction:column; overflow:hidden;">
+                        <span class="name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtmlSafe(g.name)}</span>
+                        <span class="year" style="font-size:0.8em; color:var(--text-secondary);">${g.yearPublished || ''}</span>
+                    </div>
+                    <button class="add-btn" ${isAdded ? 'disabled' : ''}>${isAdded ? '추가됨' : '추가'}</button>`;
 
-                if (mySeq !== _searchSeq) return;
-                _lastBoardLifeSearchKey = normQ;
-
-                const docs = [];
-                for (const d of [...nameDocs, ...snap.docs]) {
-                    if (_shownBoardLifeIds.has(d.id)) continue;
-                    _shownBoardLifeIds.add(d.id);
-                    docs.push({ id: d.id, ...d.data() });
+                if (!isAdded) {
+                    item.querySelector('.add-btn').addEventListener('click', (e) => {
+                        e.target.disabled = true;
+                        handleAddBoardLifeDBGame(g, e.target);
+                    });
                 }
-
-                if (docs.length === 0) {
-                    if (!isLoadMore) resultsEl.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:1rem;">검색 결과가 없습니다.</p>';
-                    return;
-                }
-
-                if (!isLoadMore) resultsEl.innerHTML = '';
-                if (!snap.empty) currentSearchCursor = snap.docs[snap.docs.length - 1];
-
-                if (!isLoadMore) docs.sort((a, b) => {
-                    const sa = boardLifeMatchRank(a.name, normQ);
-                    const sb = boardLifeMatchRank(b.name, normQ);
-                    if (sa !== sb) return sa - sb;
-                    const la = (a.name || '').length, lb = (b.name || '').length;
-                    if (sa <= 1 && la !== lb) return la - lb;
-                    return (a.name || '').localeCompare(b.name || '', 'ko');
-                });
-
-                docs.forEach(g => {
-                    const dbNumId = getBlNumId(g);
-                    const isAdded = (dbNumId && allUserGames.some(ug => getBlNumId(ug) === dbNumId)) || allUserGames.some(ug => ug.id === g.id);
-                    const item = document.createElement('div');
-                    item.className = 'search-result-item';
-                    item.style.display = 'grid';
-                    item.style.gridTemplateColumns = '40px 1fr auto';
-                    item.style.gap = '10px';
-                    item.style.alignItems = 'center';
-
-                    const thumbUrl = g.image || g.thumbnail || './placeholder.png';
-                    item.innerHTML = `
-                        <img src="${thumbUrl}" alt="${escapeHtmlSafe(g.name)}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid var(--border-color);">
-                        <div style="display:flex; flex-direction:column; overflow:hidden;">
-                            <span class="name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtmlSafe(g.name)}</span>
-                            <span class="year" style="font-size:0.8em; color:var(--text-secondary);">${g.yearPublished || ''}</span>
-                        </div>
-                        <button class="add-btn" ${isAdded ? 'disabled' : ''}>${isAdded ? '추가됨' : '추가'}</button>`;
-
-                    if (!isAdded) {
-                        item.querySelector('.add-btn').addEventListener('click', (e) => {
-                            e.target.disabled = true;
-                            handleAddBoardLifeDBGame(g, e.target);
-                        });
-                    }
-                    resultsEl.appendChild(item);
-                });
-
-                if (snap.size >= 20) {
-                    const btn = document.createElement('button');
-                    btn.id = 'load-more-btn';
-                    btn.className = 'filter-sort-btn';
-                    btn.style.cssText = 'width:100%; margin-top:0.5rem; padding:0.75rem; text-align:center;';
-                    btn.textContent = '+ 더보기';
-                    btn.onclick = () => handleBoardLifeDBSearch(true);
-                    resultsEl.appendChild(btn);
-                }
-            } catch (error) {
-                console.error(error);
-                if (!isLoadMore) resultsEl.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:1rem;">검색 중 오류가 발생했습니다.</p>';
-            }
+                resultsEl.appendChild(item);
+            });
         }
-
         function handleAddBoardLifeDBGame(blGame, buttonEl) {
             const docId = blGame.id;
             const isAutoExp = (blGame.themes || []).some(t => t.includes('본판이 필요한 확장')) || (blGame.categories || []).some(c => c.includes('확장') || c.toLowerCase().includes('expansion'));

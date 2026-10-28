@@ -7,8 +7,7 @@
     <link rel="stylesheet" href="style.css?v=19">
     <meta name="theme-color" content="#F7F2FA">
     <style>
-        /* 월별 구매 금액 막대그래프 & 가성비 순위표 전용 추가 스타일 */
-        .mp-dashboard-card {
+        .mp-custom-panel {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--border-radius);
@@ -16,7 +15,7 @@
             box-shadow: 0 0.125rem 0.5rem var(--shadow-color);
             margin-top: 1.5rem;
         }
-        .mp-card-head {
+        .mp-panel-head {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -24,35 +23,35 @@
             flex-wrap: wrap;
             gap: 0.5rem;
         }
-        .mp-card-head h3 { font-size: 1.05rem; font-weight: 700; margin: 0; }
+        .mp-panel-head h3 { font-size: 1rem; font-weight: 700; margin: 0; }
         .mp-bar-grid {
             display: flex;
             align-items: flex-end;
-            gap: 0.75rem;
-            height: 190px;
+            gap: 0.65rem;
+            height: 180px;
             padding-top: 2rem;
             border-bottom: 2px solid var(--border-color);
             overflow-x: auto;
         }
         .mp-bar-col {
             flex: 1;
-            min-width: 52px;
+            min-width: 50px;
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
             align-items: center;
         }
-        .mp-bar-val { font-size: 0.7rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; text-align: center; white-space: nowrap; }
-        .mp-bar-fill { width: 100%; max-width: 42px; background: var(--md-primary); border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.3s; }
-        .mp-bar-labels { display: flex; gap: 0.75rem; margin-top: 0.4rem; }
-        .mp-bar-label { flex: 1; min-width: 52px; text-align: center; font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; }
+        .mp-bar-val { font-size: 0.68rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; text-align: center; white-space: nowrap; }
+        .mp-bar-fill { width: 100%; max-width: 40px; background: var(--md-primary); border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.3s; }
+        .mp-bar-labels { display: flex; gap: 0.65rem; margin-top: 0.4rem; }
+        .mp-bar-label { flex: 1; min-width: 50px; text-align: center; font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; }
 
         .cpp-table-wrap { width: 100%; overflow-x: auto; }
-        .cpp-table { width: 100%; border-collapse: collapse; min-width: 560px; font-size: 0.88rem; }
-        .cpp-table th, .cpp-table td { padding: 0.75rem 0.6rem; text-align: left; border-bottom: 1px solid var(--border-color); }
-        .cpp-table th { color: var(--text-secondary); font-size: 0.78rem; background: var(--bg-secondary); }
-        .cpp-badge { padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+        .cpp-table { width: 100%; border-collapse: collapse; min-width: 540px; font-size: 0.85rem; }
+        .cpp-table th, .cpp-table td { padding: 0.65rem 0.5rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .cpp-table th { color: var(--text-secondary); font-size: 0.75rem; background: var(--bg-secondary); }
+        .cpp-badge { padding: 0.2rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; }
     </style>
 </head>
 <body>
@@ -66,57 +65,63 @@
                 </svg>
             </a>
             <h1>마이페이지</h1>
-            <button id="dark-mode-toggle" class="action-icon-btn" title="다크모드 전환">🌓</button>
+            <div style="display: flex; gap: 0.5rem;">
+                <button id="dark-mode-toggle" class="action-icon-btn" title="다크모드 전환">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line>
+                    </svg>
+                    <svg class="moon-icon hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+            </div>
         </header>
 
-        <!-- 탭 네비게이션 (구매 통계 기본 활성) -->
         <nav class="mypage-tabs">
-            <button class="tab-btn active" data-tab="statistics">구매 통계 &amp; 가성비</button>
+            <button class="tab-btn active" data-tab="statistics">구매 통계</button>
             <button class="tab-btn" data-tab="playstats">플레이 통계</button>
-            <button class="tab-btn" data-tab="profile">프로필 &amp; 클라우드 동기화</button>
+            <button class="tab-btn" data-tab="profile">프로필</button>
         </nav>
 
         <main class="mypage-content">
-            <!-- 1. 구매 통계 & 가성비 대시보드 탭 -->
+            <!-- 1. 구매 통계 탭 -->
             <div id="statistics-tab" class="tab-content active">
                 <div class="tab-inner">
-                    <h2 style="margin-bottom: 1.25rem;">💳 보드게임 구매 금액 대시보드</h2>
+                    <h2 style="margin-bottom: 1.5rem;">구매 금액 통계 대시보드</h2>
 
-                    <div class="stats-cards" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-                        <!-- (1) 지금까지 구매한 게임의 가격 총액 -->
+                    <div class="stats-cards" style="grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));">
                         <div class="stat-card">
-                            <h3>💰 전체 누적 구매 총액</h3>
+                            <h3>전체 구매 총액</h3>
                             <p class="stat-value" id="total-spent">0원</p>
-                            <p class="stat-count" id="total-count">0개 게임</p>
+                            <p class="stat-count" id="total-count">0개</p>
                         </div>
-
-                        <!-- (2) 최근 ( )일간 구매한 게임의 가격 총액 -->
                         <div class="stat-card">
-                            <h3>🗓️ 최근 (<input type="number" id="custom-days" min="1" value="14"
-                                    style="width: 3.8rem; text-align: center; border: 1.5px solid var(--md-primary); border-radius: 0.35rem; padding: 0.15rem; font-weight:700; background:var(--bg-main); color:var(--text-primary);">)일간 구매 총액
+                            <h3>최근 (<input type="number" id="custom-days" min="1" value="30"
+                                    style="width: 3.8rem; text-align: center; border: 1px solid var(--border-color); border-radius: 0.25rem; padding: 0.2rem; font-weight:700;">)일간 구매 총액
                             </h3>
                             <p class="stat-value" id="custom-period-total">0원</p>
-                            <p class="stat-count" id="custom-period-count">0개 게임</p>
+                            <p class="stat-count" id="custom-period-count">0개</p>
                         </div>
-
-                        <!-- (3) 최근 1개월간 구매 가격 총액 -->
                         <div class="stat-card">
-                            <h3>📅 최근 1개월간 구매 총액</h3>
+                            <h3>최근 1개월간 구매 총액</h3>
                             <p class="stat-value" id="one-month-total">0원</p>
-                            <p class="stat-count" id="one-month-count">0개 게임</p>
+                            <p class="stat-count" id="one-month-count">0개</p>
                         </div>
-
-                        <!-- (4) 이번 달 구매 총액 -->
                         <div class="stat-card">
-                            <h3>📆 이번 달 구매 총액</h3>
+                            <h3>이번 달</h3>
                             <p class="stat-value" id="this-month-total">0원</p>
-                            <p class="stat-count" id="this-month-count">0개 게임</p>
+                            <p class="stat-count" id="this-month-count">0개</p>
                         </div>
                     </div>
 
                     <!-- 월별 구매 금액 막대그래프 -->
-                    <div class="mp-dashboard-card">
-                        <div class="mp-card-head">
+                    <div class="mp-custom-panel">
+                        <div class="mp-panel-head">
                             <h3>📊 월별 구매 금액 막대그래프</h3>
                             <select id="month-chart-mode" class="filter-input" style="width:auto; height:2.2rem; font-size:0.85rem;">
                                 <option value="6">최근 6개월</option>
@@ -129,8 +134,8 @@
                     </div>
 
                     <!-- 게임별 1회 플레이당 비용 (가성비) 순위 표 -->
-                    <div class="mp-dashboard-card">
-                        <div class="mp-card-head">
+                    <div class="mp-custom-panel">
+                        <div class="mp-panel-head">
                             <h3>🏆 게임별 1회 플레이당 비용 (가성비 순위)</h3>
                             <select id="cpp-sort-select" class="filter-input" style="width:auto; height:2.2rem; font-size:0.85rem;">
                                 <option value="cpp_asc">가성비 높은순 (1회당 비용 낮은순)</option>
@@ -157,93 +162,144 @@
                         </div>
                     </div>
 
-                    <!-- 최근 구매한 게임 리스트 -->
                     <div style="margin-top: 2rem;">
-                        <h3 style="margin-bottom: 1rem;">🛒 최근 구매한 게임 내역</h3>
+                        <h3 style="margin-bottom: 1rem;">최근 구매한 게임</h3>
                         <div id="recent-purchases-list"></div>
                     </div>
+
+                    <!-- 분포 (카테고리/테마/메카닉) — 원본 mypage.js 동일 -->
+                    <div id="purchase-extra" style="margin-top: 1.5rem;"></div>
                 </div>
             </div>
 
-            <!-- 2. 플레이 통계 탭 -->
+            <!-- 2. 플레이 통계 탭 (원본 mypage.js?v=18 100% 동일) -->
             <div id="playstats-tab" class="tab-content">
                 <div class="tab-inner">
-                    <h2 style="margin-bottom: 1.5rem;">🎲 플레이 통계</h2>
+                    <h2 style="margin-bottom: 1.5rem;">플레이 통계</h2>
                     <div class="stats-cards">
                         <div class="stat-card">
-                            <h3>총 플레이 횟수</h3>
-                            <p class="stat-value" id="total-plays">0회</p>
-                            <p class="stat-count" id="total-games-played">0개 게임 플레이</p>
+                            <h3>총 플레이</h3>
+                            <p class="stat-value" id="total-plays">0</p>
+                            <p class="stat-count" id="total-games-played">0개 게임</p>
                         </div>
                         <div class="stat-card">
-                            <h3>미플레이 (망부석)</h3>
-                            <p class="stat-value" id="unplayed-count">0개</p>
-                            <p class="stat-count" id="unplayed-ratio">전체 대비 0%</p>
+                            <h3>게임 데이</h3>
+                            <p class="stat-value" id="game-days">0</p>
+                            <p class="stat-count">실제 보드한 날</p>
                         </div>
                         <div class="stat-card">
-                            <h3>평균 1회 플레이 비용</h3>
-                            <p class="stat-value" id="avg-cpp-val">0원</p>
-                            <p class="stat-count">총 구매액 ÷ 총 플레이</p>
+                            <h3>최근 30일</h3>
+                            <p class="stat-value" id="recent-30-plays">0</p>
+                            <p class="stat-count" id="this-month-plays-sub">이번 달 0회</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>평균 별점</h3>
+                            <p class="stat-value" id="avg-rating">-</p>
+                            <p class="stat-count" id="avg-rating-sub">별점 0회</p>
                         </div>
                     </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3 style="margin-bottom: 1rem;">가장 많이 플레이한 게임 TOP 10</h3>
+                        <div id="most-played-games-list"></div>
+                    </div>
+
+                    <!-- 추가 통계 (잔디/승률/본전/마라톤/잠자는/타임라인) -->
+                    <div id="playstats-extra" style="margin-top: 1.5rem;"></div>
+
                     <div style="margin-top: 2rem; text-align: center;">
                         <a href="./sessions.html" class="filter-sort-btn primary-action-btn"
-                           style="display:inline-block; width:auto; padding: 0.75rem 1.5rem; text-decoration:none;">📅 게임 기록 추가/편집 화면으로 이동</a>
+                           style="display:inline-block; width:auto; padding: 0.6rem 1.2rem; text-decoration:none;">기록 추가/편집 화면으로 이동</a>
                     </div>
                 </div>
             </div>
 
-            <!-- 3. 프로필 & 클라우드 동기화 탭 -->
+            <!-- 3. 프로필 탭 -->
             <div id="profile-tab" class="tab-content">
                 <div class="tab-inner">
                     <div class="form-group">
-                        <label for="nickname-input">책장 표시 닉네임</label>
+                        <label for="nickname-input">닉네임</label>
                         <div class="input-group">
-                            <input type="text" id="nickname-input" class="filter-input" placeholder="예: 승휘">
-                            <button id="save-nickname-btn" class="detail-section-btn">저장</button>
+                            <input type="text" id="nickname-input" class="filter-input" placeholder="표시될 닉네임 입력">
+                            <button id="save-nickname-btn" class="action-icon-btn" title="닉네임 저장">💾</button>
                         </div>
                     </div>
 
+                    <!-- 테마 선택 (Light/System/Dark) -->
+                    <div class="form-group">
+                        <label>테마</label>
+                        <div class="theme-segmented" role="radiogroup" aria-label="테마 선택">
+                            <button type="button" class="theme-segment-btn" data-theme="light"><span>☀️ 라이트</span></button>
+                            <button type="button" class="theme-segment-btn" data-theme="system"><span>💻 시스템</span></button>
+                            <button type="button" class="theme-segment-btn" data-theme="dark"><span>🌙 다크</span></button>
+                        </div>
+                    </div>
+
+                    <!-- 빠른 작업 -->
+                    <div class="form-group">
+                        <label>빠른 작업</label>
+                        <div class="quick-action-list">
+                            <a href="./?openTagManager=1" class="quick-action-item">
+                                <span class="quick-action-icon">🏷️</span>
+                                <span class="quick-action-text">
+                                    <span class="quick-action-title">태그 관리</span>
+                                    <span class="quick-action-sub">태그 생성·수정·삭제</span>
+                                </span>
+                                <span>›</span>
+                            </a>
+                            <a href="./sessions.html?openPlayerBook=1" class="quick-action-item">
+                                <span class="quick-action-icon">👥</span>
+                                <span class="quick-action-text">
+                                    <span class="quick-action-title">주소록 관리</span>
+                                    <span class="quick-action-sub">자주 같이 플레이하는 사람</span>
+                                </span>
+                                <span>›</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 클라우드 동기화 및 JSON 백업 섹션 -->
                     <div class="sync-section">
-                        <h2 class="sync-section-title">☁️ GitHub Secret Gist 자동 동기화</h2>
+                        <h2 class="sync-section-title">☁️ GitHub Gist 동기화 &amp; JSON 백업</h2>
                         <div class="sync-panel">
-                            <p class="sync-panel-desc">
-                                GitHub Personal Access Token(<code>gist</code> 권한)을 연결하면 PC와 스마트폰 어디서든 책장과 구매 통계가 실시간 동기화됩니다.
-                            </p>
-                            <div class="form-group">
-                                <label>GitHub Token</label>
-                                <input type="password" id="gist-token-input" class="filter-input" placeholder="ghp_...">
+                            <div class="sync-panel-header"><strong>mybgshelf 추출 JSON / 백업 파일 복원</strong></div>
+                            <p class="sync-panel-desc">콘솔에서 추출한 <code>myboardgames_my_data.json</code> 파일을 불러오거나 현재 데이터를 백업합니다.</p>
+                            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                                <label class="filter-sort-btn primary-action-btn" style="width:auto; cursor:pointer; display:inline-block;">
+                                    📤 JSON 파일 불러오기
+                                    <input type="file" id="import-json-input" accept=".json" style="display:none;">
+                                </label>
+                                <button id="export-json-btn" class="filter-sort-btn" style="width:auto;">📥 현재 데이터 JSON 백업</button>
                             </div>
+                        </div>
+
+                        <div class="sync-panel">
+                            <div class="sync-panel-header"><strong>GitHub Secret Gist 자동 동기화</strong></div>
+                            <p class="sync-panel-desc">GitHub Token(<code>gist</code> 권한)을 등록하면 PC와 모바일 간 실시간으로 동기화됩니다.</p>
                             <div class="form-group">
-                                <label>Secret Gist ID (없으면 '새 Gist 자동 생성' 클릭)</label>
+                                <input type="password" id="gist-token-input" class="filter-input" placeholder="GitHub Token (ghp_...)" style="margin-bottom:0.5rem;">
                                 <div class="sync-input-row">
-                                    <input type="text" id="gist-id-input" class="filter-input" placeholder="Gist ID">
+                                    <input type="text" id="gist-id-input" class="filter-input" placeholder="Secret Gist ID">
                                     <button id="create-gist-btn" class="filter-sort-btn" style="width:auto; white-space:nowrap;">✨ 새 Gist 생성</button>
                                 </div>
                             </div>
                             <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                                 <button id="save-gist-btn" class="filter-sort-btn primary-action-btn" style="width:auto;">설정 저장</button>
-                                <button id="pull-gist-btn" class="filter-sort-btn" style="width:auto;">⬇️ 클라우드에서 불러오기</button>
-                                <button id="push-gist-btn" class="filter-sort-btn" style="width:auto;">⬆️ 클라우드로 업로드</button>
+                                <button id="pull-gist-btn" class="filter-sort-btn" style="width:auto;">⬇️ 지금 불러오기</button>
+                                <button id="push-gist-btn" class="filter-sort-btn" style="width:auto;">⬆️ 지금 업로드</button>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="sync-panel">
-                            <div class="sync-panel-header"><strong>💾 JSON 백업 파일 내보내기 / 불러오기</strong></div>
-                            <p class="sync-panel-desc">기존 mybgshelf에서 추출한 JSON이나 백업 파일을 복원할 수 있습니다.</p>
-                            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                                <button id="export-json-btn" class="filter-sort-btn primary-action-btn" style="width:auto;">📥 JSON 백업 다운로드</button>
-                                <label class="filter-sort-btn" style="width:auto; cursor:pointer; display:inline-block;">
-                                    📤 JSON 파일 불러오기
-                                    <input type="file" id="import-json-input" accept=".json" style="display:none;">
-                                </label>
-                            </div>
-                        </div>
+                    <div class="danger-zone" style="margin-top: 2.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; text-align: center;">
+                        <button id="reset-data-btn" class="detail-section-btn delete-btn">로컬 데이터 전체 초기화</button>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+
+    <div class="message-container"></div>
 
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
         <a href="./" class="nav-item" aria-label="책장">
@@ -262,136 +318,295 @@
 
     <script>
         const GAMES_STORAGE_KEY = "MY_BG_SHELF_DATA_V1";
+        const TAGS_STORAGE_KEY = "MY_BG_TAGS_V1";
         const SESSIONS_STORAGE_KEY = "MY_BG_SESSIONS_V1";
+        const PLAYERS_STORAGE_KEY = "MY_BG_PLAYERS_V1";
         const GIST_CONFIG_KEY = "MY_BG_GIST_CONFIG_V1";
         const NICKNAME_KEY = "MY_BG_NICKNAME_V1";
         const GIST_FILENAME = "myboardgames_db.json";
 
-        let games = [];
-        let sessions = [];
+        const $ = (s) => document.querySelector(s);
+        const $$ = (s) => document.querySelectorAll(s);
 
-        function parsePrice(g) {
-            const raw = (g.customFields && g.customFields['구매가격']) ?? g.purchasePrice ?? 0;
-            return parseInt(String(raw).replace(/[^0-9]/g, ''), 10) || 0;
-        }
+        let allGames = [];
+        let allPlayRecords = [];
+        let currentSelfName = '나';
+        let _unplayedGames = [];
+        let _sleepingGamesCache = [];
 
-        function parseDateYMD(g) {
-            const raw = (g.customFields && g.customFields['구매일자']) || g.purchaseDate || '';
-            if (!raw) return '';
-            const digits = String(raw).replace(/[^0-9]/g, '');
-            if (digits.length === 8) return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
-            return String(raw).trim().slice(0, 10);
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            initDarkMode();
+            initTabNavigation();
+            loadLocalData();
 
-        function getPlaysCount(g) {
-            let count = Number(g.plays) || 0;
-            // sessions 기록에서도 해당 게임 플레이 횟수 합산 보정
-            const fromSessions = sessions.reduce((acc, s) => {
-                const list = s.games || s.gameResults || [];
-                const hit = list.find(item => item.gameId === g.id || item.gameName === g.name || item === g.name);
-                if (!hit) return acc;
-                return acc + Math.max((hit.rounds || []).length, 1);
-            }, 0);
-            return Math.max(count, fromSessions);
-        }
+            $('#custom-days').addEventListener('input', updateStatistics);
+            $('#month-chart-mode').addEventListener('change', renderMonthlyBarChart);
+            $('#cpp-sort-select').addEventListener('change', renderCppTable);
 
-        function formatYMD(d) {
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        }
+            $('#nickname-input').value = localStorage.getItem(NICKNAME_KEY) || '나';
+            $('#save-nickname-btn').onclick = () => {
+                const v = $('#nickname-input').value.trim() || '나';
+                localStorage.setItem(NICKNAME_KEY, v);
+                currentSelfName = v;
+                showMessage('닉네임이 저장되었습니다.', 'success');
+            };
 
-        function renderAllStats() {
-            games = JSON.parse(localStorage.getItem(GAMES_STORAGE_KEY) || '[]');
-            sessions = JSON.parse(localStorage.getItem(SESSIONS_STORAGE_KEY) || '[]');
+            const cfg = JSON.parse(localStorage.getItem(GIST_CONFIG_KEY) || '{}');
+            $('#gist-token-input').value = cfg.token || '';
+            $('#gist-id-input').value = cfg.gistId || '';
 
-            const now = new Date();
-            const todayYMD = formatYMD(now);
-            const thisMonthPrefix = todayYMD.slice(0, 7);
+            $('#save-gist-btn').onclick = () => {
+                localStorage.setItem(GIST_CONFIG_KEY, JSON.stringify({
+                    token: $('#gist-token-input').value.trim(),
+                    gistId: $('#gist-id-input').value.trim(),
+                    autoSync: true
+                }));
+                showMessage('Gist 설정이 저장되었습니다.', 'success');
+            };
 
-            // 1. 전체 구매 금액 총액
-            let totalSpent = 0, totalCount = 0;
-            // 2. 이번 달 구매 총액
-            let thisMonthSpent = 0, thisMonthCount = 0;
-            // 3. 최근 ( N )일간 구매 총액
-            const customDays = Math.max(1, parseInt(document.getElementById('custom-days').value, 10) || 14);
-            const cutoffCustom = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (customDays - 1));
-            const cutoffCustomYMD = formatYMD(cutoffCustom);
-            let customSpent = 0, customCount = 0;
+            $('#create-gist-btn').onclick = async () => {
+                const token = $('#gist-token-input').value.trim();
+                if (!token) { showMessage('GitHub Token을 먼저 입력해주세요.', 'error'); return; }
+                const resp = await fetch('https://api.github.com/gists', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        description: 'myboardgames sync db',
+                        public: false,
+                        files: { [GIST_FILENAME]: { content: JSON.stringify({ games: allGames, sessions: allPlayRecords }, null, 2) } }
+                    })
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    $('#gist-id-input').value = data.id;
+                    localStorage.setItem(GIST_CONFIG_KEY, JSON.stringify({ token, gistId: data.id, autoSync: true }));
+                    showMessage('새 Secret Gist 생성 완료!', 'success');
+                } else showMessage('생성 실패: 토큰 권한을 확인하세요.', 'error');
+            };
 
-            // 4. 최근 1개월간 구매 총액
-            const cutoffOneMonth = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-            const cutoffOneMonthYMD = formatYMD(cutoffOneMonth);
-            let oneMonthSpent = 0, oneMonthCount = 0;
-
-            const purchasedGames = [];
-
-            games.forEach(g => {
-                const price = parsePrice(g);
-                const pDate = parseDateYMD(g);
-                if (price > 0) {
-                    totalSpent += price;
-                    totalCount++;
-                    purchasedGames.push({ ...g, price, pDate });
+            $('#pull-gist-btn').onclick = async () => {
+                const c = JSON.parse(localStorage.getItem(GIST_CONFIG_KEY) || '{}');
+                if (!c.token || !c.gistId) { showMessage('Token과 Gist ID를 먼저 저장해주세요.', 'error'); return; }
+                const r = await fetch(`https://api.github.com/gists/${c.gistId}`, { headers: { 'Authorization': `Bearer ${c.token}` } });
+                if (r.ok) {
+                    const d = await r.json();
+                    const f = d.files[GIST_FILENAME] || Object.values(d.files)[0];
+                    const parsed = JSON.parse(f.content);
+                    if (Array.isArray(parsed.games)) localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(parsed.games));
+                    if (Array.isArray(parsed.tags)) localStorage.setItem(TAGS_STORAGE_KEY, JSON.stringify(parsed.tags));
+                    if (Array.isArray(parsed.sessions)) localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(parsed.sessions));
+                    if (Array.isArray(parsed.players)) localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(parsed.players));
+                    loadLocalData();
+                    showMessage('클라우드에서 최신 데이터를 불러왔습니다!', 'success');
                 }
-                if (pDate) {
-                    if (pDate.startsWith(thisMonthPrefix)) {
-                        thisMonthSpent += price;
-                        thisMonthCount++;
-                    }
-                    if (pDate >= cutoffCustomYMD && pDate <= todayYMD) {
-                        customSpent += price;
-                        customCount++;
-                    }
-                    if (pDate >= cutoffOneMonthYMD && pDate <= todayYMD) {
-                        oneMonthSpent += price;
-                        oneMonthCount++;
+            };
+
+            $('#push-gist-btn').onclick = async () => {
+                const c = JSON.parse(localStorage.getItem(GIST_CONFIG_KEY) || '{}');
+                if (!c.token || !c.gistId) { showMessage('Token과 Gist ID를 먼저 저장해주세요.', 'error'); return; }
+                const payload = {
+                    updatedAt: new Date().toISOString(),
+                    games: allGames,
+                    tags: JSON.parse(localStorage.getItem(TAGS_STORAGE_KEY) || '[]'),
+                    sessions: allPlayRecords,
+                    players: JSON.parse(localStorage.getItem(PLAYERS_STORAGE_KEY) || '[]')
+                };
+                const r = await fetch(`https://api.github.com/gists/${c.gistId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${c.token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ files: { [GIST_FILENAME]: { content: JSON.stringify(payload, null, 2) } } })
+                });
+                if (r.ok) showMessage('클라우드 업로드 완료!', 'success');
+            };
+
+            $('#export-json-btn').onclick = () => {
+                const payload = {
+                    exportedAt: new Date().toISOString(),
+                    games: allGames,
+                    tags: JSON.parse(localStorage.getItem(TAGS_STORAGE_KEY) || '[]'),
+                    sessions: allPlayRecords,
+                    players: JSON.parse(localStorage.getItem(PLAYERS_STORAGE_KEY) || '[]')
+                };
+                const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `myboardgames_backup_${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+            };
+
+            $('#import-json-input').onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    try {
+                        const parsed = JSON.parse(ev.target.result);
+                        const gArr = Array.isArray(parsed) ? parsed : (parsed.games || []);
+                        localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(gArr));
+                        if (parsed.tags) localStorage.setItem(TAGS_STORAGE_KEY, JSON.stringify(parsed.tags));
+                        if (parsed.sessions) localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(parsed.sessions));
+                        if (parsed.players) localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(parsed.players));
+                        loadLocalData();
+                        showMessage(`총 ${gArr.length}개의 게임을 복원했습니다!`, 'success');
+                    } catch (err) { showMessage('올바른 JSON 파일이 아닙니다.', 'error'); }
+                };
+                reader.readAsText(file);
+            };
+
+            $('#reset-data-btn').onclick = () => {
+                if (!confirm('정말로 모든 로컬 데이터를 초기화할까요?')) return;
+                localStorage.removeItem(GAMES_STORAGE_KEY);
+                localStorage.removeItem(TAGS_STORAGE_KEY);
+                localStorage.removeItem(SESSIONS_STORAGE_KEY);
+                localStorage.removeItem(PLAYERS_STORAGE_KEY);
+                loadLocalData();
+                showMessage('초기화되었습니다.', 'success');
+            };
+        });
+
+        function loadLocalData() {
+            allGames = JSON.parse(localStorage.getItem(GAMES_STORAGE_KEY) || '[]');
+            allPlayRecords = JSON.parse(localStorage.getItem(SESSIONS_STORAGE_KEY) || '[]').map(d => ({
+                ...d,
+                date: d.date || d.playDate || null,
+                games: Array.isArray(d.games) ? d.games : (Array.isArray(d.gameResults) ? d.gameResults : [])
+            }));
+            updateStatistics();
+            updatePlayStatistics();
+        }
+
+        /* 테마 시스템 (원본 mypage.js 동일) */
+        function initDarkMode() {
+            const savedTheme = localStorage.getItem('theme') || 'system';
+            applyTheme(savedTheme);
+            updateThemeSegmentedUI(savedTheme);
+            $('#dark-mode-toggle')?.addEventListener('click', () => {
+                const curDark = document.body.classList.contains('dark-mode');
+                setTheme(curDark ? 'light' : 'dark');
+            });
+            $$('.theme-segment-btn').forEach(btn => {
+                btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+            });
+        }
+        function applyTheme(theme) {
+            const isDark = theme === 'dark' ? true : theme === 'light' ? false : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.body.classList.toggle('dark-mode', isDark);
+            $('#dark-mode-toggle .sun-icon')?.classList.toggle('hidden', isDark);
+            $('#dark-mode-toggle .moon-icon')?.classList.toggle('hidden', !isDark);
+        }
+        function setTheme(theme) {
+            localStorage.setItem('theme', theme);
+            applyTheme(theme);
+            updateThemeSegmentedUI(theme);
+        }
+        function updateThemeSegmentedUI(theme) {
+            $$('.theme-segment-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === theme));
+        }
+
+        function initTabNavigation() {
+            $$('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabId = btn.dataset.tab;
+                    $$('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+                    $$('.tab-content').forEach(c => c.classList.remove('active'));
+                    $(`#${tabId}-tab`).classList.add('active');
+                    if (tabId === 'statistics') updateStatistics();
+                    if (tabId === 'playstats') updatePlayStatistics();
+                });
+            });
+        }
+
+        /* =========================================================
+           구매 금액 통계 + 월별 막대그래프 + 가성비 순위표 + 분포
+           ========================================================= */
+        function parsePrice(priceStr) {
+            if (!priceStr) return 0;
+            return parseInt(String(priceStr).replace(/[^0-9]/g, ''), 10) || 0;
+        }
+        function formatPrice(price) { return price.toLocaleString('ko-KR') + '원'; }
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+            const s = String(dateStr).trim();
+            const digits = s.replace(/[^0-9]/g, '');
+            if (digits.length === 8) {
+                return new Date(parseInt(digits.slice(0, 4), 10), parseInt(digits.slice(4, 6), 10) - 1, parseInt(digits.slice(6, 8), 10));
+            }
+            const d = new Date(s);
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        function updateStatistics() {
+            const now = new Date();
+            const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const customDays = parseInt($('#custom-days').value, 10) || 30;
+            const customPeriodStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (customDays - 1));
+            const oneMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+
+            let thisMonthTotal = 0, thisMonthCount = 0;
+            let totalSpent = 0, totalCount = 0;
+            let customPeriodTotal = 0, customPeriodCount = 0;
+            let oneMonthTotal = 0, oneMonthCount = 0;
+            const recentPurchases = [];
+
+            allGames.forEach(game => {
+                const priceStr = game.customFields?.['구매가격'] ?? game.purchasePrice;
+                const dateStr = game.customFields?.['구매일자'] ?? game.purchaseDate;
+                const price = parsePrice(priceStr);
+                if (price === 0) return;
+
+                totalSpent += price;
+                totalCount++;
+
+                if (dateStr) {
+                    const purchaseDate = parseDate(dateStr);
+                    if (purchaseDate) {
+                        if (purchaseDate >= thisMonthStart) { thisMonthTotal += price; thisMonthCount++; }
+                        if (purchaseDate >= customPeriodStart) { customPeriodTotal += price; customPeriodCount++; }
+                        if (purchaseDate >= oneMonthStart) { oneMonthTotal += price; oneMonthCount++; }
+                        recentPurchases.push({
+                            name: game.customFields?.['게임 이름'] || game.name,
+                            date: purchaseDate,
+                            price
+                        });
                     }
                 }
             });
 
-            document.getElementById('total-spent').textContent = `${totalSpent.toLocaleString()}원`;
-            document.getElementById('total-count').textContent = `${totalCount}개 게임`;
-            document.getElementById('custom-period-total').textContent = `${customSpent.toLocaleString()}원`;
-            document.getElementById('custom-period-count').textContent = `${customCount}개 게임 (${cutoffCustomYMD}~)`;
-            document.getElementById('one-month-total').textContent = `${oneMonthSpent.toLocaleString()}원`;
-            document.getElementById('one-month-count').textContent = `${oneMonthCount}개 게임 (${cutoffOneMonthYMD}~)`;
-            document.getElementById('this-month-total').textContent = `${thisMonthSpent.toLocaleString()}원`;
-            document.getElementById('this-month-count').textContent = `${thisMonthCount}개 게임`;
+            $('#this-month-total').textContent = formatPrice(thisMonthTotal);
+            $('#this-month-count').textContent = `${thisMonthCount}개`;
+            $('#total-spent').textContent = formatPrice(totalSpent);
+            $('#total-count').textContent = `${totalCount}개`;
+            $('#custom-period-total').textContent = formatPrice(customPeriodTotal);
+            $('#custom-period-count').textContent = `${customPeriodCount}개`;
+            $('#one-month-total').textContent = formatPrice(oneMonthTotal);
+            $('#one-month-count').textContent = `${oneMonthCount}개`;
 
-            // 최근 구매한 게임 리스트
-            purchasedGames.sort((a, b) => (b.pDate || '').localeCompare(a.pDate || ''));
-            document.getElementById('recent-purchases-list').innerHTML = purchasedGames.slice(0, 10).map(g => `
-                <div class="purchase-item">
-                    <div>
-                        <div class="purchase-item-name">${g.name || g.title}</div>
-                        <div class="purchase-item-date">${g.pDate || '날짜 미입력'}</div>
-                    </div>
-                    <div class="purchase-item-price">${g.price.toLocaleString()}원</div>
-                </div>`).join('') || '<p class="empty-message">구매 가격/일자가 입력된 게임이 없습니다.</p>';
+            recentPurchases.sort((a, b) => b.date - a.date);
+            const recentBox = $('#recent-purchases-list');
+            recentBox.innerHTML = recentPurchases.length === 0
+                ? '<div class="empty-message">구매 기록이 없습니다.</div>'
+                : recentPurchases.slice(0, 10).map(item => `
+                    <div class="purchase-item">
+                        <div>
+                            <div class="purchase-item-name">${_statEsc(item.name)}</div>
+                            <div class="purchase-item-date">${item.date.toLocaleDateString('ko-KR')}</div>
+                        </div>
+                        <div class="purchase-item-price">${formatPrice(item.price)}</div>
+                    </div>`).join('');
 
-            renderMonthlyChart();
+            renderMonthlyBarChart();
             renderCppTable();
-
-            // 플레이 통계 탭 업데이트
-            const totalPlays = games.reduce((acc, g) => acc + getPlaysCount(g), 0);
-            const playedGamesCount = games.filter(g => getPlaysCount(g) > 0).length;
-            const unplayed = games.length - playedGamesCount;
-            const avgCpp = totalPlays > 0 ? Math.round(totalSpent / totalPlays) : 0;
-
-            document.getElementById('total-plays').textContent = `${totalPlays}회`;
-            document.getElementById('total-games-played').textContent = `${playedGamesCount}개 게임 플레이함`;
-            document.getElementById('unplayed-count').textContent = `${unplayed}개`;
-            document.getElementById('unplayed-ratio').textContent = games.length > 0 ? `전체 대비 ${Math.round((unplayed / games.length) * 100)}%` : '0%';
-            document.getElementById('avg-cpp-val').textContent = `${avgCpp.toLocaleString()}원`;
+            renderPurchaseDistributions();
         }
 
-        function renderMonthlyChart() {
-            const mode = document.getElementById('month-chart-mode').value;
+        function renderMonthlyBarChart() {
+            const mode = $('#month-chart-mode').value;
             const monthMap = {};
-            games.forEach(g => {
-                const price = parsePrice(g);
-                const pDate = parseDateYMD(g);
-                if (pDate && pDate.length >= 7) {
-                    const ym = pDate.slice(0, 7);
+            allGames.forEach(g => {
+                const price = parsePrice(g.customFields?.['구매가격'] ?? g.purchasePrice);
+                const d = parseDate(g.customFields?.['구매일자'] ?? g.purchaseDate);
+                if (d && price > 0) {
+                    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                     if (!monthMap[ym]) monthMap[ym] = { amount: 0, count: 0 };
                     monthMap[ym].amount += price;
                     monthMap[ym].count += 1;
@@ -402,7 +617,7 @@
             const now = new Date();
             if (mode === 'ACTIVE') {
                 months = Object.keys(monthMap).sort();
-                if (months.length === 0) months = [formatYMD(now).slice(0, 7)];
+                if (months.length === 0) months = [`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`];
             } else {
                 const n = parseInt(mode, 10) || 6;
                 for (let i = n - 1; i >= 0; i--) {
@@ -412,7 +627,7 @@
             }
 
             const maxVal = Math.max(...months.map(ym => monthMap[ym]?.amount || 0), 1);
-            document.getElementById('mp-bar-grid').innerHTML = months.map(ym => {
+            $('#mp-bar-grid').innerHTML = months.map(ym => {
                 const info = monthMap[ym] || { amount: 0, count: 0 };
                 const hPct = info.amount > 0 ? Math.max(Math.round((info.amount / maxVal) * 100), 6) : 2;
                 return `
@@ -422,19 +637,36 @@
                     </div>`;
             }).join('');
 
-            document.getElementById('mp-bar-labels').innerHTML = months.map(ym => {
+            $('#mp-bar-labels').innerHTML = months.map(ym => {
                 const [y, m] = ym.split('-');
                 return `<div class="mp-bar-label">${y.slice(2)}.${m}월</div>`;
             }).join('');
         }
 
+        function getPlaysByGameMap() {
+            const map = new Map();
+            allPlayRecords.forEach(s => {
+                (s.games || []).forEach(g => {
+                    const cnt = Math.max((g.rounds || []).length, 1);
+                    if (g.gameId) map.set(g.gameId, (map.get(g.gameId) || 0) + cnt);
+                    if (g.gameName) map.set(g.gameName, (map.get(g.gameName) || 0) + cnt);
+                });
+            });
+            return map;
+        }
+
         function renderCppTable() {
-            const sortBy = document.getElementById('cpp-sort-select').value;
-            const list = games.map(g => {
-                const price = parsePrice(g);
-                const plays = getPlaysCount(g);
+            const sortBy = $('#cpp-sort-select').value;
+            const playsMap = getPlaysByGameMap();
+
+            const list = allGames.map(g => {
+                const name = _statGameName(g);
+                const price = parsePrice(g.customFields?.['구매가격'] ?? g.purchasePrice);
+                const d = parseDate(g.customFields?.['구매일자'] ?? g.purchaseDate);
+                const pDate = d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : '-';
+                const plays = Math.max(Number(g.plays) || 0, playsMap.get(g.id) || 0, playsMap.get(name) || 0);
                 const cpp = plays > 0 ? Math.round(price / plays) : Infinity;
-                return { ...g, name: g.name || g.title, price, plays, pDate: parseDateYMD(g), cpp };
+                return { name, price, pDate, plays, cpp };
             });
 
             list.sort((a, b) => {
@@ -450,7 +682,7 @@
                 return 0;
             });
 
-            document.getElementById('cpp-table-body').innerHTML = list.map((g, i) => {
+            $('#cpp-table-body').innerHTML = list.map((g, i) => {
                 const badge = g.plays <= 0
                     ? `<span class="cpp-badge" style="background:#f1f5f9;color:#475569;">🪨 망부석</span>`
                     : g.cpp <= 5000
@@ -458,108 +690,347 @@
                         : g.cpp <= 15000
                             ? `<span class="cpp-badge" style="background:#e0f2fe;color:#075985;">👍 갓성비</span>`
                             : `<span class="cpp-badge" style="background:#fef3c7;color:#92400e;">⏳ 분발 필요</span>`;
-
                 return `
                     <tr>
                         <td><strong>${i + 1}</strong></td>
-                        <td><strong>${g.name}</strong></td>
-                        <td>${g.pDate || '-'}</td>
+                        <td><strong>${_statEsc(g.name)}</strong></td>
+                        <td>${g.pDate}</td>
                         <td>${g.price.toLocaleString()}원</td>
                         <td>${g.plays}회</td>
                         <td>${g.plays > 0 ? `<strong style="color:var(--primary-color);">${g.cpp.toLocaleString()}원</strong>/회` : '<span style="color:var(--error-color);">미플레이</span>'}</td>
                         <td>${badge}</td>
                     </tr>`;
-            }).join('');
+            }).join('') || '<tr><td colspan="7" style="text-align:center;">게임이 없습니다.</td></tr>';
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
-            document.getElementById('dark-mode-toggle').onclick = () => {
-                const isDark = document.body.classList.toggle('dark-mode');
-                localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            };
+        /* =========================================================
+           원본 mypage.js?v=18 통계 보강 로직 100% 이식
+           ========================================================= */
+        function _statGameName(g) { return (g.customFields && g.customFields['게임 이름']) || g.name || '게임'; }
+        function _statGameThumb(g) { return (g.customFields && g.customFields['대표 이미지']) || g.thumbnail || g.image || ''; }
+        function _statEsc(s) {
+            if (s == null) return '';
+            return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function _statFormatWon(v) {
+            if (v >= 10000) return `${(v / 10000).toFixed(1)}만원`;
+            return `${v.toLocaleString('ko-KR')}원`;
+        }
+        function _statRecordDate(record) {
+            const raw = record.date || record.playDate;
+            if (!raw) return null;
+            if (raw instanceof Date) return raw;
+            if (typeof raw === 'string') { const d = new Date(raw); return isNaN(d.getTime()) ? null : d; }
+            if (typeof raw.seconds === 'number') return new Date(raw.seconds * 1000);
+            if (typeof raw._seconds === 'number') return new Date(raw._seconds * 1000);
+            return null;
+        }
 
-            // 탭 전환
-            document.querySelectorAll('.mypage-tabs .tab-btn').forEach(btn => {
-                btn.onclick = () => {
-                    document.querySelectorAll('.mypage-tabs .tab-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    btn.classList.add('active');
-                    document.getElementById(`${btn.dataset.tab}-tab`).classList.add('active');
-                };
+        function _topDistSection(title, map, total, unit) {
+            const entries = Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            if (entries.length === 0) return '';
+            const max = entries[0][1];
+            return `
+                <section class="r-card">
+                    <h3 class="r-card-title">${_statEsc(title)}</h3>
+                    <div class="r-toplist">
+                        ${entries.map(([key, val], i) => {
+                            const pct = total > 0 ? Math.round(val / total * 100) : 0;
+                            const ratio = max > 0 ? val / max * 100 : 0;
+                            return `
+                                <div class="r-toplist-row">
+                                    <div class="r-toplist-head">
+                                        <div class="r-rank ${i < 3 ? 'r-rank-top' : ''}">${i + 1}</div>
+                                        <div class="r-toplist-name">${_statEsc(key)}</div>
+                                        <div class="r-toplist-meta">${val}${unit} · <strong>${pct}%</strong></div>
+                                    </div>
+                                    <div class="r-toplist-bar"><span style="width:${ratio}%"></span></div>
+                                </div>`;
+                        }).join('')}
+                    </div>
+                </section>`;
+        }
+
+        function renderPurchaseDistributions() {
+            const root = $('#purchase-extra');
+            if (!root) return;
+            if (allGames.length === 0) { root.innerHTML = ''; return; }
+            const cat = new Map(), the = new Map(), mec = new Map();
+            let n = 0;
+            for (const g of allGames) {
+                n++;
+                for (const c of (g.categories || [])) if (c) cat.set(c, (cat.get(c) || 0) + 1);
+                for (const t of (g.themes || [])) if (t) the.set(t, (the.get(t) || 0) + 1);
+                for (const m of (g.mechanics || [])) if (m) mec.set(m, (mec.get(m) || 0) + 1);
+            }
+            const sections = [];
+            if (cat.size > 0) sections.push(_topDistSection('카테고리 분포', cat, n, '개'));
+            if (the.size > 0) sections.push(_topDistSection('테마 분포', the, n, '개'));
+            if (mec.size > 0) sections.push(_topDistSection('메카닉 분포', mec, n, '개'));
+            root.innerHTML = sections.join('');
+        }
+
+        function updatePlayStatistics() {
+            const now = new Date();
+            const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(today.getDate() - 29);
+
+            let totalPlays = 0;
+            const gamesPlayed = new Set();
+            let thisMonthPlays = 0, recent30Plays = 0, ratingSum = 0, ratingCount = 0;
+            const playDays = new Set();
+            const gamePlayCounts = {};
+
+            allPlayRecords.forEach(record => {
+                const games = record.games || [];
+                const recordDate = _statRecordDate(record);
+                if (recordDate) {
+                    playDays.add(new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate()).getTime());
+                }
+                if (typeof record.rating === 'number' && record.rating >= 1 && record.rating <= 5) {
+                    ratingSum += record.rating;
+                    ratingCount++;
+                }
+                games.forEach(game => {
+                    const gameName = game.gameName;
+                    if (!gameName) return;
+                    const playCount = (game.rounds || []).length || 1;
+                    totalPlays += playCount;
+                    gamesPlayed.add(gameName);
+                    if (recordDate && recordDate >= thisMonthStart) thisMonthPlays += playCount;
+                    if (recordDate && recordDate >= thirtyDaysAgo) recent30Plays += playCount;
+                    gamePlayCounts[gameName] = (gamePlayCounts[gameName] || 0) + playCount;
+                });
             });
 
-            document.getElementById('custom-days').addEventListener('input', renderAllStats);
-            document.getElementById('month-chart-mode').addEventListener('change', renderMonthlyChart);
-            document.getElementById('cpp-sort-select').addEventListener('change', renderCppTable);
+            $('#total-plays').textContent = totalPlays;
+            $('#total-games-played').textContent = `${gamesPlayed.size}개 게임`;
+            $('#game-days').textContent = playDays.size;
+            $('#recent-30-plays').textContent = recent30Plays;
+            $('#this-month-plays-sub').textContent = `이번 달 ${thisMonthPlays}회`;
+            $('#avg-rating').textContent = ratingCount > 0 ? (ratingSum / ratingCount).toFixed(1) : '-';
+            $('#avg-rating-sub').textContent = `별점 ${ratingCount}회`;
 
-            // 프로필 & Gist 설정
-            document.getElementById('nickname-input').value = localStorage.getItem(NICKNAME_KEY) || '나의';
-            document.getElementById('save-nickname-btn').onclick = () => {
-                localStorage.setItem(NICKNAME_KEY, document.getElementById('nickname-input').value.trim() || '나의');
-                alert('닉네임이 저장되었습니다.');
-            };
+            const sortedGames = Object.entries(gamePlayCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            $('#most-played-games-list').innerHTML = sortedGames.length === 0
+                ? '<div class="empty-message">아직 플레이 기록이 없습니다.</div>'
+                : sortedGames.map(([gameName, count], idx) => `
+                    <div class="purchase-item">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="font-size: 1.5em; font-weight: 700; color: var(--text-light); min-width: 2rem;">${idx + 1}</div>
+                            <div class="purchase-item-name">${_statEsc(gameName)}</div>
+                        </div>
+                        <div class="purchase-item-price">${count}회</div>
+                    </div>`).join('');
 
-            const cfg = JSON.parse(localStorage.getItem(GIST_CONFIG_KEY) || '{}');
-            document.getElementById('gist-token-input').value = cfg.token || '';
-            document.getElementById('gist-id-input').value = cfg.gistId || '';
+            renderPlayExtraSections();
+        }
 
-            document.getElementById('save-gist-btn').onclick = () => {
-                localStorage.setItem(GIST_CONFIG_KEY, JSON.stringify({
-                    token: document.getElementById('gist-token-input').value.trim(),
-                    gistId: document.getElementById('gist-id-input').value.trim(),
-                    autoSync: true
-                }));
-                alert('Gist 동기화 설정이 저장되었습니다.');
-            };
+        function renderPlayExtraSections() {
+            const root = $('#playstats-extra');
+            if (!root) return;
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(today.getDate() - 29);
 
-            document.getElementById('create-gist-btn').onclick = async () => {
-                const token = document.getElementById('gist-token-input').value.trim();
-                if (!token) { alert('GitHub Token을 먼저 입력해주세요.'); return; }
-                const resp = await fetch('https://api.github.com/gists', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        description: 'myboardgames sync db',
-                        public: false,
-                        files: { [GIST_FILENAME]: { content: JSON.stringify({ games, sessions }, null, 2) } }
-                    })
-                });
-                if (resp.ok) {
-                    const data = await resp.json();
-                    document.getElementById('gist-id-input').value = data.id;
-                    localStorage.setItem(GIST_CONFIG_KEY, JSON.stringify({ token, gistId: data.id, autoSync: true }));
-                    alert(`새 Secret Gist 생성 완료! ID: ${data.id}`);
-                } else alert('Gist 생성 실패: 토큰 권한을 확인하세요.');
-            };
+            const playsByDay = new Map(), playsByGameId = new Map(), playsByPartner = new Map();
+            const lastPlayedByGame = new Map(), winRoundsByPlayer = new Map(), totalRoundsByPlayer = new Map(), distinctByDay = new Map();
+            let firstPlayDate = null, lastPlayDate = null;
 
-            document.getElementById('export-json-btn').onclick = () => {
-                const blob = new Blob([JSON.stringify({ games, sessions }, null, 2)], { type: 'application/json' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = `myboardgames_backup_${new Date().toISOString().slice(0, 10)}.json`;
-                a.click();
-            };
+            for (const s of allPlayRecords) {
+                const d = _statRecordDate(s);
+                if (!d) continue;
+                const dayKey = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+                if (!firstPlayDate || d < firstPlayDate) firstPlayDate = d;
+                if (!lastPlayDate || d > lastPlayDate) lastPlayDate = d;
+                if (!distinctByDay.has(dayKey)) distinctByDay.set(dayKey, new Set());
+                const distinctSet = distinctByDay.get(dayKey);
 
-            document.getElementById('import-json-input').onchange = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = ev => {
-                    try {
-                        const parsed = JSON.parse(ev.target.result);
-                        const importedGames = Array.isArray(parsed) ? parsed : (parsed.games || []);
-                        localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(importedGames));
-                        if (parsed.sessions) localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(parsed.sessions));
-                        renderAllStats();
-                        alert(`총 ${importedGames.length}개 게임을 성공적으로 복원했습니다!`);
-                    } catch (err) { alert('올바른 JSON 파일이 아닙니다.'); }
+                const players = Array.isArray(s.players) ? s.players : [];
+                for (const p of players) if (p) playsByPartner.set(p, (playsByPartner.get(p) || 0) + 1);
+
+                let dayCount = 0;
+                for (const g of (s.games || [])) {
+                    const rounds = Array.isArray(g.rounds) ? g.rounds : [];
+                    const cnt = rounds.length || 1;
+                    dayCount += cnt;
+                    const key = g.gameId || g.gameName;
+                    playsByGameId.set(key, (playsByGameId.get(key) || 0) + cnt);
+                    distinctSet.add(key);
+                    const cur = lastPlayedByGame.get(key);
+                    if (!cur || d > cur) lastPlayedByGame.set(key, d);
+
+                    for (const r of rounds) {
+                        const winners = Array.isArray(r.winners) && r.winners.length ? r.winners : (r.winner ? [r.winner] : []);
+                        if (winners.length === 0) continue;
+                        for (const p of players) {
+                            if (!p) continue;
+                            totalRoundsByPlayer.set(p, (totalRoundsByPlayer.get(p) || 0) + 1);
+                            if (winners.includes(p)) winRoundsByPlayer.set(p, (winRoundsByPlayer.get(p) || 0) + 1);
+                        }
+                    }
+                }
+                playsByDay.set(dayKey, (playsByDay.get(dayKey) || 0) + dayCount);
+            }
+
+            let recent30 = 0;
+            for (const [k, v] of playsByDay.entries()) if (k >= thirtyDaysAgo.getTime()) recent30 += v;
+
+            const sections = [];
+            sections.push(_renderGrass30(playsByDay, today, recent30));
+
+            // 자주 함께하는 사람
+            const sortedPartners = Array.from(playsByPartner.entries()).filter(([n]) => n && n !== currentSelfName).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            if (sortedPartners.length > 0) {
+                sections.push(`
+                    <section class="r-card">
+                        <h3 class="r-card-title">자주 함께하는 사람</h3>
+                        <div class="r-list">
+                            ${sortedPartners.map(([n, c], i) => `
+                                <div class="r-list-row">
+                                    <div class="r-rank ${i < 3 ? 'r-rank-top' : ''}">${i + 1}</div>
+                                    <div class="r-list-name">${_statEsc(n)}</div>
+                                    <div class="r-list-trailing">${c}회</div>
+                                </div>`).join('')}
+                        </div>
+                    </section>`);
+            }
+
+            // 승률 랭킹
+            const winEntries = Array.from(totalRoundsByPlayer.entries())
+                .filter(([, t]) => t >= 3)
+                .map(([n, total]) => ({ name: n, wins: winRoundsByPlayer.get(n) || 0, total, rate: (winRoundsByPlayer.get(n) || 0) / total }))
+                .sort((a, b) => b.rate - a.rate).slice(0, 8);
+            if (winEntries.length > 0) {
+                const maxRate = winEntries[0].rate;
+                sections.push(`
+                    <section class="r-card">
+                        <h3 class="r-card-title">승률 랭킹</h3>
+                        <div class="r-toplist">
+                            ${winEntries.map((e, i) => `
+                                <div class="r-toplist-row">
+                                    <div class="r-toplist-head">
+                                        <div class="r-rank ${i < 3 ? 'r-rank-top' : ''}">${i + 1}</div>
+                                        <div class="r-toplist-name">${_statEsc(e.name)}</div>
+                                        <div class="r-toplist-meta"><strong style="color:var(--md-primary)">${Math.round(e.rate * 100)}%</strong> (${e.wins}/${e.total})</div>
+                                    </div>
+                                    <div class="r-toplist-bar"><span style="width:${maxRate > 0 ? (e.rate / maxRate) * 100 : 0}%"></span></div>
+                                </div>`).join('')}
+                        </div>
+                    </section>`);
+            }
+
+            // 아직 안 해본 게임
+            _unplayedGames = allGames.filter(g => !playsByGameId.has(g.id) && !playsByGameId.has(_statGameName(g)));
+            if (_unplayedGames.length > 0) {
+                sections.push(`
+                    <article class="r-highlight info-card-clickable" data-list-type="unplayed" style="--accent:#475569; background:#4755691a; border-color:#47556959; cursor:pointer;">
+                        <div class="r-highlight-head">
+                            <div class="r-highlight-icon" style="background:#47556933">📚</div>
+                            <h3 class="r-highlight-title" style="color:#475569">아직 안 해본 게임</h3>
+                            <div class="r-highlight-big" style="color:#475569">${_unplayedGames.length}개</div>
+                        </div>
+                        <p class="r-highlight-body">책장에 있지만 플레이 기록이 없어요. 탭하면 목록을 확인할 수 있어요.</p>
+                    </article>`);
+            }
+
+            // 타임라인
+            if (firstPlayDate && lastPlayDate) {
+                const firstDay = new Date(firstPlayDate.getFullYear(), firstPlayDate.getMonth(), firstPlayDate.getDate());
+                const days = Math.floor((today - firstDay) / 86400000) + 1;
+                sections.push(`
+                    <article class="r-highlight" style="--accent:#6366f1; background:#6366f11a; border-color:#6366f159">
+                        <div class="r-highlight-head">
+                            <div class="r-highlight-icon" style="background:#6366f133">🕰️</div>
+                            <h3 class="r-highlight-title" style="color:#6366f1">게임 인생 타임라인</h3>
+                            <div class="r-highlight-big" style="color:#6366f1">${days}일째</div>
+                        </div>
+                        <p class="r-highlight-body">첫 기록: ${firstPlayDate.toLocaleDateString('ko-KR')}<br>최근 기록: ${lastPlayDate.toLocaleDateString('ko-KR')}</p>
+                    </article>`);
+            }
+
+            root.innerHTML = sections.join('');
+            root.querySelectorAll('.info-card-clickable').forEach(card => {
+                card.onclick = () => {
+                    if (card.dataset.listType === 'unplayed') {
+                        _openGameListSheet('아직 안 해본 게임', _unplayedGames.map(g => ({ name: _statGameName(g), thumb: _statGameThumb(g) })));
+                    }
                 };
-                reader.readAsText(file);
-            };
+            });
+        }
 
-            renderAllStats();
-        });
+        function _renderGrass30(playsByDay, today, recent30) {
+            const start = new Date(today);
+            start.setDate(today.getDate() - 29);
+            const cells = [];
+            for (let i = 0; i < start.getDay(); i++) cells.push(null);
+            for (let i = 0; i < 30; i++) {
+                const d = new Date(start);
+                d.setDate(start.getDate() + i);
+                cells.push(d);
+            }
+            while (cells.length % 7 !== 0) cells.push(null);
+            let max = 0;
+            for (const v of playsByDay.values()) if (v > max) max = v;
+            return `
+                <section class="r-card">
+                    <h3 class="r-card-title">최근 30일 잔디 <span style="font-weight:normal; font-size:0.7rem; color:var(--md-on-surface-variant); margin-left:0.5rem;">${recent30}판</span></h3>
+                    <div class="r-calendar">
+                        <div class="r-calendar-head">${['일','월','화','수','목','금','토'].map(l => `<div class="r-calendar-label">${l}</div>`).join('')}</div>
+                        <div class="r-calendar-grid">
+                            ${cells.map(d => {
+                                if (!d) return '<div class="r-calendar-cell r-calendar-cell-empty"></div>';
+                                const k = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+                                const c = playsByDay.get(k) || 0;
+                                const cls = c > 0 ? `r-calendar-cell r-calendar-cell-filled int-${Math.min(4, Math.ceil((c / max) * 4))}` : 'r-calendar-cell';
+                                return `<div class="${cls}">${d.getDate()}</div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                </section>`;
+        }
+
+        function _openGameListSheet(title, items) {
+            const existing = $('.mypage-game-list-sheet');
+            if (existing) existing.remove();
+            const sheet = document.createElement('div');
+            sheet.className = 'history-sheet mypage-game-list-sheet';
+            sheet.innerHTML = `
+                <div class="history-sheet-backdrop"></div>
+                <div class="history-sheet-panel">
+                    <div class="history-sheet-handle"></div>
+                    <div class="history-sheet-header">
+                        <h2>${_statEsc(title)} (${items.length}개)</h2>
+                        <button class="action-icon-btn" data-close>&times;</button>
+                    </div>
+                    <div class="history-sheet-body">
+                        <div class="r-list">
+                            ${items.map(it => `
+                                <div class="r-list-row" style="padding:0.5rem 0;">
+                                    ${it.thumb ? `<img class="r-list-thumb" src="${_statEsc(it.thumb)}" style="width:2.5rem;height:2.5rem;">` : '<div class="r-list-thumb r-list-thumb-empty" style="width:2.5rem;height:2.5rem;"></div>'}
+                                    <div class="r-list-name">${_statEsc(it.name)}</div>
+                                </div>`).join('')}
+                        </div>
+                    </div>
+                </div>`;
+            document.body.appendChild(sheet);
+            const close = () => sheet.remove();
+            sheet.querySelector('[data-close]').onclick = close;
+            sheet.querySelector('.history-sheet-backdrop').onclick = close;
+        }
+
+        function showMessage(msg, type = 'success') {
+            const box = $('.message-container');
+            if (!box) return;
+            const el = document.createElement('div');
+            el.className = `message ${type}`;
+            el.textContent = msg;
+            box.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
+        }
     </script>
 </body>
 </html>

@@ -9,7 +9,6 @@
 </head>
 <body>
 
-    <!-- 메인 앱 (GitHub Pages에서는 로그인 화면 없이 즉시 진입) -->
     <div class="main-layout" id="app-container">
         <aside id="filter-sidebar" class="filter-sidebar">
             <div class="filter-header">
@@ -159,7 +158,6 @@
                 </div>
             </header>
 
-            <!-- 모바일 확장 헤더 -->
             <div class="mobile-app-bar-ext" id="mobile-app-bar-ext">
                 <div class="mobile-search-box">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -186,7 +184,6 @@
         </main>
     </div>
 
-    <!-- 모바일 FAB (게임 추가) -->
     <button type="button" id="fab-add-game" class="mobile-fab" aria-label="게임 추가">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -198,14 +195,14 @@
     <div id="filter-overlay" class="filter-overlay hidden"></div>
     <div class="modal hidden" id="detailModal"></div>
 
-    <!-- 게임 추가 모달 (boardlifeGames 실시간 검색) -->
+    <!-- 게임 추가 모달 -->
     <div class="modal hidden" id="search-panel">
         <div class="search-panel-content">
             <button class="modal-close-btn">&times;</button>
             <h2>게임 추가</h2>
 
             <div class="search-box" style="margin-bottom: 1rem;">
-                <input type="text" id="bl-db-search-input" class="filter-input" placeholder="추가할 게임 이름을 검색하세요 (초성 검색 가능: ㅂㅇㄷㅍ)...">
+                <input type="text" id="bl-db-search-input" class="filter-input" placeholder="게임 이름, 초성(ㅂㅇㄷㅍ) 또는 보드라이프 번호(14527) 검색...">
             </div>
 
             <div id="bl-db-search-results" class="search-results-list" style="margin-bottom: 1rem;"></div>
@@ -216,24 +213,25 @@
                     <button id="open-manual-add-btn" class="add-method-card" type="button">
                         <span class="add-method-icon" aria-hidden="true">✏️</span>
                         <span class="add-method-title">직접 입력</span>
-                        <span class="add-method-desc">구매가격·일자 포함 작성</span>
+                        <span class="add-method-desc">정보를 직접 작성</span>
                     </button>
                     <button id="open-boardlife-add-btn" class="add-method-card" type="button">
                         <span class="add-method-icon" aria-hidden="true">🔗</span>
                         <span class="add-method-title">URL 추가</span>
                         <span class="add-method-desc">보드라이프 URL 붙여넣기</span>
                     </button>
-                    <a href="./mypage.html" class="add-method-card add-method-card-accent" style="text-decoration:none;">
-                        <span class="add-method-icon" aria-hidden="true">☁️</span>
-                        <span class="add-method-title">백업/동기화</span>
-                        <span class="add-method-desc">Gist 연동 및 JSON 복원</span>
-                    </a>
+                    <label class="add-method-card add-method-card-accent" style="cursor:pointer;">
+                        <span class="add-method-icon" aria-hidden="true">📂</span>
+                        <span class="add-method-title">JSON 불러오기</span>
+                        <span class="add-method-desc">추출한 데이터 즉시 복원</span>
+                        <input type="file" id="quick-json-import" accept=".json" style="display:none;">
+                    </label>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 게임 직접 추가 모달 (구매일자, 구매가격 포함) -->
+    <!-- 직접 추가 모달 -->
     <div class="modal hidden" id="manual-add-panel">
         <div class="search-panel-content">
             <button class="modal-close-btn">&times;</button>
@@ -244,12 +242,13 @@
                         <label for="manual-name">게임 이름 (필수)</label>
                         <div style="display:flex; gap:0.5rem;">
                             <input type="text" id="manual-name" class="filter-input" required placeholder="예: 보이드폴">
-                            <button type="button" id="manual-auto-cover-btn" class="detail-section-btn" style="white-space:nowrap;">🔍 커버 매칭</button>
+                            <button type="button" id="manual-match-btn" class="detail-section-btn" style="white-space:nowrap;">🔍 커버 매칭</button>
                         </div>
                     </div>
                     <div class="form-group form-group-full">
-                        <label for="manual-image-url">대표 이미지 URL (보드라이프 DB 자동 매칭 지원)</label>
-                        <input type="text" id="manual-image-url" class="filter-input" placeholder="🔍 커버 매칭 클릭 시 bl_XXXXX.webp 자동 입력">
+                        <label for="manual-image-url">대표 이미지 URL (보드라이프/웹 또는 파일 선택)</label>
+                        <input type="text" id="manual-image-url" class="filter-input" placeholder="https://... 또는 보드라이프 고유번호(예: 14527)">
+                        <input type="file" id="manual-image" class="filter-input" accept="image/jpeg,image/png,image/webp" style="margin-top:0.4rem; padding-top:0.4rem;">
                     </div>
                     <div class="form-group">
                         <label for="manual-minplayers">최소 인원</label>
@@ -269,7 +268,7 @@
                     </div>
                     <div class="form-group form-group-full">
                         <label for="manual-complexity">난이도 (1-5)</label>
-                        <input type="number" id="manual-complexity" class="filter-input" step="0.1" min="1" max="5" placeholder="예: 2.5">
+                        <input type="number" id="manual-complexity" class="filter-input" step="0.01" min="1" max="5" placeholder="예: 2.5">
                     </div>
                     <div class="form-group form-group-full">
                         <label for="manual-genre">장르 (쉼표로 구분)</label>
@@ -295,11 +294,11 @@
             <button class="modal-close-btn">&times;</button>
             <h2>BoardLife URL로 추가</h2>
             <p style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 1rem;">
-                BoardLife 게임 페이지 주소(예: <code>https://boardlife.co.kr/game/14527</code>)를 붙여넣으세요.
+                BoardLife 게임 페이지 주소(예: <code>https://boardlife.co.kr/game/14527</code>) 또는 이미지 주소를 붙여넣으세요.
             </p>
             <form id="boardlife-add-form">
                 <div class="search-box">
-                    <input type="url" id="boardlife-url-input" class="filter-input"
+                    <input type="text" id="boardlife-url-input" class="filter-input"
                         placeholder="https://boardlife.co.kr/game/14527" required>
                 </div>
                 <button type="submit" class="filter-sort-btn primary-action-btn"
@@ -313,7 +312,6 @@
         <div class="spinner"></div>
     </div>
 
-    <!-- 모바일 하단 탭 바 -->
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
         <a href="./" class="nav-item active" aria-label="책장">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -340,28 +338,10 @@
         </a>
     </nav>
 
-    <!-- Firebase SDK (boardlifeGames 마스터 DB 고속 조회용) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
     <script>
         /* =========================================================
-           1. 원본 firebase-config.js & search-keywords.js 내장
+           1. 한글 자모 분해 및 초성 검색 유틸 (원본 /lib/search-keywords.js)
            ========================================================= */
-        const firebaseConfig = {
-            apiKey: "AIzaSyCr3bsfOssOHnD1ART57EqpK9eaiA93ick",
-            authDomain: "mybgshelf.firebaseapp.com",
-            projectId: "mybgshelf",
-            storageBucket: "mybgshelf.firebasestorage.app",
-            messagingSenderId: "435059169096",
-            appId: "1:435059169096:web:9d2db5ef9358bd2ff9c57d",
-            measurementId: "G-7E5G4EY6XB",
-            apiBaseUrl: "https://mybgshelf.web.app"
-        };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // 원본 /lib/search-keywords.js (자모 분해 및 초성 검색 엔진)
         (function (global) {
             const HANGUL_BASE = 0xAC00, HANGUL_END = 0xD7A3, MAX_INDEXED_KEY_LENGTH = 12;
             const CHOSUNG_LIST = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
@@ -389,21 +369,25 @@
                 }
                 return out;
             }
+            function extractChosung(str) {
+                let out = '';
+                for (const ch of (str || '')) {
+                    const code = ch.charCodeAt(0);
+                    if (code >= HANGUL_BASE && code <= HANGUL_END) {
+                        out += CHOSUNG_LIST[Math.floor((code - HANGUL_BASE) / 588)];
+                    } else {
+                        out += ch;
+                    }
+                }
+                return out;
+            }
             function normalizeQuery(input) { return (input == null ? '' : String(input)).replace(/\s+/g, '').toLowerCase(); }
             function isAllChosung(s) { if (!s) return false; for (const ch of s) { if (!CHOSUNG_SET.has(ch)) return false; } return true; }
-            function buildSearchKey(input) {
-                const q = normalizeQuery(input);
-                if (q.length === 0) return { key: null, reason: 'empty' };
-                const jamo = decomposeHangul(q);
-                if (jamo.length < 2) return { key: null, reason: 'too_short' };
-                return { key: jamo.slice(0, MAX_INDEXED_KEY_LENGTH), reason: 'ok' };
-            }
-            function buildExactNameKey(input) { const q = normalizeQuery(input); return q ? '=' + q : ''; }
-            global.SearchKeywords = { buildSearchKey, buildExactNameKey, normalizeQuery, isAllChosung, decomposeHangul };
+            global.SearchKeywords = { normalizeQuery, isAllChosung, decomposeHangul, extractChosung };
         })(window);
 
         /* =========================================================
-           2. 로컬 스토리지 + GitHub Gist 클라우드 동기화 상태 관리
+           2. 스토리지 키 & 기본 마스터 인덱스
            ========================================================= */
         const GAMES_STORAGE_KEY = "MY_BG_SHELF_DATA_V1";
         const TAGS_STORAGE_KEY = "MY_BG_TAGS_V1";
@@ -412,23 +396,34 @@
         const GIST_CONFIG_KEY = "MY_BG_GIST_CONFIG_V1";
         const NICKNAME_KEY = "MY_BG_NICKNAME_V1";
         const GIST_FILENAME = "myboardgames_db.json";
+        const STORAGE_BL_BASE = "https://storage.googleapis.com/mybgshelf.firebasestorage.app/boardlife_games";
+
+        // boardlife_db.json 이 없어도 기본 검색이 즉시 동작하도록 내장된 시드 DB
+        const BUILTIN_BL_SEED = [
+            { id: "bl_14527", boardlifeNumId: "14527", name: "보이드폴", yearPublished: "2023", image: `${STORAGE_BL_BASE}/bl_14527.webp`, minplayers: "1", maxplayers: "4", minplaytime: "90", maxplaytime: "240", complexity: "4.59", bestplayercounts: ["1", "3"], categories: ["전략", "SF"], themes: ["우주"], mechanics: ["일꾼 놓기", "문명"] },
+            { id: "bl_knarr", boardlifeNumId: "knarr", name: "나르 (KNARR)", yearPublished: "2023", image: "https://storage.googleapis.com/mybgshelf.firebasestorage.app/boardlife_imports%2F592946cc-19c1-4909-9af9-4305ee73b8b1.webp", minplayers: "2", maxplayers: "4", minplaytime: "30", maxplaytime: "30", complexity: "1.9", bestplayercounts: ["3", "4"], categories: ["전략", "가족"], themes: ["바이킹"], mechanics: ["셋 컬렉션"] },
+            { id: "bl_arnak", boardlifeNumId: "arnak", name: "아르낙의 잊혀진 유적", yearPublished: "2020", image: "https://cf.geekdo-images.com/6GqH14TJJh2869Vn-0Q57w__itemrep/img/s232325123_c5f83e696d/pic5674958.jpg", minplayers: "1", maxplayers: "4", minplaytime: "30", maxplaytime: "120", complexity: "2.92", bestplayercounts: ["3"], categories: ["전략"], themes: ["모험", "탐험"], mechanics: ["덱 빌딩", "일꾼 놓기"] },
+            { id: "bl_spirit", boardlifeNumId: "spirit", name: "정령섬", yearPublished: "2017", image: "https://cf.geekdo-images.com/kjCm4ZvPjIZxS-mYgSPy1g__itemrep/img/7AXozbOIxk5MDpn_RNlat4omAcc=/fit-in/246x300/filters:strip_icc()/pic7013651.png", minplayers: "1", maxplayers: "4", minplaytime: "90", maxplaytime: "120", complexity: "4.07", bestplayercounts: ["1", "2"], categories: ["전략", "협력"], themes: ["판타지"], mechanics: ["핸드 관리", "지역 영향력"] },
+            { id: "bl_whitecastle", boardlifeNumId: "whitecastle", name: "백로성", yearPublished: "2023", image: "https://cf.geekdo-images.com/qXT1U-nFh9PE8ujfdmI7dA__itemrep/img/3_7e9c7P_E6h-4C7nE_E6R6_E6c=/fit-in/246x300/filters:strip_icc()/pic7546068.jpg", minplayers: "1", maxplayers: "4", minplaytime: "80", maxplaytime: "80", complexity: "3.01", bestplayercounts: ["3"], categories: ["전략"], themes: ["역사"], mechanics: ["주사위 일꾼 놓기"] }
+        ];
 
         let allUserGames = [];
         let allUserTags = [];
+        let allPlayRecords = [];
+        let localBlDb = null;
         let currentSort = 'name-asc';
         let currentViewMode = 'grid';
         let debounceTimer;
         let autoSaveDebounceTimer = null;
+        let boardLifeSearchDebounceTimer = null;
 
         const $ = (sel) => document.querySelector(sel);
         const dom = {
-            appContainer: $('#app-container'),
             userNicknameLine1: $('#user-nickname-line1'),
-            headerSubtitle: $('#header-subtitle'),
-            loading: $('#loading'),
             gameListContainer: $('#gameListContainer'),
             gameCountBadge: $('#game-count-badge'),
             messageContainer: $('.message-container'),
+            loading: $('#loading'),
             filterSidebar: $('#filter-sidebar'),
             openFilterBtn: $('#open-filter-btn'),
             closeFilterBtn: $('#close-filter-btn'),
@@ -468,33 +463,65 @@
             fabAddGame: $('#fab-add-game')
         };
 
-        // 구버전 데이터 포맷 및 원본 포맷 양방향 호환 정규화
+        /* =========================================================
+           3. 보드라이프 URL / 고유번호 즉시 변환기 & 로컬 DB 로더
+           ========================================================= */
+        function resolveCoverUrl(rawInput) {
+            if (!rawInput) return '';
+            const s = String(rawInput).trim();
+            // 1) 숫자만(14527) 또는 bl_14527 입력 시
+            const idMatch = s.match(/^(?:bl_)?(\d{1,6})$/i);
+            if (idMatch) return `${STORAGE_BL_BASE}/bl_${idMatch[1]}.webp`;
+            // 2) boardlife.co.kr/game/14527 또는 bbs_num=14527 입력 시
+            const urlMatch = s.match(/boardlife\.co\.kr\/(?:game\/|bbs_detail\.php\?[^#]*bbs_num=)(\d+)/i);
+            if (urlMatch) return `${STORAGE_BL_BASE}/bl_${urlMatch[1]}.webp`;
+            return s;
+        }
+
+        async function getMasterBoardLifeDb() {
+            if (localBlDb) return localBlDb;
+            const map = new Map();
+            BUILTIN_BL_SEED.forEach(g => map.set(g.id, g));
+            allUserGames.forEach(g => { if (g && g.id) map.set(g.id, g); });
+
+            // 저장소에 boardlife_db.json 파일이 있으면 자동 병합
+            try {
+                const res = await fetch('./boardlife_db.json');
+                if (res.ok) {
+                    const arr = await res.json();
+                    if (Array.isArray(arr)) {
+                        arr.forEach(g => { if (g && g.id) map.set(g.id, g); });
+                        console.log(`⚡ boardlife_db.json 로드 완료: 총 ${map.size.toLocaleString()}개 게임`);
+                    }
+                }
+            } catch (e) {}
+
+            localBlDb = Array.from(map.values());
+            return localBlDb;
+        }
+
         function normalizeGameRecord(raw) {
             if (!raw) return null;
             const custom = { ...(raw.customFields || {}) };
-            // 이전 버전 필드(purchasePrice, purchaseDate, memo)를 원본 customFields 구조와 동기화
             if (raw.purchasePrice && !custom['구매가격']) custom['구매가격'] = String(raw.purchasePrice);
             if (raw.purchaseDate && !custom['구매일자']) custom['구매일자'] = String(raw.purchaseDate);
 
             const name = raw.name || raw.title || custom['게임 이름'] || '이름 없음';
-            const minP = String(raw.minplayers ?? raw.minP ?? '1');
-            const maxP = String(raw.maxplayers ?? raw.maxP ?? '4');
-            const minT = String(raw.minplaytime ?? raw.time ?? '30');
-            const maxT = String(raw.maxplaytime ?? raw.time ?? '60');
-            const comp = String(raw.complexity ?? raw.weight ?? '2.5');
+            const rawImg = custom['대표 이미지'] || raw.image || raw.thumbnail || '';
+            const resolvedImg = resolveCoverUrl(rawImg);
+            if (resolvedImg && !custom['대표 이미지']) custom['대표 이미지'] = resolvedImg;
 
             return {
                 ...raw,
                 id: raw.id || `bl_${Date.now()}`,
                 name,
-                title: name, // 마이페이지 하위 호환용
-                image: raw.image || raw.thumbnail || '',
-                thumbnail: raw.thumbnail || raw.image || '',
-                minplayers: minP,
-                maxplayers: maxP,
-                minplaytime: minT,
-                maxplaytime: maxT,
-                complexity: comp,
+                image: resolvedImg || raw.image || '',
+                thumbnail: resolvedImg || raw.thumbnail || raw.image || '',
+                minplayers: String(raw.minplayers ?? raw.minP ?? '1'),
+                maxplayers: String(raw.maxplayers ?? raw.maxP ?? '4'),
+                minplaytime: String(raw.minplaytime ?? raw.time ?? '30'),
+                maxplaytime: String(raw.maxplaytime ?? raw.time ?? '60'),
+                complexity: String(raw.complexity ?? raw.weight ?? '2.5'),
                 categories: Array.isArray(raw.categories) ? raw.categories : (raw.category ? [raw.category] : []),
                 themes: Array.isArray(raw.themes) ? raw.themes : [],
                 mechanics: Array.isArray(raw.mechanics) ? raw.mechanics : [],
@@ -502,34 +529,10 @@
                 tags: Array.isArray(raw.tags) ? raw.tags : [],
                 memo: raw.memo || '',
                 memoPublic: raw.memoPublic !== false,
-                myRating: raw.myRating ?? raw.rating ?? null,
-                plays: Number(raw.plays) || 0,
-                purchasePrice: parseInt(String(custom['구매가격'] || raw.purchasePrice || '0').replace(/[^0-9]/g, ''), 10) || 0,
-                purchaseDate: normalizeDateStr(custom['구매일자'] || raw.purchaseDate || ''),
+                myRating: raw.myRating ?? null,
                 customFields: custom,
-                createdAt: raw.createdAt || Date.now()
+                createdAt: raw.createdAt?.seconds ? raw.createdAt.seconds * 1000 : (raw.createdAt || Date.now())
             };
-        }
-
-        function normalizeDateStr(str) {
-            if (!str) return '';
-            const digits = String(str).replace(/[^0-9]/g, '');
-            if (digits.length === 8) {
-                return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
-            }
-            return String(str).trim();
-        }
-
-        function getBlNumId(g) {
-            if (!g) return null;
-            if (g.boardlifeNumId != null && g.boardlifeNumId !== '') return String(g.boardlifeNumId);
-            const candidates = [g.boardlifeId, g.bggId, g.boardlifeDbId, g.id];
-            for (const c of candidates) {
-                if (!c) continue;
-                const m = String(c).match(/(?:bl_|boardlife_)?(\d+)/);
-                if (m) return m[1];
-            }
-            return null;
         }
 
         function persistData() {
@@ -552,11 +555,7 @@
                 };
                 await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
                     method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${cfg.token}`,
-                        'Accept': 'application/vnd.github+json',
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Authorization': `Bearer ${cfg.token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ files: { [GIST_FILENAME]: { content: JSON.stringify(payload, null, 2) } } })
                 });
             } catch (e) {}
@@ -567,7 +566,7 @@
                 const cfg = JSON.parse(localStorage.getItem(GIST_CONFIG_KEY) || '{}');
                 if (!cfg.token || !cfg.gistId || cfg.autoSync === false) return;
                 const resp = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
-                    headers: { 'Authorization': `Bearer ${cfg.token}`, 'Accept': 'application/vnd.github+json' }
+                    headers: { 'Authorization': `Bearer ${cfg.token}` }
                 });
                 if (!resp.ok) return;
                 const data = await resp.json();
@@ -582,7 +581,10 @@
                     allUserTags = parsed.tags;
                     localStorage.setItem(TAGS_STORAGE_KEY, JSON.stringify(allUserTags));
                 }
-                if (Array.isArray(parsed.sessions)) localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(parsed.sessions));
+                if (Array.isArray(parsed.sessions)) {
+                    allPlayRecords = parsed.sessions;
+                    localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(allPlayRecords));
+                }
                 if (Array.isArray(parsed.players)) localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(parsed.players));
                 renderTagFilters();
                 renderFilteredGames();
@@ -590,51 +592,45 @@
         }
 
         /* =========================================================
-           3. 초기화
+           4. 앱 초기화
            ========================================================= */
         document.addEventListener('DOMContentLoaded', async () => {
             initDarkMode();
-            const nick = localStorage.getItem(NICKNAME_KEY) || '나의';
+            const nick = localStorage.getItem(NICKNAME_KEY) || '나';
             dom.userNicknameLine1.textContent = nick.endsWith('의') ? nick : `${nick}의`;
 
+            allPlayRecords = JSON.parse(localStorage.getItem(SESSIONS_STORAGE_KEY) || '[]');
             const savedTags = localStorage.getItem(TAGS_STORAGE_KEY);
-            allUserTags = savedTags ? JSON.parse(savedTags) : [
-                { id: 't_solo', name: '1인', color: '#6750A4' },
-                { id: 't_party', name: '파티', color: '#E53935' },
-                { id: 't_heavy', name: '전략', color: '#1E88E5' }
-            ];
+            allUserTags = savedTags ? JSON.parse(savedTags) : [];
 
             const savedGames = localStorage.getItem(GAMES_STORAGE_KEY);
             if (savedGames) {
                 allUserGames = JSON.parse(savedGames).map(normalizeGameRecord);
             } else {
-                // 초기 샘플 (보이드폴 bl_14527 & 나르 포함)
-                allUserGames = [
-                    normalizeGameRecord({
-                        id: 'bl_14527',
-                        boardlifeId: 'bl_14527',
-                        boardlifeNumId: '14527',
-                        name: '보이드폴',
-                        image: 'https://storage.googleapis.com/mybgshelf.firebasestorage.app/boardlife_games/bl_14527.webp',
-                        minplayers: '1', maxplayers: '4', minplaytime: '90', maxplaytime: '240',
-                        complexity: '4.59', bestplayercounts: ['1', '3'],
-                        categories: ['전략', 'SF'],
-                        tags: ['t_solo', 't_heavy'],
-                        plays: 5,
-                        customFields: { '구매일자': '2026-10-20', '구매가격': '168000', '언어판': '한국어판', '슬리브': 'O' }
-                    }),
-                    normalizeGameRecord({
-                        id: 'bl_knarr',
-                        name: '나르 (KNARR)',
-                        image: 'https://storage.googleapis.com/mybgshelf.firebasestorage.app/boardlife_imports%2F592946cc-19c1-4909-9af9-4305ee73b8b1.webp',
-                        minplayers: '2', maxplayers: '4', minplaytime: '30', maxplaytime: '30',
-                        complexity: '1.9', bestplayercounts: ['3', '4'],
-                        categories: ['전략'],
-                        plays: 6,
-                        customFields: { '구매일자': '2026-10-25', '구매가격': '32000', '언어판': '한국어판' }
-                    })
-                ];
-                persistData();
+                // 저장소에 myboardgames_my_data.json 이 올려져 있다면 자동으로 읽어와 초기화!
+                let loadedFromRepoFile = false;
+                try {
+                    const r = await fetch('./myboardgames_my_data.json');
+                    if (r.ok) {
+                        const repoData = await r.json();
+                        if (Array.isArray(repoData.games)) {
+                            allUserGames = repoData.games.map(normalizeGameRecord);
+                            if (Array.isArray(repoData.tags)) allUserTags = repoData.tags;
+                            if (Array.isArray(repoData.sessions)) {
+                                allPlayRecords = repoData.sessions;
+                                localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(allPlayRecords));
+                            }
+                            if (Array.isArray(repoData.players)) localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(repoData.players));
+                            persistData();
+                            loadedFromRepoFile = true;
+                        }
+                    }
+                } catch (e) {}
+
+                if (!loadedFromRepoFile) {
+                    allUserGames = BUILTIN_BL_SEED.slice(0, 2).map(normalizeGameRecord);
+                    persistData();
+                }
             }
 
             initFilterListeners();
@@ -647,8 +643,19 @@
             renderTagFilters();
             renderFilteredGames();
 
-            // Firestore boardlifeGames 예열 및 Gist 동기화
-            db.collection('boardlifeGames').limit(1).get().catch(() => {});
+            // ?openTagManager=1 대응 (마이페이지 -> 빠른 작업 -> 태그 관리)
+            try {
+                const qp = new URLSearchParams(window.location.search);
+                if (qp.get('openTagManager') === '1') {
+                    setTimeout(() => {
+                        openGlobalTagManager();
+                        const url = new URL(window.location);
+                        url.searchParams.delete('openTagManager');
+                        history.replaceState({}, '', url);
+                    }, 300);
+                }
+            } catch (_) {}
+
             await pullFromGistSilent();
         });
 
@@ -661,37 +668,17 @@
         }
 
         /* =========================================================
-           4. 원본 boardlifeGames 0.1초 검색 엔진 (main.js 100% 동일)
+           5. 무오류 초고속 검색 엔진 (로컬 DB + 초성 + 고유번호 즉시 변환)
            ========================================================= */
-        let currentSearchCursor = null;
-        let _searchSeq = 0;
-        let _lastBoardLifeSearchKey = null;
-        let _shownBoardLifeIds = new Set();
-        let boardLifeSearchDebounceTimer = null;
-        const BOARDLIFE_SEARCH_TIMEOUT_MS = 4000;
-
-        function getBoardLifeSearchSnapshot(query) {
-            let timeoutId;
-            const timeout = new Promise((_, reject) => {
-                timeoutId = setTimeout(() => {
-                    const error = new Error('BoardLife search timed out');
-                    error.code = 'search-timeout';
-                    reject(error);
-                }, BOARDLIFE_SEARCH_TIMEOUT_MS);
-            });
-            return Promise.race([query.get(), timeout]).finally(() => clearTimeout(timeoutId));
-        }
-
-        async function getBoardLifeNameMatches(rawInput) {
-            const Sk = window.SearchKeywords;
-            const trimmed = rawInput.trim();
-            if (!trimmed || !Sk || Sk.isAllChosung(Sk.normalizeQuery(trimmed))) return [];
-            const queries = [
-                db.collection('boardlifeGames').where('searchKeywords', 'array-contains', Sk.buildExactNameKey(trimmed)).limit(5),
-                db.collection('boardlifeGames').orderBy('name').startAt(trimmed).endAt(trimmed + '\uf8ff').limit(10),
-            ];
-            const results = await Promise.all(queries.map(q => getBoardLifeSearchSnapshot(q).then(s => s.docs).catch(() => [])));
-            return results.flat();
+        function getBlNumId(g) {
+            if (!g) return null;
+            if (g.boardlifeNumId != null && g.boardlifeNumId !== '') return String(g.boardlifeNumId);
+            for (const c of [g.boardlifeId, g.bggId, g.id]) {
+                if (!c) continue;
+                const m = String(c).match(/(?:bl_|boardlife_)?(\d+)/);
+                if (m) return m[1];
+            }
+            return null;
         }
 
         function boardLifeMatchRank(name, normQ) {
@@ -699,51 +686,75 @@
             return n === normQ ? 0 : n.startsWith(normQ) ? 1 : n.includes(normQ) ? 2 : 3;
         }
 
-        // 이름으로 boardlifeGames에서 가장 일치하는 1개 문서를 즉시 찾아 반환 (클릭 시 커버 자동 매칭용)
-        async function findBestBoardLifeGameByName(rawTitle) {
+        async function findBestGameInDb(rawTitle) {
             if (!rawTitle) return null;
-            const dbList = await ensureLocalBoardLifeDb();
-            const cleanName = rawTitle.replace(/\([^)]*\)/g, '').trim() || rawTitle.trim();
-            const Sk = window.SearchKeywords;
-            const normQ = Sk.normalizeQuery(cleanName);
+            const dbList = await getMasterBoardLifeDb();
+            const clean = rawTitle.replace(/\([^)]*\)/g, '').trim() || rawTitle.trim();
 
+            // 숫자 ID로 검색한 경우
+            const numMatch = clean.match(/^(?:bl_)?(\d{1,6})$/i);
+            if (numMatch) {
+                const targetId = `bl_${numMatch[1]}`;
+                const hit = dbList.find(g => g.id === targetId || String(g.boardlifeNumId) === numMatch[1]);
+                if (hit) return hit;
+                return { id: targetId, boardlifeNumId: numMatch[1], name: `보드라이프 #${numMatch[1]}`, image: `${STORAGE_BL_BASE}/${targetId}.webp` };
+            }
+
+            const Sk = window.SearchKeywords;
+            const normQ = Sk.normalizeQuery(clean);
             const matches = dbList.filter(g => {
                 const n = Sk.normalizeQuery(g.name || '');
                 return n === normQ || n.includes(normQ) || normQ.includes(n);
-    });
-
+            });
             if (matches.length === 0) return null;
             matches.sort((a, b) => boardLifeMatchRank(a.name, normQ) - boardLifeMatchRank(b.name, normQ));
             return matches[0];
+        }
 
-         async function handleBoardLifeDBSearch() {
+        async function handleBoardLifeDBSearch() {
             const queryField = ($('#bl-db-search-input')?.value || '').trim();
             const resultsEl = $('#bl-db-search-results');
             if (!resultsEl) return;
 
-            if (queryField.length < 1) {
+            if (!queryField) {
                 resultsEl.innerHTML = '';
                 return;
             }
 
-            resultsEl.innerHTML = '<div class="spinner" style="margin: 1rem auto;"></div>';
-            const dbList = await ensureLocalBoardLifeDb();
-
-            if (dbList.length === 0) {
-                resultsEl.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:1rem;">저장소에 boardlife_db.json 파일을 업로드해 주세요.</p>';
-            return;
-            }
-
+            const dbList = await getMasterBoardLifeDb();
             const Sk = window.SearchKeywords;
             const normQ = Sk.normalizeQuery(queryField);
+            const isChosungOnly = Sk.isAllChosung(normQ);
             const jamoQ = Sk.decomposeHangul(normQ);
 
+            // 1) 숫자나 보드라이프 URL을 입력한 경우 즉시 해당 번호의 bl_XXXXX.webp 항목을 맨 위에 생성
+            const customCandidates = [];
+            const idMatch = queryField.match(/(?:^|bl_|game\/|bbs_num=)(\d{1,6})(?:$|\b)/i);
+            if (idMatch) {
+                const numId = idMatch[1];
+                const existingInDb = dbList.find(g => g.id === `bl_${numId}` || String(g.boardlifeNumId) === numId);
+                if (!existingInDb) {
+                    customCandidates.push({
+                        id: `bl_${numId}`,
+                        boardlifeNumId: numId,
+                        name: `보드라이프 게임 #${numId}`,
+                        yearPublished: `bl_${numId}.webp 자동 연결`,
+                        image: `${STORAGE_BL_BASE}/bl_${numId}.webp`,
+                        minplayers: '1', maxplayers: '4', minplaytime: '30', maxplaytime: '60', complexity: '2.5'
+                    });
+                }
+            }
+
+            // 2) 마스터 DB에서 이름 / 초성 / 자모 검색
             const matched = dbList.filter(g => {
                 const normName = Sk.normalizeQuery(g.name || '');
+                if (!normName) return false;
                 if (normName.includes(normQ)) return true;
-                // 초성 또는 자모 검색 지원
-                const jamoName = Sk.decomposeHangul(normName);
-                return jamoName.includes(jamoQ);
+                if (String(g.boardlifeNumId || '') === normQ || String(g.id || '').toLowerCase() === normQ) return true;
+                if (isChosungOnly) {
+                    return Sk.extractChosung(normName).includes(normQ);
+                }
+                return Sk.decomposeHangul(normName).includes(jamoQ);
             });
 
             matched.sort((a, b) => {
@@ -753,14 +764,10 @@
                 return (a.name || '').length - (b.name || '').length;
             });
 
-            const topDocs = matched.slice(0, 30);
-            if (topDocs.length === 0) {
-                resultsEl.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:1rem;">검색 결과가 없습니다.</p>';
-                return;
-            }
-
+            const finalDocs = [...customCandidates, ...matched.slice(0, 25)];
             resultsEl.innerHTML = '';
-            topDocs.forEach(g => {
+
+            finalDocs.forEach(g => {
                 const dbNumId = getBlNumId(g);
                 const isAdded = (dbNumId && allUserGames.some(ug => getBlNumId(ug) === dbNumId)) || allUserGames.some(ug => ug.id === g.id);
                 const item = document.createElement('div');
@@ -769,7 +776,7 @@
 
                 const thumbUrl = g.image || g.thumbnail || './placeholder.png';
                 item.innerHTML = `
-                    <img src="${thumbUrl}" alt="${escapeHtmlSafe(g.name)}" referrerpolicy="no-referrer" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid var(--border-color);">
+                    <img src="${thumbUrl}" alt="${escapeHtmlSafe(g.name)}" referrerpolicy="no-referrer" onerror="this.src='https://placehold.co/40x40/6750A4/ffffff?text=BG'" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid var(--border-color);">
                     <div style="display:flex; flex-direction:column; overflow:hidden;">
                         <span class="name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtmlSafe(g.name)}</span>
                         <span class="year" style="font-size:0.8em; color:var(--text-secondary);">${g.yearPublished || ''}</span>
@@ -784,42 +791,42 @@
                 }
                 resultsEl.appendChild(item);
             });
+
+            // 3) 검색어로 바로 수동 추가할 수 있는 버튼도 하단에 항상 제공 (오류 0%)
+            const directRow = document.createElement('div');
+            directRow.className = 'search-result-item';
+            directRow.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:var(--bg-secondary); border-radius:8px; padding:0.6rem 0.75rem; margin-top:0.4rem;';
+            directRow.innerHTML = `
+                <div style="font-size:0.85rem;">
+                    <strong>'${escapeHtmlSafe(queryField)}'</strong> 직접 입력하여 추가하기
+                </div>
+                <button class="add-btn" type="button">직접 추가</button>
+            `;
+            directRow.querySelector('.add-btn').onclick = () => {
+                dom.searchPanel.classList.add('hidden');
+                $('#manual-name').value = queryField;
+                $('#manual-purchase-date').value = new Date().toISOString().slice(0, 10);
+                dom.manualAddPanel.classList.remove('hidden');
+            };
+            resultsEl.appendChild(directRow);
         }
+
         function handleAddBoardLifeDBGame(blGame, buttonEl) {
-            const docId = blGame.id;
+            const docId = blGame.id || `bl_${Date.now()}`;
             const isAutoExp = (blGame.themes || []).some(t => t.includes('본판이 필요한 확장')) || (blGame.categories || []).some(c => c.includes('확장') || c.toLowerCase().includes('expansion'));
-            const customFields = { '구매일자': new Date().toISOString().slice(0, 10), '구매가격': '' };
+            const customFields = { '구매일자': '', '구매가격': '', '대표 이미지': blGame.image || '' };
             if (isAutoExp) customFields['확장판'] = 'true';
 
             const newGame = normalizeGameRecord({
+                ...blGame,
                 id: docId,
-                boardlifeId: blGame.id,
-                boardlifeNumId: blGame.boardlifeNumId,
-                name: blGame.name,
-                image: blGame.image || '',
-                thumbnail: blGame.image || '',
-                minplayers: blGame.minplayers || '0',
-                maxplayers: blGame.maxplayers || '0',
-                minplaytime: blGame.minplaytime || '0',
-                maxplaytime: blGame.maxplaytime || '0',
-                complexity: blGame.complexity || '0',
-                bestplayercounts: blGame.bestplayercounts || [],
-                categories: blGame.categories || [],
-                themes: blGame.themes || [],
-                mechanics: blGame.mechanics || [],
-                designers: blGame.designers || [],
-                publishers: blGame.publishers || [],
-                rating: blGame.rating || '0',
-                yearPublished: blGame.yearPublished || '',
-                bggId: blGame.bggId || '',
-                isManual: false,
-                source: 'boardlife_db',
+                boardlifeId: docId,
                 createdAt: Date.now(),
                 customFields
             });
 
-            const existingIdx = allUserGames.findIndex(g => g.id === docId);
-            if (existingIdx >= 0) allUserGames[existingIdx] = newGame;
+            const idx = allUserGames.findIndex(g => g.id === docId);
+            if (idx >= 0) allUserGames[idx] = newGame;
             else allUserGames.unshift(newGame);
 
             persistData();
@@ -829,7 +836,7 @@
         }
 
         /* =========================================================
-           5. 필터 및 카드 렌더링 (원본 main.js 로직)
+           6. 필터링 및 그리드/리스트 렌더링
            ========================================================= */
         function initFilterListeners() {
             const debouncedRender = () => {
@@ -933,8 +940,16 @@
                     if (!isNaN(maxP) && maxP > 0 && filters.players > maxP) return false;
                     if (filters.bestOnly) {
                         if (!game.bestplayercounts || game.bestplayercounts.length === 0) return false;
-                        const isBest = game.bestplayercounts.some(bc => String(bc).includes(String(filters.players)));
-                        if (!isBest) return false;
+                        const matchBest = (bc, n) => {
+                            const s = String(bc).trim();
+                            if (s.endsWith('+')) return n >= parseInt(s.slice(0, -1), 10);
+                            if (s.includes('-') || s.includes('~')) {
+                                const [a, b] = s.split(/[-~]/).map(x => parseInt(x.trim(), 10));
+                                return n >= a && n <= b;
+                            }
+                            return parseInt(s, 10) === n;
+                        };
+                        if (!game.bestplayercounts.some(bc => matchBest(bc, filters.players))) return false;
                     }
                 }
 
@@ -1021,7 +1036,7 @@
             const item = document.createElement('div');
             const custom = game.customFields || {};
             const displayName = custom['게임 이름'] || game.name;
-            const imageUrl = custom['대표 이미지'] || game.image || game.thumbnail || 'https://placehold.co/300x300/6750A4/ffffff?text=' + encodeURIComponent(displayName);
+            const imageUrl = resolveCoverUrl(custom['대표 이미지'] || game.image || game.thumbnail) || 'https://placehold.co/300x300/6750A4/ffffff?text=' + encodeURIComponent(displayName);
 
             let tagsHtml = '';
             (game.tags || []).forEach(tagId => {
@@ -1035,7 +1050,7 @@
                 item.innerHTML = `
                     <div class="game-image">
                         <div class="card-tags-container">${tagsHtml}</div>
-                        <img src="${imageUrl}" alt="${escapeHtmlSafe(displayName)}" loading="lazy" referrerpolicy="no-referrer">
+                        <img src="${imageUrl}" alt="${escapeHtmlSafe(displayName)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='https://placehold.co/300x300/6750A4/ffffff?text=BG'">
                     </div>
                     <div class="game-title-grid">
                         <h3>${escapeHtmlSafe(displayName)}</h3>
@@ -1053,6 +1068,7 @@
                     </div>
                     <div class="list-item-details">
                         <div class="list-detail-item"><strong>플레이 인원</strong><span>${formatPlayersRange(game) || '-'}</span></div>
+                        <div class="list-detail-item"><strong>베스트 인원</strong><span>${(game.bestplayercounts && game.bestplayercounts.join(', ')) || '-'}</span></div>
                         <div class="list-detail-item"><strong>플레이 시간</strong><span>${formatTimeRange(game) || '-'}</span></div>
                         <div class="list-detail-item"><strong>난이도</strong><span>${game.complexity || 0}/5</span></div>
                         <div class="list-detail-item"><strong>구매일자</strong><span>${custom['구매일자'] || '-'}</span></div>
@@ -1064,55 +1080,40 @@
         }
 
         /* =========================================================
-           6. 게임 클릭 시 상세 모달 + 보드라이프 커버 자동 링크 + 구매가격/일자
+           7. 상세 모달 (원본 3탭 + 반별 평가 + 플레이 기록 연동 + 커버 매칭)
            ========================================================= */
         async function openDetailModal(docId) {
             dom.detailModal.classList.remove('hidden');
-            let game = allUserGames.find(g => g.id === docId);
-            if (!game) return;
+            const game = allUserGames.find(g => g.id === docId);
+            if (!game) { dom.detailModal.classList.add('hidden'); return; }
 
-            renderModalContent(game);
-
-            // 클릭한 게임의 커버 이미지가 비어있거나 placeholder인 경우 boardlifeGames DB에서 자동으로 찾아 링크!
-            const currentCover = (game.customFields && game.customFields['대표 이미지']) || game.image || '';
-            if (!currentCover || currentCover.includes('placehold') || currentCover.includes('unsplash')) {
-                await autoMatchBoardLifeCoverForGame(game, false);
-            }
-        }
-
-        async function autoMatchBoardLifeCoverForGame(game, showToastMsg = true) {
-            const matched = await findBestBoardLifeGameByName(game.name);
-            if (matched && matched.image) {
-                game.image = matched.image;
-                game.thumbnail = matched.image;
-                if (!game.customFields) game.customFields = {};
-                game.customFields['대표 이미지'] = matched.image;
-                if (!game.minplayers || game.minplayers === '0') game.minplayers = matched.minplayers || '1';
-                if (!game.maxplayers || game.maxplayers === '0') game.maxplayers = matched.maxplayers || '4';
-                if (!game.minplaytime || game.minplaytime === '0') game.minplaytime = matched.minplaytime || '60';
-                if (!game.maxplaytime || game.maxplaytime === '0') game.maxplaytime = matched.maxplaytime || '60';
-                if (!game.complexity || game.complexity === '0') game.complexity = matched.complexity || '2.5';
-                persistData();
-                renderFilteredGames();
-                if (!dom.detailModal.classList.contains('hidden')) {
-                    renderModalContent(game);
+            // 커버 이미지가 비어있으면 자동으로 마스터 DB에서 매칭
+            const curImg = (game.customFields && game.customFields['대표 이미지']) || game.image || '';
+            if (!curImg || curImg.includes('placehold')) {
+                const matched = await findBestGameInDb(game.name);
+                if (matched && matched.image) {
+                    game.image = matched.image;
+                    if (!game.customFields) game.customFields = {};
+                    game.customFields['대표 이미지'] = matched.image;
+                    persistData();
+                    renderFilteredGames();
                 }
-                if (showToastMsg) showMessage(`✅ 보드라이프 DB('${matched.name}') 커버 이미지를 성공적으로 연결했습니다!`, 'success');
-            } else if (showToastMsg) {
-                showMessage('보드라이프 DB에서 일치하는 게임을 찾지 못했습니다.', 'error');
             }
+            renderModalContent(game);
         }
 
         function renderModalContent(game) {
             const custom = game.customFields || {};
             const displayName = custom['게임 이름'] || game.name;
-            const coverImage = custom['대표 이미지'] || game.image || game.thumbnail || 'https://placehold.co/400x400/6750A4/ffffff?text=' + encodeURIComponent(displayName);
+            const coverImage = resolveCoverUrl(custom['대표 이미지'] || game.image || game.thumbnail) || './placeholder.png';
+            const allImages = [coverImage, ...(custom['추가이미지'] || [])].filter(Boolean);
 
             const pmin = game.minplayers || 0, pmax = game.maxplayers || 0;
             const playerStr = (pmin === pmax) ? `${pmax}명` : `${pmin}-${pmax}명`;
             const tmin = game.minplaytime || 0, tmax = game.maxplaytime || 0;
             const timeStr = (tmin === tmax) ? `${tmax}분` : `${tmin}-${tmax}분`;
             const difficultyStr = `${(parseFloat(game.complexity) || 0).toFixed(1)}/5`;
+            const ratingStr = game.rating && parseFloat(game.rating) > 0 ? `⭐ ${parseFloat(game.rating).toFixed(1)} /10` : '';
             const bestArr = Array.isArray(game.bestplayercounts) ? game.bestplayercounts.filter(Boolean) : [];
             const bestStr = bestArr.length ? bestArr.join(', ') + '명' : '';
 
@@ -1137,47 +1138,58 @@
             }).join('');
 
             const myRating = game.myRating || null;
-            const ratingBtnLabel = myRating ? `★ ${Number(myRating).toFixed(1)}` : '★ 별점';
+            const ratingBtnLabel = myRating ? `★ ${myRating % 1 === 0 ? myRating : Number(myRating).toFixed(1)}` : '★ -';
+
+            const memoTabHtml = `
+                <div class="detail-tab-section memo-tab">
+                    <div class="toggle-group memo-public-toggle-row">
+                        <label class="toggle-switch"><input type="checkbox" id="memo-public-toggle" ${game.memoPublic ? 'checked' : ''}><span class="toggle-slider"></span></label>
+                        <label class="toggle-label">메모 공개</label>
+                    </div>
+                    <textarea id="memo-textarea" class="memo-box" placeholder="메모를 입력하세요...">${escapeHtmlSafe(game.memo || '')}</textarea>
+                </div>`;
 
             const purchaseTabHtml = `
                 <div class="detail-tab-section purchase-tab">
-                    <div class="management-subhead">구매 정보 (마이페이지 통계 자동 연동)</div>
-                    ${mkInput('구매 일자', '구매일자', 'YYYY-MM-DD', 'date')}
-                    ${mkInput('구매 가격', '구매가격', '0', 'number', '원')}
-                    ${mkInput('커버 이미지 URL (보드라이프/웹)', '대표 이미지', 'https://...', 'text')}
-                    ${mkInput('언어판', '언어판', '예: 한국어판, 영문판', 'text')}
-                    <div class="management-subhead" style="margin-top: 1rem;">관리 현황</div>
+                    <div class="management-subhead">관리 현황</div>
                     <div class="management-checks">
                         ${mkCheckbox('슬리브 완료', '슬리브')}
                         ${mkCheckbox('박스 아스테이지 완료', '포장')}
                         ${mkCheckbox('컴포 업그레이드', '컴포')}
                         ${mkCheckbox('확장판', '확장판')}
                     </div>
+                    <div class="management-subhead" style="margin-top: 1rem;">구매 및 커버 정보</div>
+                    ${mkInput('구매 시기', '구매일자', 'YYYY-MM-DD 또는 20261028', 'text')}
+                    ${mkInput('구매 금액', '구매가격', '0', 'number', '원')}
+                    ${mkInput('언어판', '언어판', '예: 한국어판, 영문판', 'text')}
+                    ${mkInput('대표 커버 이미지 URL (보드라이프 번호 또는 주소)', '대표 이미지', '예: 14527 또는 https://...', 'text')}
                 </div>`;
 
-            const memoTabHtml = `
-                <div class="detail-tab-section memo-tab">
-                    <textarea id="memo-textarea" class="memo-box" placeholder="메모를 입력하세요...">${escapeHtmlSafe(game.memo || '')}</textarea>
-                </div>`;
-
-            const playTabHtml = `
-                <div class="detail-tab-section play-tab">
-                    <div class="play-tab-stats">
-                        <div class="play-tab-stat">
-                            <div class="play-tab-stat-value">${Number(game.plays) || 0}</div>
-                            <div class="play-tab-stat-label">총 플레이 횟수</div>
+            let imageSliderHtml = '';
+            const imageManageBtnHtml = '<button class="image-manage-icon-btn" id="image-manage-icon-btn" title="이미지 관리">📸</button>';
+            if (allImages.length > 1) {
+                const dotsHtml = allImages.map((_, i) => `<span class="slider-dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></span>`).join('');
+                imageSliderHtml = `
+                    <div class="image-slider-container">
+                        <div class="image-slider">
+                            <img src="${allImages[0]}" alt="${escapeHtmlSafe(displayName)}" class="slider-image" id="slider-main-image" referrerpolicy="no-referrer">
                         </div>
-                    </div>
-                    <a href="./sessions.html" class="play-tab-link-btn" style="margin-top:0.75rem;">📅 게임 기록 페이지로 이동</a>
-                </div>`;
+                        <button class="slider-btn slider-btn-prev" id="slider-prev-btn">‹</button>
+                        <button class="slider-btn slider-btn-next" id="slider-next-btn">›</button>
+                        <div class="slider-indicator" id="slider-indicator">1 / ${allImages.length}</div>
+                        <div class="slider-dots" id="slider-dots">${dotsHtml}</div>
+                        ${imageManageBtnHtml}
+                    </div>`;
+            } else {
+                imageSliderHtml = `
+                    <img src="${coverImage}" alt="${escapeHtmlSafe(displayName)}" referrerpolicy="no-referrer" onerror="this.src='https://placehold.co/400x400/6750A4/ffffff?text=BG'">
+                    ${imageManageBtnHtml}`;
+            }
 
             dom.detailModal.innerHTML = `
                 <div class="detail-content detail-content-v2" data-doc-id="${game.id}">
                     <button class="modal-close-btn" style="z-index:100;">&times;</button>
-                    <div class="modal-left">
-                        <img src="${coverImage}" alt="${escapeHtmlSafe(displayName)}" referrerpolicy="no-referrer">
-                        <button class="image-manage-icon-btn" id="auto-bl-cover-btn" title="보드라이프 커버 자동 매칭">🔄</button>
-                    </div>
+                    <div class="modal-left">${imageSliderHtml}</div>
                     <div class="modal-right">
                         <div class="dashboard-content">
                             <div class="detail-header-block">
@@ -1186,9 +1198,9 @@
                                 </div>
                                 ${tagChipsHtml ? `<div class="detail-tag-row">${tagChipsHtml}</div>` : ''}
                                 <div class="detail-actions-row">
+                                    ${ratingStr ? `<span class="detail-action-pill detail-action-pill-info">${ratingStr}</span>` : ''}
                                     <button id="my-rating-btn" class="detail-action-pill my-rating-btn" type="button">${ratingBtnLabel}</button>
                                     <button id="manage-tags-btn" class="detail-action-pill" type="button">🏷️ 태그</button>
-                                    <button id="rematch-cover-pill" class="detail-action-pill" type="button">🖼️ 보드라이프 커버 자동매칭</button>
                                 </div>
                             </div>
 
@@ -1200,26 +1212,74 @@
                             </div>
 
                             <div class="detail-tab-bar" role="tablist">
-                                <button type="button" class="detail-tab-btn active" data-tab="purchase" role="tab">구매/관리</button>
-                                <button type="button" class="detail-tab-btn" data-tab="memo" role="tab">메모</button>
+                                <button type="button" class="detail-tab-btn active" data-tab="memo" role="tab">메모</button>
+                                <button type="button" class="detail-tab-btn" data-tab="purchase" role="tab">구매/관리</button>
                                 <button type="button" class="detail-tab-btn" data-tab="play" role="tab">플레이</button>
                             </div>
 
                             <div class="detail-tab-panels">
-                                <div class="detail-tab-panel active" data-tab="purchase">${purchaseTabHtml}</div>
-                                <div class="detail-tab-panel" data-tab="memo">${memoTabHtml}</div>
-                                <div class="detail-tab-panel" data-tab="play">${playTabHtml}</div>
+                                <div class="detail-tab-panel active" data-tab="memo">${memoTabHtml}</div>
+                                <div class="detail-tab-panel" data-tab="purchase">${purchaseTabHtml}</div>
+                                <div class="detail-tab-panel" data-tab="play"><div class="play-tab-loading">불러오는 중…</div></div>
                             </div>
                         </div>
                         <div class="modal-footer" style="justify-content: flex-end; gap: 0.5rem;">
                             <button id="delete-game-btn" class="detail-section-icon-btn" style="color:var(--delete-color);" title="삭제">🗑️</button>
-                            <button id="save-now-btn" class="detail-section-btn" style="padding:0.4rem 0.9rem;">💾 저장</button>
+                            <button id="edit-mode-btn" class="detail-section-icon-btn edit-mode-btn" title="수정/저장">✏️</button>
                         </div>
                     </div>
                 </div>`;
+
+            const playPanel = dom.detailModal.querySelector('.detail-tab-panel[data-tab="play"]');
+            if (playPanel) renderPlayTabForGame(game, playPanel);
         }
 
-        function saveDetailModalChanges(docId, modalContentEl, showToast = false) {
+        function renderPlayTabForGame(game, panelEl) {
+            allPlayRecords = JSON.parse(localStorage.getItem(SESSIONS_STORAGE_KEY) || '[]');
+            const matchesGame = (g) => g.gameId === game.id || g.gameName === game.name || (Array.isArray(g.expansionIds) && g.expansionIds.includes(game.id));
+            const matching = allPlayRecords.filter(rec => (rec.games || rec.gameResults || []).some(matchesGame));
+
+            if (matching.length === 0) {
+                panelEl.innerHTML = `
+                    <div class="play-tab-empty">
+                        <div class="play-tab-empty-icon">🎲</div>
+                        <div class="play-tab-empty-msg">아직 이 게임의 플레이 기록이 없어요.</div>
+                    </div>
+                    <a href="./sessions.html" class="play-tab-link-btn">📅 게임 기록 페이지에서 추가</a>`;
+                return;
+            }
+
+            const totalPlays = matching.reduce((sum, rec) => {
+                const g = (rec.games || rec.gameResults || []).find(matchesGame);
+                return sum + Math.max((g?.rounds || []).length, 1);
+            }, 0);
+
+            const cardsHtml = matching.map(rec => {
+                const g = (rec.games || rec.gameResults || []).find(matchesGame);
+                const plays = Math.max((g?.rounds || []).length, 1);
+                const players = (rec.players || []).join(', ');
+                return `
+                    <div class="play-record-card">
+                        <div class="play-record-card-header">
+                            <span class="play-record-date">${escapeHtmlSafe(String(rec.date || ''))}</span>
+                            <span class="play-record-plays">${plays}판</span>
+                            ${rec.rating ? `<span class="play-record-rating">${'★'.repeat(rec.rating)}</span>` : ''}
+                        </div>
+                        ${players ? `<div class="play-record-players">👥 ${escapeHtmlSafe(players)}</div>` : ''}
+                        ${rec.memo ? `<div class="play-record-memo">${escapeHtmlSafe(rec.memo)}</div>` : ''}
+                    </div>`;
+            }).join('');
+
+            panelEl.innerHTML = `
+                <div class="play-tab-stats">
+                    <div class="play-tab-stat"><div class="play-tab-stat-value">${totalPlays}</div><div class="play-tab-stat-label">총 플레이</div></div>
+                    <div class="play-tab-stat"><div class="play-tab-stat-value">${matching.length}</div><div class="play-tab-stat-label">기록</div></div>
+                </div>
+                <div class="play-record-list">${cardsHtml}</div>
+                <a href="./sessions.html" class="play-tab-link-btn" style="margin-top:0.75rem;">📅 전체 게임 기록 보기</a>`;
+        }
+
+        function saveModalData(docId, modalContentEl) {
             const game = allUserGames.find(g => g.id === docId);
             if (!game) return;
             const newCustom = { ...(game.customFields || {}) };
@@ -1233,21 +1293,32 @@
                 if (k) newCustom[k] = el.value.trim();
             });
 
+            if (newCustom['대표 이미지']) {
+                newCustom['대표 이미지'] = resolveCoverUrl(newCustom['대표 이미지']);
+                game.image = newCustom['대표 이미지'];
+            }
+
             const memoArea = modalContentEl.querySelector('#memo-textarea');
+            const pubToggle = modalContentEl.querySelector('#memo-public-toggle');
             if (memoArea) game.memo = memoArea.value;
+            if (pubToggle) game.memoPublic = pubToggle.checked;
+
+            const editMinP = modalContentEl.querySelector('#edit-minp');
+            if (editMinP) {
+                game.minplayers = editMinP.value;
+                game.maxplayers = modalContentEl.querySelector('#edit-maxp')?.value || editMinP.value;
+                game.minplaytime = modalContentEl.querySelector('#edit-mint')?.value || '0';
+                game.maxplaytime = modalContentEl.querySelector('#edit-maxt')?.value || '0';
+                game.complexity = modalContentEl.querySelector('#edit-diff')?.value || '0';
+            }
 
             game.customFields = newCustom;
-            if (newCustom['대표 이미지']) game.image = newCustom['대표 이미지'];
-            game.purchasePrice = parseInt(String(newCustom['구매가격'] || '0').replace(/[^0-9]/g, ''), 10) || 0;
-            game.purchaseDate = normalizeDateStr(newCustom['구매일자'] || '');
-
             persistData();
             renderFilteredGames();
-            if (showToast) showMessage('저장되었습니다.', 'success');
         }
 
         function initModalListeners() {
-            dom.detailModal.addEventListener('click', async (e) => {
+            dom.detailModal.addEventListener('click', (e) => {
                 const modalContentEl = e.target.closest('.detail-content');
                 if (!modalContentEl) return;
                 const docId = modalContentEl.dataset.docId;
@@ -1255,33 +1326,58 @@
                 if (!game) return;
 
                 if (e.target.matches('.modal-close-btn')) {
-                    saveDetailModalChanges(docId, modalContentEl, false);
+                    saveModalData(docId, modalContentEl);
                     dom.detailModal.classList.add('hidden');
-                } else if (e.target.matches('#save-now-btn')) {
-                    saveDetailModalChanges(docId, modalContentEl, true);
-                    renderModalContent(allUserGames.find(g => g.id === docId));
+                } else if (e.target.matches('#edit-mode-btn') || e.target.closest('#edit-mode-btn')) {
+                    const btn = modalContentEl.querySelector('#edit-mode-btn');
+                    if (btn.dataset.mode === 'editing') {
+                        saveModalData(docId, modalContentEl);
+                        btn.dataset.mode = '';
+                        btn.textContent = '✏️';
+                        btn.classList.remove('saving');
+                        renderModalContent(allUserGames.find(g => g.id === docId));
+                        showMessage('변경사항이 저장되었습니다.', 'success');
+                    } else {
+                        btn.dataset.mode = 'editing';
+                        btn.textContent = '💾';
+                        btn.classList.add('saving');
+                        const statsGrid = modalContentEl.querySelector('.quick-stats-grid');
+                        if (statsGrid) {
+                            statsGrid.innerHTML = `
+                                <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value" style="display:flex; justify-content:center; align-items:center;">
+                                    <input type="number" id="edit-minp" value="${game.minplayers || 1}" style="width:2.5ch; background:transparent; border:none; border-bottom:1px solid var(--md-primary); color:inherit; text-align:center;">-<input type="number" id="edit-maxp" value="${game.maxplayers || 4}" style="width:2.5ch; background:transparent; border:none; border-bottom:1px solid var(--md-primary); color:inherit; text-align:center;">명
+                                </div></div>
+                                <div class="stat-card"><div class="stat-icon">⏱️</div><div class="stat-value" style="display:flex; justify-content:center; align-items:center;">
+                                    <input type="number" id="edit-mint" value="${game.minplaytime || 30}" style="width:3.5ch; background:transparent; border:none; border-bottom:1px solid var(--md-primary); color:inherit; text-align:center;">-<input type="number" id="edit-maxt" value="${game.maxplaytime || 60}" style="width:3.5ch; background:transparent; border:none; border-bottom:1px solid var(--md-primary); color:inherit; text-align:center;">분
+                                </div></div>
+                                <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-value" style="display:flex; justify-content:center; align-items:center;">
+                                    <input type="number" step="0.1" id="edit-diff" value="${game.complexity || 2.5}" style="width:3ch; background:transparent; border:none; border-bottom:1px solid var(--md-primary); color:inherit; text-align:center;">/ 5
+                                </div></div>`;
+                        }
+                    }
                 } else if (e.target.matches('#delete-game-btn') || e.target.closest('#delete-game-btn')) {
                     if (confirm(`'${game.name}' 게임을 책장에서 삭제할까요?`)) {
                         allUserGames = allUserGames.filter(g => g.id !== docId);
                         persistData();
                         renderFilteredGames();
                         dom.detailModal.classList.add('hidden');
-                        showMessage('삭제되었습니다.', 'success');
+                        showMessage('게임이 삭제되었습니다.', 'success');
                     }
-                } else if (e.target.matches('#auto-bl-cover-btn') || e.target.matches('#rematch-cover-pill')) {
-                    await autoMatchBoardLifeCoverForGame(game, true);
-                } else if (e.target.matches('#manage-tags-btn')) {
+                } else if (e.target.matches('#manage-tags-btn') || e.target.closest('#manage-tags-btn')) {
                     openTagApplyModal(docId, game.tags || []);
-                } else if (e.target.matches('#my-rating-btn')) {
-                    const input = prompt('내 별점을 입력하세요 (0.5 ~ 10):', game.myRating || 8.5);
-                    if (input !== null) {
-                        const val = parseFloat(input);
-                        if (!isNaN(val)) {
-                            game.myRating = Math.min(10, Math.max(0, val));
-                            persistData();
-                            renderModalContent(game);
-                            renderFilteredGames();
-                        }
+                } else if (e.target.matches('#my-rating-btn') || e.target.closest('#my-rating-btn')) {
+                    openRatingModal(docId, game.myRating || null);
+                } else if (e.target.matches('#image-manage-icon-btn') || e.target.closest('#image-manage-icon-btn')) {
+                    const newUrl = prompt('새 커버 이미지 URL 또는 보드라이프 번호(예: 14527)를 입력하세요:', (game.customFields && game.customFields['대표 이미지']) || game.image || '');
+                    if (newUrl !== null && newUrl.trim() !== '') {
+                        const resolved = resolveCoverUrl(newUrl.trim());
+                        game.image = resolved;
+                        if (!game.customFields) game.customFields = {};
+                        game.customFields['대표 이미지'] = resolved;
+                        persistData();
+                        renderFilteredGames();
+                        renderModalContent(game);
+                        showMessage('커버 이미지가 업데이트되었습니다.', 'success');
                     }
                 } else if (e.target.matches('.detail-tab-btn')) {
                     const targetTab = e.target.dataset.tab;
@@ -1295,68 +1391,157 @@
                 const docId = modalContentEl?.dataset.docId;
                 if (!docId) return;
                 clearTimeout(autoSaveDebounceTimer);
-                autoSaveDebounceTimer = setTimeout(() => saveDetailModalChanges(docId, modalContentEl, false), 800);
+                autoSaveDebounceTimer = setTimeout(() => saveModalData(docId, modalContentEl), 1000);
             });
         }
 
+        // 원본 main.js의 0.5점 단위 5-Star 별점 모달
+        function openRatingModal(docId, currentRating) {
+            const modalEl = document.createElement('div');
+            modalEl.className = 'modal rating-modal';
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                starsHtml += `
+                    <div class="star-wrap" data-star="${i}">
+                        <span class="star-char star-bg">&#9733;</span>
+                        <span class="star-fg-wrap" id="star-fgw-${i}"><span class="star-char star-fg">&#9733;</span></span>
+                        <button class="star-half star-left" data-value="${(i - 0.5).toFixed(1)}"></button>
+                        <button class="star-half star-right" data-value="${i.toFixed(1)}"></button>
+                    </div>`;
+            }
+            modalEl.innerHTML = `
+                <div class="search-panel-content rating-modal-content">
+                    <button class="modal-close-btn">&times;</button>
+                    <h2>내 별점</h2>
+                    <div class="star-rating-ui">
+                        <div class="stars-row">${starsHtml}</div>
+                        <div class="rating-current-label" id="rating-current-label">${currentRating ? `${currentRating} / 5` : '별점을 선택하세요'}</div>
+                    </div>
+                    <div class="rating-modal-footer">
+                        ${currentRating ? '<button id="rating-clear-btn" class="rating-clear-btn">별점 초기화</button>' : ''}
+                    </div>
+                </div>`;
+            modalEl.querySelector('.modal-close-btn').onclick = () => modalEl.remove();
+
+            const setStarDisplay = (rating) => {
+                for (let i = 1; i <= 5; i++) {
+                    const wrap = modalEl.querySelector(`#star-fgw-${i}`);
+                    if (!wrap) continue;
+                    wrap.style.width = rating >= i ? '100%' : rating >= i - 0.5 ? '50%' : '0%';
+                }
+            };
+            if (currentRating) setStarDisplay(currentRating);
+
+            const saveRating = (val) => {
+                const game = allUserGames.find(g => g.id === docId);
+                if (game) {
+                    if (val === null) delete game.myRating;
+                    else game.myRating = val;
+                    persistData();
+                    renderFilteredGames();
+                    renderModalContent(game);
+                }
+                modalEl.remove();
+            };
+
+            modalEl.querySelectorAll('.star-half').forEach(btn => {
+                btn.onmouseenter = () => {
+                    const v = parseFloat(btn.dataset.value);
+                    setStarDisplay(v);
+                    modalEl.querySelector('#rating-current-label').textContent = `${v} / 5`;
+                };
+                btn.onclick = () => saveRating(parseFloat(btn.dataset.value));
+            });
+            const clearBtn = modalEl.querySelector('#rating-clear-btn');
+            if (clearBtn) clearBtn.onclick = () => saveRating(null);
+            document.body.appendChild(modalEl);
+        }
+
         /* =========================================================
-           7. 모달 열기/직접 추가/URL 추가/태그 관리
+           8. 추가 모달 및 태그 관리
            ========================================================= */
         function initAddGameModals() {
-            dom.addGameButton.addEventListener('click', () => {
+            dom.addGameButton.onclick = () => {
                 dom.searchPanel.classList.remove('hidden');
                 const inputEl = $('#bl-db-search-input');
-                if (inputEl) setTimeout(() => inputEl.focus(), 50);
-            });
-            dom.searchPanel.querySelector('.modal-close-btn').addEventListener('click', () => dom.searchPanel.classList.add('hidden'));
+                if (inputEl) { inputEl.value = ''; $('#bl-db-search-results').innerHTML = ''; setTimeout(() => inputEl.focus(), 50); }
+            };
+            dom.searchPanel.querySelector('.modal-close-btn').onclick = () => dom.searchPanel.classList.add('hidden');
 
             const blDbInput = $('#bl-db-search-input');
             if (blDbInput) {
                 blDbInput.addEventListener('input', () => {
                     clearTimeout(boardLifeSearchDebounceTimer);
-                    boardLifeSearchDebounceTimer = setTimeout(() => handleBoardLifeDBSearch(false), 150);
+                    boardLifeSearchDebounceTimer = setTimeout(handleBoardLifeDBSearch, 120);
                 });
             }
 
-            dom.openManualAddBtn.addEventListener('click', () => {
+            // 빠른 JSON 불러오기 카드
+            $('#quick-json-import').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    try {
+                        const parsed = JSON.parse(ev.target.result);
+                        const gamesArr = Array.isArray(parsed) ? parsed : (parsed.games || []);
+                        allUserGames = gamesArr.map(normalizeGameRecord);
+                        if (parsed.tags) allUserTags = parsed.tags;
+                        if (parsed.sessions) localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(parsed.sessions));
+                        if (parsed.players) localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(parsed.players));
+                        persistData();
+                        renderTagFilters();
+                        renderFilteredGames();
+                        dom.searchPanel.classList.add('hidden');
+                        showMessage(`총 ${allUserGames.length}개 게임을 불러왔습니다!`, 'success');
+                    } catch (err) { showMessage('올바른 JSON 파일이 아닙니다.', 'error'); }
+                };
+                reader.readAsText(file);
+            });
+
+            dom.openManualAddBtn.onclick = () => {
                 dom.searchPanel.classList.add('hidden');
                 $('#manual-purchase-date').value = new Date().toISOString().slice(0, 10);
                 dom.manualAddPanel.classList.remove('hidden');
-            });
-            dom.manualAddPanel.querySelector('.modal-close-btn').addEventListener('click', () => dom.manualAddPanel.classList.add('hidden'));
+            };
+            dom.manualAddPanel.querySelector('.modal-close-btn').onclick = () => dom.manualAddPanel.classList.add('hidden');
 
-            $('#manual-auto-cover-btn').addEventListener('click', async () => {
-                const title = $('#manual-name').value.trim();
-                if (!title) { showMessage('게임 이름을 먼저 입력해주세요.', 'error'); return; }
-                const found = await findBestBoardLifeGameByName(title);
-                if (found) {
-                    $('#manual-image-url').value = found.image || '';
-                    if (found.minplayers) $('#manual-minplayers').value = found.minplayers;
-                    if (found.maxplayers) $('#manual-maxplayers').value = found.maxplayers;
-                    if (found.minplaytime) $('#manual-minplaytime').value = found.minplaytime;
-                    if (found.maxplaytime) $('#manual-maxplaytime').value = found.maxplaytime;
-                    if (found.complexity) $('#manual-complexity').value = found.complexity;
-                    if (found.categories) $('#manual-genre').value = found.categories.join(', ');
-                    showMessage(`✅ '${found.name}' 커버 및 정보를 자동 매칭했습니다!`, 'success');
+            $('#manual-match-btn').onclick = async () => {
+                const name = $('#manual-name').value.trim();
+                if (!name) return;
+                const hit = await findBestGameInDb(name);
+                if (hit) {
+                    $('#manual-image-url').value = hit.image || '';
+                    $('#manual-minplayers').value = hit.minplayers || '1';
+                    $('#manual-maxplayers').value = hit.maxplayers || '4';
+                    $('#manual-minplaytime').value = hit.minplaytime || '30';
+                    $('#manual-maxplaytime').value = hit.maxplaytime || '60';
+                    $('#manual-complexity').value = hit.complexity || '2.5';
+                    if (hit.categories) $('#manual-genre').value = hit.categories.join(', ');
+                    showMessage(`✅ '${hit.name}' 정보를 매칭했습니다!`, 'success');
                 } else {
-                    showMessage('일치하는 보드라이프 DB 게임이 없습니다.', 'error');
+                    showMessage('일치하는 게임이 없습니다. 보드라이프 번호나 이미지 URL을 입력해주세요.', 'error');
                 }
-            });
+            };
 
-            dom.manualAddForm.addEventListener('submit', async (e) => {
+            dom.manualAddForm.onsubmit = async (e) => {
                 e.preventDefault();
                 const name = $('#manual-name').value.trim();
                 if (!name) return;
-                let imageUrl = $('#manual-image-url').value.trim();
-                if (!imageUrl) {
-                    const matched = await findBestBoardLifeGameByName(name);
-                    if (matched && matched.image) imageUrl = matched.image;
+
+                let imgUrl = resolveCoverUrl($('#manual-image-url').value.trim());
+                const fileInput = $('#manual-image');
+                if (fileInput.files && fileInput.files[0]) {
+                    imgUrl = await fileToWebpDataUrl(fileInput.files[0]);
+                } else if (!imgUrl) {
+                    const hit = await findBestGameInDb(name);
+                    if (hit && hit.image) imgUrl = hit.image;
                 }
 
                 const newGame = normalizeGameRecord({
                     id: `manual_${Date.now()}`,
                     name,
-                    image: imageUrl,
+                    image: imgUrl,
                     minplayers: $('#manual-minplayers').value || '1',
                     maxplayers: $('#manual-maxplayers').value || '4',
                     minplaytime: $('#manual-minplaytime').value || '30',
@@ -1368,7 +1553,7 @@
                     customFields: {
                         '구매일자': $('#manual-purchase-date').value || '',
                         '구매가격': $('#manual-purchase-price').value || '',
-                        '대표 이미지': imageUrl
+                        '대표 이미지': imgUrl
                     }
                 });
 
@@ -1378,32 +1563,49 @@
                 dom.manualAddForm.reset();
                 dom.manualAddPanel.classList.add('hidden');
                 showMessage(`${name} 추가 완료!`, 'success');
-            });
+            };
 
-            dom.openBoardlifeAddBtn.addEventListener('click', () => {
+            dom.openBoardlifeAddBtn.onclick = () => {
                 dom.searchPanel.classList.add('hidden');
                 dom.boardlifeAddPanel.classList.remove('hidden');
-            });
-            dom.boardlifeAddPanel.querySelector('.modal-close-btn').addEventListener('click', () => dom.boardlifeAddPanel.classList.add('hidden'));
+            };
+            dom.boardlifeAddPanel.querySelector('.modal-close-btn').onclick = () => dom.boardlifeAddPanel.classList.add('hidden');
 
-            dom.boardlifeAddForm.addEventListener('submit', async (e) => {
+            dom.boardlifeAddForm.onsubmit = async (e) => {
                 e.preventDefault();
-                const url = dom.boardlifeUrlInput.value.trim();
-                const m = url.match(/(?:game\/|bbs_num=|bl_)(\d+)/i);
-                if (!m) { showMessage('유효한 보드라이프 게임 URL을 입력해주세요.', 'error'); return; }
-                const docId = `bl_${m[1]}`;
-                try {
-                    const doc = await db.collection('boardlifeGames').doc(docId).get();
-                    if (doc.exists) {
-                        handleAddBoardLifeDBGame({ id: doc.id, ...doc.data() });
-                        dom.boardlifeUrlInput.value = '';
-                        dom.boardlifeAddPanel.classList.add('hidden');
-                    } else {
-                        showMessage(`DB에 아직 없는 번호(${docId})입니다. 직접 입력을 이용해주세요.`, 'error');
-                    }
-                } catch (err) {
-                    showMessage('조회 실패', 'error');
+                const rawUrl = dom.boardlifeUrlInput.value.trim();
+                const hit = await findBestGameInDb(rawUrl);
+                if (hit) {
+                    handleAddBoardLifeDBGame(hit);
+                    dom.boardlifeUrlInput.value = '';
+                    dom.boardlifeAddPanel.classList.add('hidden');
+                } else {
+                    const resolved = resolveCoverUrl(rawUrl);
+                    dom.boardlifeAddPanel.classList.add('hidden');
+                    $('#manual-image-url').value = resolved;
+                    dom.manualAddPanel.classList.remove('hidden');
                 }
+            };
+        }
+
+        function fileToWebpDataUrl(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const max = 360;
+                        let w = img.width, h = img.height;
+                        if (w > h && w > max) { h = Math.round(h * max / w); w = max; }
+                        else if (h > max) { w = Math.round(w * max / h); h = max; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/webp', 0.85));
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
             });
         }
 
@@ -1429,7 +1631,6 @@
                     <button id="save-tags-btn" class="tag-apply-save-btn">적용</button>
                 </div>
             </div>`;
-
             modalEl.querySelector('.modal-close-btn').onclick = () => modalEl.remove();
             modalEl.querySelector('#cancel-tags-btn').onclick = () => modalEl.remove();
             modalEl.querySelectorAll('.tag-apply-chip').forEach(chip => {
@@ -1471,7 +1672,7 @@
                         <h2>전체 태그 관리</h2>
                         <div class="tag-manage-list">${listHtml || '<p>생성된 태그가 없습니다.</p>'}</div>
                         <div class="tag-create-form">
-                            <input type="text" id="new-tag-name" class="filter-input" placeholder="새 태그 이름 (최대 6자)" maxlength="6">
+                            <input type="text" id="new-tag-name" class="filter-input" placeholder="새 태그 이름 (3자 이하)" maxlength="3">
                             <input type="color" id="new-tag-color" value="#6750A4" style="width:42px; height:42px; border:none; cursor:pointer;">
                             <button id="create-tag-btn" class="detail-section-btn">생성</button>
                         </div>

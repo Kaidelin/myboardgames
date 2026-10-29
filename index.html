@@ -7,15 +7,28 @@
     <link rel="stylesheet" href="style.css?v=19">
     <meta name="theme-color" content="#F7F2FA">
     <style>
-        .bulk-editor-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; min-width: 680px; }
-        .bulk-editor-table th, .bulk-editor-table td { padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--border-color); text-align: left; }
+        .bulk-editor-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; min-width: 720px; }
+        .bulk-editor-table th, .bulk-editor-table td { padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--border-color); text-align: left; vertical-align: middle; }
         .bulk-editor-table th { background: var(--bg-secondary); color: var(--text-secondary); font-size: 0.75rem; position: sticky; top: 0; z-index: 2; }
         .bulk-input { width: 100%; padding: 0.35rem 0.45rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-main); color: var(--text-primary); font-size: 0.82rem; box-sizing: border-box; }
         .sleeve-preset-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.4rem; }
         .sleeve-chip { padding: 0.2rem 0.55rem; font-size: 0.72rem; border-radius: 999px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-secondary); cursor: pointer; font-weight: 600; user-select: none; }
         .sleeve-chip:hover { border-color: var(--md-primary); color: var(--md-primary); }
         .sleeve-row-item { display: flex; gap: 0.4rem; align-items: center; margin-bottom: 0.4rem; }
-        .sleeve-badge-mini { display: inline-block; padding: 0.1rem 0.4rem; font-size: 0.7rem; border-radius: 4px; background: var(--bg-secondary); color: var(--text-secondary); margin-right: 0.25rem; font-weight: 600; }
+        .stock-badge-inline { font-size: 0.72rem; padding: 0.2rem 0.45rem; border-radius: 6px; background: var(--bg-secondary); color: var(--text-secondary); white-space: nowrap; font-weight: 600; }
+        .stock-badge-inline.ok { background: #dcfce7; color: #166534; }
+        .stock-badge-inline.short { background: #fee2e2; color: #991b1b; }
+        .deduct-action-btn { width: 100%; margin: 0.5rem 0; padding: 0.55rem 0.75rem; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; border: 1px solid var(--md-primary); background: var(--md-primary); color: #fff; transition: opacity 0.15s; }
+        .deduct-action-btn.deducted { background: #dcfce7; color: #166534; border-color: #22c55e; }
+        .bgg-status-pill { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.72rem; padding: 0.15rem 0.5rem; border-radius: 999px; background: var(--bg-secondary); color: var(--md-primary); font-weight: 700; }
+
+        /* 일괄 재수집 프로그레스 바 스타일 */
+        .bgg-progress-box { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.65rem 0.85rem; margin-bottom: 0.75rem; display: none; }
+        .bgg-progress-top { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.4rem; }
+        .bgg-progress-track { width: 100%; height: 10px; background: var(--border-color); border-radius: 999px; overflow: hidden; }
+        .bgg-progress-fill { height: 100%; width: 0%; background: var(--md-primary); transition: width 0.2s ease; }
+        .row-refetch-btn { padding: 0.28rem 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-secondary); cursor: pointer; font-size: 0.75rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; }
+        .row-refetch-btn:hover { border-color: var(--md-primary); color: var(--md-primary); }
     </style>
 </head>
 <body>
@@ -105,7 +118,7 @@
                 </h1>
                 <div class="header-controls">
                     <button id="sync-gist-header-btn" class="action-icon-btn" type="button" title="Gist 클라우드에서 최신 데이터 불러오기(Pull)">☁️</button>
-                    <button id="open-bulk-editor-btn" class="action-icon-btn" type="button" title="엑셀형 일괄 편집 ([M-1])">📝</button>
+                    <button id="open-bulk-editor-btn" class="action-icon-btn" type="button" title="엑셀형 일괄 편집 & 슬리브 재수집 ([M-1])">📝</button>
                     <button id="add-game-button" class="action-icon-btn desktop-only-btn" type="button" title="게임 추가">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     </button>
@@ -159,7 +172,7 @@
         <div class="search-panel-content">
             <button class="modal-close-btn" type="button">&times;</button>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                <h2 style="margin:0;">게임 추가 <small style="font-size:0.75rem; color:var(--md-primary); font-weight:600;">(슬리브 자동입력 지원)</small></h2>
+                <h2 style="margin:0;">게임 추가 <span class="bgg-status-pill">🛡️ BGG 슬리브 실시간 자동수집</span></h2>
                 <button type="button" id="set-rt-token-btn" class="detail-title-action-btn" style="font-size:0.78rem;">🔑 실시간 DB 키 설정</button>
             </div>
             <div id="rt-db-status" style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:0.5rem;"></div>
@@ -193,10 +206,10 @@
             <form id="manual-add-form">
                 <div class="manual-add-grid">
                     <div class="form-group form-group-full">
-                        <label for="manual-name">게임 이름 (필수)</label>
+                        <label for="manual-name">게임 이름 (필수 · 추가 시 BGG 슬리브 자동 조회)</label>
                         <div style="display:flex; gap:0.5rem;">
-                            <input type="text" id="manual-name" class="filter-input" required placeholder="예: 정령섬, 보이드폴">
-                            <button type="button" id="manual-match-btn" class="detail-section-btn" style="white-space:nowrap;">🔍 실시간 매칭 &amp; 슬리브 자동입력</button>
+                            <input type="text" id="manual-name" class="filter-input" required placeholder="예: 정령섬, Spirit Island">
+                            <button type="button" id="manual-match-btn" class="detail-section-btn" style="white-space:nowrap;">🔍 DB &amp; BGG 슬리브 즉시 조회</button>
                         </div>
                     </div>
                     <div class="form-group form-group-full">
@@ -211,8 +224,8 @@
                     <div class="form-group"><label>구매일자</label><input type="date" id="manual-purchase-date" class="filter-input"></div>
                     <div class="form-group"><label>구매가격 (원)</label><input type="number" id="manual-purchase-price" class="filter-input" placeholder="50000"></div>
                     <div class="form-group form-group-full">
-                        <label>복수 슬리브 규격 &amp; 매수 (예: 63.5x88:138, 45x68:38)</label>
-                        <input type="text" id="manual-sleeves-text" class="filter-input" placeholder="이름 입력 시 자동 매칭되거나 직접 입력 (예: 63.5x88:120, 56x87:40)">
+                        <label>복수 슬리브 규격 &amp; 매수 (비워두면 추가 시 BGG에서 자동 수집)</label>
+                        <input type="text" id="manual-sleeves-text" class="filter-input" placeholder="비워두면 BGG에서 자동으로 읽어옵니다 (직접 입력 시 예: 63.5x88:138, 45x68:38)">
                     </div>
                 </div>
                 <button type="submit" class="filter-sort-btn primary-action-btn" style="text-align: center; width: 100%; margin-top: 0.75rem;">책장에 추가</button>
@@ -220,33 +233,49 @@
         </div>
     </div>
 
-    <!-- [M-1] 엑셀형 일괄 편집 모달 -->
+    <!-- [M-1] 엑셀형 일괄 편집 & 슬리브 초기화/BGG 재수집 모달 -->
     <div class="modal hidden" id="bulk-editor-modal">
-        <div class="search-panel-content" style="width: 62rem; max-width: 96vw;">
+        <div class="search-panel-content" style="width: 66rem; max-width: 96vw;">
             <button class="modal-close-btn" type="button">&times;</button>
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.5rem;">
-                <h2 style="margin:0;">📝 엑셀형 일괄 편집기 ([M-1])</h2>
-                <button type="button" id="bulk-auto-sleeve-btn" class="detail-section-btn" style="font-size:0.8rem;">✨ 미입력 게임 슬리브 자동 채우기</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.6rem;">
+                <h2 style="margin:0;">📝 엑셀형 일괄 편집 &amp; BGG 슬리브 일괄 재수집 ([M-1])</h2>
+                <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+                    <button type="button" id="bulk-clear-all-sleeves-btn" class="detail-section-btn" style="font-size:0.78rem; color:var(--error-color, #dc2626); border-color:var(--error-color, #dc2626);">🗑️ 슬리브 전체 초기화</button>
+                    <button type="button" id="bulk-auto-sleeve-btn" class="detail-section-btn" style="font-size:0.78rem;">✨ 빈칸만 BGG 수집</button>
+                    <button type="button" id="bulk-reset-and-refetch-all-btn" class="detail-section-btn" style="font-size:0.78rem; background:var(--md-primary); color:#fff; border-color:var(--md-primary);">🔄 전체 초기화 후 BGG 일괄 재수집</button>
+                </div>
             </div>
-            <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:0.75rem;">
-                복수 슬리브는 <strong><code>63.5x88:138, 45x68:38</code></strong> 형식으로 한 칸에 여러 개를 입력할 수 있습니다.
+
+            <!-- 실시간 BGG 일괄 수집 진행 상태 바 -->
+            <div id="bgg-bulk-progress-box" class="bgg-progress-box">
+                <div class="bgg-progress-top">
+                    <span id="bgg-bulk-progress-text">BGG 슬리브 데이터 수집 준비 중...</span>
+                    <button type="button" id="bgg-bulk-stop-btn" class="row-refetch-btn" style="color:var(--error-color, #dc2626);">⏹️ 중지</button>
+                </div>
+                <div class="bgg-progress-track">
+                    <div id="bgg-bulk-progress-fill" class="bgg-progress-fill"></div>
+                </div>
+            </div>
+
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.6rem;">
+                💡 <strong>[🔄 전체 초기화 후 BGG 일괄 재수집]</strong>을 누르면 기존에 잘못 들어간 수량을 모두 지우고 BGG에서 처음부터 다시 읽어옵니다. 우측 <strong>[🔄]</strong> 버튼으로 개별 게임만 재수집할 수도 있습니다.
             </p>
-            <div style="max-height: 62vh; overflow: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+            <div style="max-height: 58vh; overflow: auto; border: 1px solid var(--border-color); border-radius: 8px;">
                 <table class="bulk-editor-table">
                     <thead>
                         <tr>
                             <th>게임 이름</th>
-                            <th style="width:130px;">구매일자</th>
-                            <th style="width:105px;">구매가격(원)</th>
-                            <th style="width:230px;">복수 슬리브 (규격:매수, 규격:매수)</th>
-                            <th style="width:65px; text-align:center;">완료</th>
+                            <th style="width:125px;">구매일자</th>
+                            <th style="width:100px;">구매가격(원)</th>
+                            <th style="width:270px;">복수 슬리브 (규격:매수, 규격:매수)</th>
+                            <th style="width:80px; text-align:center;">완료(차감)</th>
                         </tr>
                     </thead>
                     <tbody id="bulk-editor-tbody"></tbody>
                 </table>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;">
-                <button type="button" class="tag-apply-cancel-btn" onclick="document.getElementById('bulk-editor-modal').classList.add('hidden')">취소</button>
+                <button type="button" class="tag-apply-cancel-btn" onclick="document.getElementById('bulk-editor-modal').classList.add('hidden')">닫기</button>
                 <button type="button" class="tag-apply-save-btn" id="bulk-save-btn">💾 전체 일괄 저장</button>
             </div>
         </div>
@@ -261,7 +290,7 @@
                 <div class="search-box">
                     <input type="text" id="boardlife-url-input" class="filter-input" placeholder="https://boardlife.co.kr/game/14527 또는 번호(14527)" required>
                 </div>
-                <button type="submit" class="filter-sort-btn primary-action-btn" style="text-align: center; width: 100%; margin-top: 1rem;">정보 추출 및 슬리브 자동 추가</button>
+                <button type="submit" class="filter-sort-btn primary-action-btn" style="text-align: center; width: 100%; margin-top: 1rem;">정보 추출 및 BGG 슬리브 자동 추가</button>
             </form>
         </div>
     </div>
@@ -326,63 +355,433 @@
         const FB_REFRESH_TOKEN_KEY = "MY_BG_FB_REFRESH_TOKEN_V1";
         const GIST_FILENAME = "myboardgames_db.json";
 
-        /* 주요 보드게임 복수 슬리브 마스터 프리셋 DB (이름 매칭 시 즉시 자동 입력) */
-        const SLEEVE_MASTER_PRESETS = [
-            { keys: ['킵더히어로즈아웃', 'keeptheheroesout'], sleeves: [{ size: '63.5x88', count: 193 }, { size: '57.5x89', count: 20 }] },
-            { keys: ['정령섬', 'spiritisland'], sleeves: [{ size: '63.5x88', count: 138 }, { size: '45x68', count: 38 }] },
-            { keys: ['아르낙의잊혀진유적', '아르낙', 'lostruinsofarnak'], sleeves: [{ size: '63.5x88', count: 110 }] },
-            { keys: ['세티', '외계지성체탐사', 'seti'], sleeves: [{ size: '63.5x88', count: 210 }] },
-            { keys: ['언스토퍼블', 'unstoppable'], sleeves: [{ size: '63.5x88', count: 150 }] },
-            { keys: ['버건디의성스페셜에디션', '버건디의성', 'castlesofburgundy'], sleeves: [{ size: '44x67', count: 82 }, { size: '59x92', count: 67 }] },
-            { keys: ['에버델뉴리프', '에버델:뉴리프', 'everdellnewleaf'], sleeves: [{ size: '63.5x88', count: 109 }] },
-            { keys: ['에버델', 'everdell'], sleeves: [{ size: '63.5x88', count: 128 }, { size: '44x63', count: 39 }] },
-            { keys: ['엔데버심해', '엔데버:심해', 'endeavordeepsea'], sleeves: [{ size: '63.5x88', count: 80 }, { size: '45x68', count: 60 }] },
-            { keys: ['보이드폴', 'voidfall'], sleeves: [{ size: '63.5x88', count: 195 }, { size: '44x67', count: 209 }] },
-            { keys: ['버튼즈앤버그즈', '글룸헤이븐버튼즈앤버그즈', 'buttonsandbugs', 'buttons&bugs'], sleeves: [{ size: '63.5x88', count: 52 }, { size: '44x68', count: 80 }] },
-            { keys: ['글룸헤이븐사자의턱', '사자의턱', 'jawsofthelion'], sleeves: [{ size: '63.5x88', count: 251 }, { size: '44x68', count: 325 }] },
-            { keys: ['글룸헤이븐', 'gloomhaven'], sleeves: [{ size: '63.5x88', count: 669 }, { size: '44x68', count: 1031 }] },
-            { keys: ['프로스트헤이븐', 'frosthaven'], sleeves: [{ size: '63.5x88', count: 1159 }, { size: '44x68', count: 1330 }] },
-            { keys: ['플립타운', 'fliptown'], sleeves: [{ size: '63.5x88', count: 78 }] },
-            { keys: ['아크노바', 'arknova'], sleeves: [{ size: '63.5x88', count: 255 }] },
-            { keys: ['테라포밍마스', 'terraformingmars'], sleeves: [{ size: '63.5x88', count: 233 }] },
-            { keys: ['브라스버밍엄', '브라스랭커셔', 'brassbirmingham'], sleeves: [{ size: '63.5x88', count: 76 }] },
-            { keys: ['듄임페리움봉기', '듄임페리움', 'duneimperium'], sleeves: [{ size: '63.5x88', count: 151 }, { size: '44x68', count: 65 }] },
-            { keys: ['윙스팬', 'wingspan'], sleeves: [{ size: '57.5x89', count: 212 }] },
-            { keys: ['스플렌더대결', '스플렌더듀얼', 'splendorduel'], sleeves: [{ size: '56x87', count: 67 }] },
-            { keys: ['스플렌더', 'splendor'], sleeves: [{ size: '63.5x88', count: 90 }] },
-            { keys: ['세븐원더스듀얼', '7wondersduel'], sleeves: [{ size: '44x68', count: 73 }, { size: '65x100', count: 23 }] },
-            { keys: ['세븐원더스', '7wonders'], sleeves: [{ size: '65x100', count: 155 }] },
-            { keys: ['백로성', 'thewhitecastle'], sleeves: [{ size: '45x68', count: 45 }, { size: '59x92', count: 27 }] },
-            { keys: ['다윈의여정', 'darwinsjourney'], sleeves: [{ size: '63.5x88', count: 40 }, { size: '44x68', count: 56 }] },
-            { keys: ['헤게모니', 'hegemony'], sleeves: [{ size: '63.5x88', count: 350 }, { size: '44x68', count: 80 }] },
-            { keys: ['슬레이더스파이어', 'slaythespire'], sleeves: [{ size: '63.5x88', count: 730 }, { size: '44x68', count: 10 }] },
-            { keys: ['메이지나이트', 'mageknight'], sleeves: [{ size: '63.5x88', count: 374 }] },
-            { keys: ['아컴호러카드게임', 'arkhamhorror'], sleeves: [{ size: '63.5x88', count: 234 }, { size: '41x63', count: 5 }] },
-            { keys: ['루트', 'root'], sleeves: [{ size: '63.5x88', count: 98 }] },
-            { keys: ['사이드', 'scythe'], sleeves: [{ size: '57.5x89', count: 42 }, { size: '44x68', count: 80 }, { size: '70x110', count: 42 }] },
-            { keys: ['클랭크', 'clank'], sleeves: [{ size: '63.5x88', count: 184 }] },
-            { keys: ['팬데믹', 'pandemic'], sleeves: [{ size: '63.5x88', count: 118 }] },
-            { keys: ['도미니언', 'dominion'], sleeves: [{ size: '59x92', count: 500 }] },
-            { keys: ['아그리콜라', 'agricola'], sleeves: [{ size: '59x92', count: 360 }] },
-            { keys: ['티켓투라이드유럽'], sleeves: [{ size: '44x68', count: 158 }] },
-            { keys: ['티켓투라이드', 'tickettoride'], sleeves: [{ size: '56x87', count: 140 }] },
-            { keys: ['스컬킹', 'skullking'], sleeves: [{ size: '56x87', count: 110 }] },
-            { keys: ['뱅', 'bang'], sleeves: [{ size: '56x87', count: 103 }] },
-            { keys: ['달무티', '더그레이트달무티'], sleeves: [{ size: '56x87', count: 80 }] },
-            { keys: ['러브레터', 'loveletter'], sleeves: [{ size: '63.5x88', count: 27 }] },
-            { keys: ['시타델', 'citadels'], sleeves: [{ size: '57.5x89', count: 68 }, { size: '65x100', count: 27 }] },
-            { keys: ['센추리향신료의길'], sleeves: [{ size: '70x120', count: 94 }] },
-            { keys: ['딕싯', 'dixit'], sleeves: [{ size: '80x120', count: 84 }] }
-        ];
+        /* BGG 실시간 통신이 완전히 차단된 오프라인 상황에만 작동하는 검증된 1:1 정확 일치 폴백 */
+        const SLEEVE_FALLBACK_EXACT = {
+            '킵더히어로즈아웃': [{ size: '63.5x88', count: 193 }, { size: '57.5x89', count: 20 }],
+            'keeptheheroesout': [{ size: '63.5x88', count: 193 }, { size: '57.5x89', count: 20 }],
+            '정령섬': [{ size: '63.5x88', count: 138 }, { size: '45x68', count: 38 }],
+            'spiritisland': [{ size: '63.5x88', count: 138 }, { size: '45x68', count: 38 }],
+            '아르낙의잊혀진유적': [{ size: '63.5x88', count: 110 }],
+            'lostruinsofarnak': [{ size: '63.5x88', count: 110 }],
+            '세티': [{ size: '63.5x88', count: 210 }],
+            'seti': [{ size: '63.5x88', count: 210 }],
+            '언스토퍼블': [{ size: '63.5x88', count: 150 }],
+            'unstoppable': [{ size: '63.5x88', count: 150 }],
+            '버건디의성스페셜에디션': [{ size: '44x67', count: 82 }, { size: '59x92', count: 67 }],
+            '버건디의성': [{ size: '44x67', count: 82 }, { size: '59x92', count: 67 }],
+            '에버델뉴리프': [{ size: '63.5x88', count: 109 }],
+            '에버델': [{ size: '63.5x88', count: 128 }, { size: '44x63', count: 39 }],
+            '엔데버심해': [{ size: '63.5x88', count: 80 }, { size: '45x68', count: 60 }],
+            'endeavordeepsea': [{ size: '63.5x88', count: 80 }, { size: '45x68', count: 60 }],
+            '보이드폴': [{ size: '63.5x88', count: 195 }, { size: '44x67', count: 209 }],
+            'voidfall': [{ size: '63.5x88', count: 195 }, { size: '44x67', count: 209 }],
+            '버튼즈앤버그즈': [{ size: '63.5x88', count: 52 }, { size: '44x68', count: 80 }],
+            '글룸헤이븐버튼즈앤버그즈': [{ size: '63.5x88', count: 52 }, { size: '44x68', count: 80 }],
+            '글룸헤이븐사자의턱': [{ size: '63.5x88', count: 251 }, { size: '44x68', count: 325 }],
+            '글룸헤이븐': [{ size: '63.5x88', count: 669 }, { size: '44x68', count: 1031 }],
+            '플립타운': [{ size: '63.5x88', count: 78 }]
+        };
 
         let _cachedIdToken = null, _cachedIdTokenExp = 0;
         let allUserGames = [], allUserTags = [], currentSort = 'name-asc', currentViewMode = 'grid';
         let debounceTimer, autoSaveDebounceTimer = null, boardLifeSearchDebounceTimer = null;
+        let _stopBulkBggFetch = false;
 
         const $ = (s) => document.querySelector(s);
         const $$ = (s) => document.querySelectorAll(s);
 
-        /* 복수 슬리브 파싱 & 포맷 유틸리티 */
+        /* =========================================================================
+           🌐 BGG 실시간 슬리브 자동 수집 엔진 (에디션 중복 합산 방지 정밀 파서)
+           ========================================================================= */
+
+        function normalizeCardDimensionToStandard(wRaw, hRaw) {
+            const w = parseFloat(wRaw), h = parseFloat(hRaw);
+            if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) return '';
+            if (w >= 62.5 && w <= 64.5 && h >= 87.5 && h <= 89.5) return '63.5x88';
+            if (w >= 55.5 && w <= 56.8 && h >= 86.5 && h <= 88.0) return '56x87';
+            if (w >= 57.0 && w <= 58.2 && h >= 88.0 && h <= 89.8) return '57.5x89';
+            if (w >= 58.5 && w <= 60.0 && h >= 90.5 && h <= 92.8) return '59x92';
+            if (w >= 43.0 && w <= 44.5 && h >= 66.5 && h <= 67.5) return '44x67';
+            if (w >= 44.6 && w <= 45.8 && h >= 67.5 && h <= 69.0) return '45x68';
+            if (w >= 43.5 && w <= 44.5 && h >= 67.6 && h <= 69.0) return '44x68';
+            if (w >= 64.5 && w <= 66.0 && h >= 99.0 && h <= 101.0) return '65x100';
+            if (w >= 69.0 && w <= 71.0 && h >= 119.0 && h >= 121.0) return '70x120';
+            if (w >= 79.0 && w <= 81.0 && h >= 119.0 && h >= 121.0) return '80x120';
+            const cleanW = Number.isInteger(w) ? String(w) : w.toFixed(1).replace(/\.0$/, '');
+            const cleanH = Number.isInteger(h) ? String(h) : h.toFixed(1).replace(/\.0$/, '');
+            return `${cleanW}x${cleanH}`;
+        }
+
+        async function fetchViaCorsProxy(targetUrl, timeoutMs = 8000) {
+            const proxies = [
+                (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+                (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+                (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`
+            ];
+            for (const buildUrl of proxies) {
+                try {
+                    const ctrl = new AbortController();
+                    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+                    const resp = await fetch(buildUrl(targetUrl), { signal: ctrl.signal });
+                    clearTimeout(timer);
+                    if (resp.ok) {
+                        const text = await resp.text();
+                        if (text && text.length > 50) return text;
+                    }
+                } catch (e) {}
+            }
+            return null;
+        }
+
+        // 1단계: 보드라이프 DB 문서 또는 보드라이프 웹페이지에서 영문 원제 & BGG ID 추출
+        async function resolveBoardlifeMeta(game) {
+            let bggId = game.bggId || game.customFields?.bggId || null;
+            if (bggId) {
+                const m = String(bggId).match(/(\d+)/);
+                bggId = m ? m[1] : null;
+            }
+            let engTitle = game.originalName || game.engName || game.nameEn || game.englishName || '';
+            const korTitle = game.customFields?.['게임 이름'] || game.name || '';
+            const blNum = getBlNumId(game);
+
+            // 보드라이프 Firestore 마스터 문서에 originalName / bggId가 있는지 먼저 확인
+            if ((!bggId || !engTitle) && blNum) {
+                try {
+                    const idToken = await getValidFirebaseIdToken();
+                    const headers = idToken ? { 'Authorization': `Bearer ${idToken}` } : {};
+                    const r = await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT_ID}/databases/(default)/documents/boardlifeGames/bl_${blNum}`, { headers });
+                    if (r.ok) {
+                        const doc = parseRestDoc(await r.json());
+                        if (doc) {
+                            if (!bggId && doc.bggId) bggId = String(doc.bggId).match(/(\d+)/)?.[1] || null;
+                            if (!engTitle) engTitle = doc.originalName || doc.engName || doc.englishName || '';
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            // 여전히 없으면 보드라이프 게임 웹페이지에서 추출
+            if ((!bggId || !engTitle) && blNum) {
+                try {
+                    const html = await fetchViaCorsProxy(`https://boardlife.co.kr/game/${blNum}`, 6500);
+                    if (html) {
+                        const bggMatch = html.match(/boardgamegeek\.com\/boardgame(?:expansion)?\/(\d+)/i);
+                        if (bggMatch && !bggId) bggId = bggMatch[1];
+                        const ogMatch = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i);
+                        if (ogMatch && !engTitle) {
+                            const paren = ogMatch[1].match(/\(([^)]+[a-zA-Z][^)]*)\)/);
+                            if (paren) engTitle = paren[1].trim();
+                        }
+                    }
+                } catch (e) {}
+            }
+            return { bggId, engTitle, korTitle };
+        }
+
+        // 2단계: 게임 제목으로 BGG Object ID(bggId) 검색
+        async function searchBggIdByTitle(queryTitle) {
+            if (!queryTitle) return null;
+            const q = String(queryTitle).trim();
+            if (!q) return null;
+
+            try {
+                const apiUrl = `https://boardgamegeek.com/search/boardgame?q=${encodeURIComponent(q)}&nosession=1&showcount=10`;
+                const raw = await fetchViaCorsProxy(apiUrl, 6500);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    const items = parsed.items || [];
+                    if (items.length > 0 && items[0].objectid) return String(items[0].objectid);
+                }
+            } catch (e) {}
+
+            try {
+                const xmlUrl = `https://boardgamegeek.com/xmlapi2/search?query=${encodeURIComponent(q)}&type=boardgame`;
+                const xmlText = await fetchViaCorsProxy(xmlUrl, 6500);
+                if (xmlText) {
+                    const m = xmlText.match(/<item[^>]*id=["'](\d+)["']/i);
+                    if (m) return m[1];
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        // 3단계: BGG 공식 /sleeves 페이지에서 복수 카드 규격/장수 추출 (에디션 중복 합산 방지)
+        async function fetchSleevesFromBggPage(bggId) {
+            if (!bggId) return [];
+            const targetUrl = `https://boardgamegeek.com/boardgame/${bggId}/sleeves`;
+            const html = await fetchViaCorsProxy(targetUrl, 8500);
+            if (!html) return [];
+
+            const sizeMap = {};
+            const addSizeCount = (w, h, qty) => {
+                const sz = normalizeCardDimensionToStandard(w, h);
+                const c = parseInt(qty, 10) || 0;
+                if (sz && c > 0) sizeMap[sz] = (sizeMap[sz] || 0) + c;
+            };
+
+            try {
+                const preloadMatch = html.match(/GEEK\.geekitemPreload\s*=\s*(\{[\s\S]*?\});\s*(?:GEEK\.|<\/script>)/i);
+                if (preloadMatch) {
+                    const preloadObj = JSON.parse(preloadMatch[1]);
+                    const item = preloadObj?.item || {};
+                    const cardsets = item.cardsets || item.cardSets || preloadObj?.cardsets || [];
+                    if (Array.isArray(cardsets) && cardsets.length > 0) {
+                        // cardsets가 각 규격별 행 배열인지, 에디션 그룹인지 판별
+                        const firstCs = cardsets[0];
+                        if (firstCs && Array.isArray(firstCs.items || firstCs.cards) && (firstCs.items || firstCs.cards).length > 0) {
+                            // 에디션별 그룹 구조인 경우 첫 번째 기본(Primary) 에디션만 집계하여 2~3배 중복 합산 방지
+                            (firstCs.items || firstCs.cards).forEach(sub => {
+                                addSizeCount(sub.width || sub.w, sub.height || sub.h, sub.quantity || sub.count || sub.qty);
+                            });
+                        } else {
+                            // 각 원소가 개별 카드 규격인 경우 동일한 cardset description/version 그룹만 집계
+                            const primaryGroupKey = firstCs.versionid || firstCs.setname || null;
+                            cardsets.forEach(cs => {
+                                if (!cs) return;
+                                const groupKey = cs.versionid || cs.setname || null;
+                                if (primaryGroupKey && groupKey && groupKey !== primaryGroupKey) return;
+                                const w = cs.width || cs.cardwidth || cs.w;
+                                const h = cs.height || cs.cardheight || cs.h;
+                                const q = cs.quantity || cs.count || cs.cardcount || cs.qty;
+                                if (w && h && q) addSizeCount(w, h, q);
+                            });
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            // 정규식 폴백
+            if (Object.keys(sizeMap).length === 0) {
+                const reg1 = /"width"\s*:\s*"?([0-9.]+)"?\s*,\s*"height"\s*:\s*"?([0-9.]+)"?[^}]*?"(?:quantity|count)"\s*:\s*"?(\d+)"?/gi;
+                let m;
+                while ((m = reg1.exec(html)) !== null) {
+                    addSizeCount(m[1], m[2], m[3]);
+                }
+            }
+
+            return Object.entries(sizeMap).map(([size, count]) => ({ size, count }));
+        }
+
+        // 4단계: BGC Moscow (BGG Geeklist #164572 마스터 슬리브 DB) 조회 (첫 번째 매칭 게임 블록만 파싱)
+        async function fetchSleevesFromBgcMoscow(queryTitle, bggId) {
+            const q = bggId || queryTitle;
+            if (!q) return [];
+            const html = await fetchViaCorsProxy(`https://bgc.moscow/bgg/?q=${encodeURIComponent(q)}`, 7500);
+            if (!html) return [];
+
+            // 여러 검색 결과가 나올 때 첫 번째 게임 블록만 잘라서 확장판까지 합산되는 현상 방지
+            const blocks = html.split(/<hr|<div\s+class=["']game/i);
+            const targetBlock = blocks.length > 1 ? blocks[1] : html;
+
+            const sizeMap = {};
+            const pattern = /([0-9]{2}(?:\.[0-9])?)\s*[xX×]\s*([0-9]{2,3}(?:\.[0-9])?)\s*(?:mm)?[^0-9\n<]{1,25}?(\d{1,4})\s*(?:cards|pcs|장|매|\b)/gi;
+            let m;
+            while ((m = pattern.exec(targetBlock)) !== null) {
+                const sz = normalizeCardDimensionToStandard(m[1], m[2]);
+                const cnt = parseInt(m[3], 10) || 0;
+                if (sz && cnt > 0 && cnt < 3000 && cnt !== 50 && cnt !== 100) {
+                    sizeMap[sz] = (sizeMap[sz] || 0) + cnt;
+                }
+            }
+            return Object.entries(sizeMap).map(([size, count]) => ({ size, count }));
+        }
+
+        // 단일 게임 BGG 슬리브 강제 재수집 (forceRefresh=true 시 기존 로컬 캐시 무시하고 BGG에서 직접 조회)
+        async function autoFetchBggSleevesForGame(game, silent = false, forceRefresh = false) {
+            if (!game) return { bggId: null, sleeves: [] };
+            if (!silent) showMessage(`🔍 '${game.name}'의 BGG 슬리브 규격을 자동으로 읽어오는 중...`, 'success');
+
+            const meta = await resolveBoardlifeMeta(game);
+            let bggId = meta.bggId;
+            if (!bggId && meta.engTitle) bggId = await searchBggIdByTitle(meta.engTitle);
+            if (!bggId && meta.korTitle) {
+                const cleanedKor = meta.korTitle.replace(/\s*\([^)]*\)\s*/g, '').trim();
+                bggId = await searchBggIdByTitle(cleanedKor);
+            }
+
+            let sleeves = [];
+            if (bggId) {
+                sleeves = await fetchSleevesFromBggPage(bggId);
+            }
+            if (!sleeves.length && (bggId || meta.engTitle || meta.korTitle)) {
+                sleeves = await fetchSleevesFromBgcMoscow(meta.engTitle || meta.korTitle, bggId);
+            }
+            if (!sleeves.length && !forceRefresh) {
+                sleeves = autoDetectSleevesForGame(game);
+            }
+            if (!sleeves.length && forceRefresh) {
+                // 강제 재수집 시에도 네트워크 조회가 실패한 경우에 한해 1:1 정확 일치 폴백 확인
+                const norm = String(game.name || '').replace(/[\s:!\-·()[\]]+/g, '').toLowerCase();
+                if (SLEEVE_FALLBACK_EXACT[norm]) sleeves = JSON.parse(JSON.stringify(SLEEVE_FALLBACK_EXACT[norm]));
+            }
+
+            const target = allUserGames.find(g => g.id === game.id) || game;
+            if (bggId) target.bggId = String(bggId);
+            if (meta.engTitle && !target.originalName) target.originalName = meta.engTitle;
+
+            target.sleeves = sleeves;
+            target.sleeveSize = formatSleevesToText(sleeves);
+            target.sleeveCount = sleeves.reduce((sum, s) => sum + (parseInt(s.count, 10) || 0), 0);
+            if (!target.customFields) target.customFields = {};
+            target.customFields['슬리브규격'] = target.sleeveSize;
+            target.customFields['슬리브매수'] = String(target.sleeveCount);
+
+            if (sleeves.length > 0) {
+                rememberCustomSleevePreset(target.name, sleeves);
+            }
+            persistData();
+            renderFilteredGames();
+
+            const openModal = $('#detailModal .detail-content');
+            if (openModal && openModal.dataset.docId === target.id) {
+                renderModalContent(target);
+            }
+            if (!silent) {
+                if (sleeves.length > 0) {
+                    showMessage(`🛡️ [${target.name}] BGG 슬리브 입력 완료: ${formatSleevesDisplay(sleeves)}`, 'success');
+                } else {
+                    showMessage(`ℹ️ [${target.name}] BGG에 등록된 슬리브 정보가 없거나 카드가 없는 게임입니다.`, 'success');
+                }
+            }
+
+            return { bggId, sleeves };
+        }
+
+        /* 🛡️ 보유 슬리브 재고 조회 및 자동 차감·환원 엔진 */
+        function loadSleeveInventory() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(SLEEVE_INV_KEY) || 'null');
+                if (Array.isArray(raw)) {
+                    return raw.map(item => {
+                        const spp = parseInt(item.sheetsPerPack, 10) || 100;
+                        const rem = item.remainingSheets !== undefined ? parseInt(item.remainingSheets, 10) : Math.round(spp * (parseFloat(item.qty) || 0));
+                        return { ...item, sheetsPerPack: spp, remainingSheets: rem, qty: +(rem / spp).toFixed(2) };
+                    });
+                }
+            } catch (e) {}
+            return [
+                { id: 'slv_1', size: '63.5x88', maker: '팝콘게임즈', sheetsPerPack: 100, qty: 0, remainingSheets: 0, price: 0, note: '블랙라벨 하드' },
+                { id: 'slv_2', size: '56x87', maker: '팝콘게임즈', sheetsPerPack: 100, qty: 0, remainingSheets: 0, price: 0, note: '블랙라벨 하드' },
+                { id: 'slv_3', size: '59x92', maker: '팝콘게임즈', sheetsPerPack: 100, qty: 0, remainingSheets: 0, price: 0, note: '블랙라벨 하드' }
+            ];
+        }
+
+        function saveSleeveInventory(invList) {
+            localStorage.setItem(SLEEVE_INV_KEY, JSON.stringify(invList));
+        }
+
+        function getStockBySizeMap() {
+            const inv = loadSleeveInventory();
+            const map = {};
+            inv.forEach(item => {
+                const sz = String(item.size || '').trim().toLowerCase();
+                if (!sz) return;
+                map[sz] = (map[sz] || 0) + (parseInt(item.remainingSheets, 10) || 0);
+            });
+            return map;
+        }
+
+        function applySleeveInventoryDelta(game, isDeduct, showToast = true) {
+            if (!game) return false;
+            const sleeves = Array.isArray(game.sleeves) ? game.sleeves.filter(s => s && s.size && (parseInt(s.count, 10) || 0) > 0) : [];
+
+            if (isDeduct) {
+                if (game.sleeveDeducted) return false;
+                if (!sleeves.length) {
+                    if (showToast) showMessage('차감할 슬리브 규격/매수가 입력되어 있지 않습니다.', 'error');
+                    return false;
+                }
+                const inv = loadSleeveInventory();
+                const deductedLog = [];
+                const summaryParts = [];
+
+                sleeves.forEach(req => {
+                    const normSize = String(req.size).trim().toLowerCase();
+                    let need = parseInt(req.count, 10) || 0;
+                    if (need <= 0) return;
+
+                    const matchingRows = inv.filter(r => String(r.size || '').trim().toLowerCase() === normSize);
+                    if (matchingRows.length === 0) {
+                        const newRow = {
+                            id: `slv_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                            size: req.size.trim(),
+                            maker: '팝콘게임즈',
+                            sheetsPerPack: 100,
+                            remainingSheets: -need,
+                            qty: +(-need / 100).toFixed(2),
+                            price: 0,
+                            note: `${game.name} 자동 차감`
+                        };
+                        inv.push(newRow);
+                        deductedLog.push({ invId: newRow.id, size: req.size.trim(), count: need });
+                        summaryParts.push(`${req.size}(-${need}장 → 잔여 ${newRow.remainingSheets}장)`);
+                    } else {
+                        let remainingToDeduct = need;
+                        for (let i = 0; i < matchingRows.length; i++) {
+                            const row = matchingRows[i];
+                            const avail = parseInt(row.remainingSheets, 10) || 0;
+                            if (i < matchingRows.length - 1 && avail > 0) {
+                                const take = Math.min(avail, remainingToDeduct);
+                                if (take > 0) {
+                                    row.remainingSheets = avail - take;
+                                    row.qty = +(row.remainingSheets / (row.sheetsPerPack || 100)).toFixed(2);
+                                    remainingToDeduct -= take;
+                                    deductedLog.push({ invId: row.id, size: row.size, count: take });
+                                }
+                            } else if (i === matchingRows.length - 1 && remainingToDeduct > 0) {
+                                row.remainingSheets = avail - remainingToDeduct;
+                                row.qty = +(row.remainingSheets / (row.sheetsPerPack || 100)).toFixed(2);
+                                deductedLog.push({ invId: row.id, size: row.size, count: remainingToDeduct });
+                                remainingToDeduct = 0;
+                            }
+                        }
+                        const totalRemForSize = inv
+                            .filter(r => String(r.size || '').trim().toLowerCase() === normSize)
+                            .reduce((acc, r) => acc + (parseInt(r.remainingSheets, 10) || 0), 0);
+                        summaryParts.push(`${req.size}(-${need}장 → 잔여 ${totalRemForSize}장)`);
+                    }
+                });
+
+                saveSleeveInventory(inv);
+                game.sleeveDeducted = true;
+                game.deductedLog = deductedLog;
+                if (!game.customFields) game.customFields = {};
+                game.customFields['슬리브'] = 'O';
+                if (showToast) showMessage(`🛡️ 슬리브 재고 차감 완료: ${summaryParts.join(', ')}`, 'success');
+                return true;
+            } else {
+                if (!game.sleeveDeducted) return false;
+                const inv = loadSleeveInventory();
+                const logs = Array.isArray(game.deductedLog) && game.deductedLog.length > 0
+                    ? game.deductedLog
+                    : sleeves.map(s => ({ invId: null, size: s.size, count: parseInt(s.count, 10) || 0 }));
+                const summaryParts = [];
+
+                logs.forEach(log => {
+                    const cnt = parseInt(log.count, 10) || 0;
+                    if (cnt <= 0) return;
+                    let targetRow = log.invId ? inv.find(r => r.id === log.invId) : null;
+                    if (!targetRow) {
+                        const normSize = String(log.size || '').trim().toLowerCase();
+                        targetRow = inv.find(r => String(r.size || '').trim().toLowerCase() === normSize);
+                    }
+                    if (targetRow) {
+                        targetRow.remainingSheets = (parseInt(targetRow.remainingSheets, 10) || 0) + cnt;
+                        targetRow.qty = +(targetRow.remainingSheets / (targetRow.sheetsPerPack || 100)).toFixed(2);
+                        summaryParts.push(`${log.size}(+${cnt}장 복구)`);
+                    }
+                });
+
+                saveSleeveInventory(inv);
+                game.sleeveDeducted = false;
+                game.deductedLog = [];
+                if (!game.customFields) game.customFields = {};
+                game.customFields['슬리브'] = '';
+                if (showToast) showMessage(`♻️ 슬리브 재고 환원 완료: ${summaryParts.join(', ')}`, 'success');
+                return true;
+            }
+        }
+
         function parseTextToSleeves(rawText, fallbackCount = 0) {
             if (!rawText) return [];
             const str = String(rawText).trim();
@@ -390,7 +789,6 @@
             const parts = str.split(/[,/;\n]+/).map(s => s.trim()).filter(Boolean);
             const result = [];
             parts.forEach(part => {
-                // "63.5x88: 120" 또는 "63.5x88(120)" 또는 "63.5x88 120장" 매칭
                 const m = part.match(/^([0-9.]+x[0-9.]+)\s*(?:[:(\s-]\s*(\d+))?/i);
                 if (m) {
                     const size = m[1].toLowerCase();
@@ -417,37 +815,35 @@
 
         function autoDetectSleevesForGame(rawGame) {
             if (!rawGame) return [];
-            // 1. 이미 유효한 복수 슬리브 배열이 있는 경우
             if (Array.isArray(rawGame.sleeves) && rawGame.sleeves.length > 0) {
                 return rawGame.sleeves.map(s => ({ size: String(s.size || '').trim(), count: parseInt(s.count, 10) || 0 })).filter(s => s.size);
             }
-            // 2. 기존 문자열 필드에 입력된 값이 있는 경우
             const existingStr = rawGame.sleeveSize || rawGame.customFields?.['슬리브규격'] || rawGame.sleeveInfo || '';
             const existingCnt = rawGame.sleeveCount || rawGame.customFields?.['슬리브매수'] || 0;
             if (existingStr) {
                 const parsed = parseTextToSleeves(existingStr, existingCnt);
                 if (parsed.length > 0) return parsed;
             }
-            // 3. 사용자 학습 프리셋 및 내장 마스터 프리셋에서 게임명으로 자동 탐색
-            const gameName = rawGame.customFields?.['게임 이름'] || rawGame.name || rawGame.title || '';
-            const normName = gameName.replace(/[\s:!\-·()[\]]+/g, '').toLowerCase();
-            if (!normName) return [];
+            const candidates = [
+                rawGame.customFields?.['게임 이름'],
+                rawGame.name,
+                rawGame.title,
+                rawGame.originalName,
+                rawGame.engName
+            ].filter(Boolean);
 
             try {
                 const userPresets = JSON.parse(localStorage.getItem(CUSTOM_SLEEVE_DB_KEY) || '{}');
-                if (userPresets[normName] && Array.isArray(userPresets[normName])) {
-                    return JSON.parse(JSON.stringify(userPresets[normName]));
-                }
-            } catch (e) {}
-
-            for (const item of SLEEVE_MASTER_PRESETS) {
-                for (const k of item.keys) {
-                    const nk = k.replace(/[\s:!\-·()[\]]+/g, '').toLowerCase();
-                    if (normName === nk || normName.includes(nk)) {
-                        return JSON.parse(JSON.stringify(item.sleeves));
+                for (const c of candidates) {
+                    const norm = String(c).replace(/[\s:!\-·()[\]]+/g, '').toLowerCase();
+                    if (norm && userPresets[norm] && Array.isArray(userPresets[norm])) {
+                        return JSON.parse(JSON.stringify(userPresets[norm]));
+                    }
+                    if (norm && SLEEVE_FALLBACK_EXACT[norm]) {
+                        return JSON.parse(JSON.stringify(SLEEVE_FALLBACK_EXACT[norm]));
                     }
                 }
-            }
+            } catch (e) {}
             return [];
         }
 
@@ -589,7 +985,9 @@
             const resolvedImg = resolveCoverUrl(custom['대표 이미지'] || raw.image || raw.thumbnail || '');
             if (resolvedImg && !custom['대표 이미지']) custom['대표 이미지'] = resolvedImg;
 
-            const detectedSleeves = autoDetectSleevesForGame({ ...raw, name, customFields: custom });
+            const detectedSleeves = Array.isArray(raw.sleeves)
+                ? raw.sleeves.filter(s => s && s.size)
+                : autoDetectSleevesForGame({ ...raw, name, customFields: custom });
             const sleeveText = formatSleevesToText(detectedSleeves);
             const totalSleeveCnt = detectedSleeves.reduce((sum, s) => sum + (parseInt(s.count, 10) || 0), 0);
             custom['슬리브규격'] = sleeveText;
@@ -617,6 +1015,8 @@
                 sleeves: detectedSleeves,
                 sleeveSize: sleeveText,
                 sleeveCount: totalSleeveCnt,
+                sleeveDeducted: Boolean(raw.sleeveDeducted),
+                deductedLog: Array.isArray(raw.deductedLog) ? raw.deductedLog : [],
                 customFields: custom,
                 createdAt: raw.createdAt?.seconds ? raw.createdAt.seconds * 1000 : (raw.createdAt || Date.now())
             };
@@ -685,7 +1085,7 @@
                     tags: allUserTags,
                     sessions: JSON.parse(localStorage.getItem(SESSIONS_STORAGE_KEY) || '[]'),
                     players: JSON.parse(localStorage.getItem(PLAYERS_STORAGE_KEY) || '[]'),
-                    sleeveInventory: JSON.parse(localStorage.getItem(SLEEVE_INV_KEY) || '[]')
+                    sleeveInventory: loadSleeveInventory()
                 };
                 await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
                     method: 'PATCH',
@@ -700,7 +1100,7 @@
             if (!el) return;
             const hasToken = !!(localStorage.getItem(FB_REFRESH_TOKEN_KEY) || '').trim();
             el.innerHTML = hasToken
-                ? '🟢 <strong>실시간 보드라이프 마스터 DB + 슬리브 자동매칭 연동됨</strong>'
+                ? '🟢 <strong>보드라이프 마스터 DB + BGG 실시간 슬리브 자동 수집 활성화됨</strong>'
                 : '🟠 실시간 DB 키 미등록 (상단 <strong>[🔑 실시간 DB 키 설정]</strong> 또는 <strong>[📂 JSON 복원]</strong> 필요)';
             el.style.color = hasToken ? 'var(--success-color)' : 'var(--error-color)';
         }
@@ -728,21 +1128,163 @@
             }
         });
 
-        /* [M-1] 엑셀형 일괄 편집기 (복수 슬리브 지원) */
+        /* =========================================================================
+           📝 [M-1] 엑셀형 일괄 편집기 + 슬리브 초기화 & BGG 전체 재수집
+           ========================================================================= */
         function openBulkEditorModal() {
             const tbody = $('#bulk-editor-tbody');
-            tbody.innerHTML = allUserGames.map((g, idx) => `
+            tbody.innerHTML = allUserGames.map((g, idx) => {
+                const isDone = g.customFields && (g.customFields['슬리브'] === 'O' || g.customFields['슬리브'] === 'true');
+                return `
                 <tr data-game-idx="${idx}">
                     <td style="font-weight:600;">${escapeHtmlSafe(g.customFields?.['게임 이름'] || g.name)}</td>
                     <td><input type="date" class="bulk-input b-date" value="${parseDateYMD(g)}"></td>
                     <td><input type="number" class="bulk-input b-price" value="${parsePrice(g)}" placeholder="0"></td>
-                    <td><input type="text" class="bulk-input b-sleeves-text" value="${escapeHtmlSafe(formatSleevesToText(g.sleeves))}" placeholder="예: 63.5x88:138, 45x68:38"></td>
-                    <td style="text-align:center;"><input type="checkbox" class="b-sleeve-done" ${(g.customFields && (g.customFields['슬리브'] === 'O' || g.customFields['슬리브'] === 'true')) ? 'checked' : ''}></td>
-                </tr>`).join('');
+                    <td>
+                        <div style="display:flex; gap:0.35rem; align-items:center;">
+                            <input type="text" class="bulk-input b-sleeves-text" value="${escapeHtmlSafe(formatSleevesToText(g.sleeves))}" placeholder="예: 63.5x88:138, 45x68:38">
+                            <button type="button" class="row-refetch-btn" data-ridx="${idx}" title="이 게임만 BGG에서 즉시 재수집">🔄</button>
+                        </div>
+                    </td>
+                    <td style="text-align:center;">
+                        <input type="checkbox" class="b-sleeve-done" ${isDone ? 'checked' : ''}>
+                        ${g.sleeveDeducted ? '<span style="font-size:0.65rem; color:#166534; display:block;">차감됨</span>' : ''}
+                    </td>
+                </tr>`;
+            }).join('');
+
+            // 개별 행 🔄 버튼 클릭 시 해당 게임만 BGG 강제 재수집
+            tbody.querySelectorAll('.row-refetch-btn').forEach(btn => {
+                btn.onclick = async () => {
+                    const idx = parseInt(btn.dataset.ridx, 10);
+                    const g = allUserGames[idx];
+                    const row = btn.closest('tr');
+                    const inp = row?.querySelector('.b-sleeves-text');
+                    if (!g || !inp) return;
+                    btn.disabled = true;
+                    btn.textContent = '⏳';
+                    g.sleeves = [];
+                    g.sleeveSize = '';
+                    g.sleeveCount = 0;
+                    const { sleeves } = await autoFetchBggSleevesForGame(g, true, true);
+                    inp.value = formatSleevesToText(sleeves);
+                    btn.disabled = false;
+                    btn.textContent = '🔄';
+                    showMessage(sleeves.length ? `🛡️ [${g.name}] 재수집 완료: ${formatSleevesDisplay(sleeves)}` : `ℹ️ [${g.name}] BGG 슬리브 정보 없음`, 'success');
+                };
+            });
+
+            $('#bgg-bulk-progress-box').style.display = 'none';
             $('#bulk-editor-modal').classList.remove('hidden');
         }
 
+        // 보유 게임 슬리브 일괄 초기화 함수
+        function clearAllSleevesData(includeCompleted = false) {
+            localStorage.removeItem(CUSTOM_SLEEVE_DB_KEY);
+            const rows = Array.from($$('#bulk-editor-tbody tr'));
+            let clearedCnt = 0;
+            rows.forEach(row => {
+                const idx = parseInt(row.dataset.gameIdx, 10);
+                const g = allUserGames[idx];
+                const isDone = row.querySelector('.b-sleeve-done')?.checked;
+                if (!includeCompleted && isDone) return;
+
+                const inp = row.querySelector('.b-sleeves-text');
+                if (inp) inp.value = '';
+                if (g) {
+                    g.sleeves = [];
+                    g.sleeveSize = '';
+                    g.sleeveCount = 0;
+                    g._bggAutoChecked = false;
+                    if (g.customFields) {
+                        g.customFields['슬리브규격'] = '';
+                        g.customFields['슬리브매수'] = '0';
+                    }
+                    clearedCnt++;
+                }
+            });
+            persistData();
+            renderFilteredGames();
+            return clearedCnt;
+        }
+
+        // BGG 일괄 수집 실행기 (onlyEmpty=false 이면 초기화 후 전체 게임 재수집)
+        async function runBulkBggRefetch(onlyEmpty = false) {
+            const rows = Array.from($$('#bulk-editor-tbody tr'));
+            if (!rows.length) return;
+
+            let targetRows = rows;
+            if (!onlyEmpty) {
+                const hasCompleted = rows.some(r => r.querySelector('.b-sleeve-done')?.checked);
+                let includeCompleted = true;
+                if (hasCompleted) {
+                    includeCompleted = confirm(
+                        '이미 [슬리브 완료]가 체크된 게임도 함께 초기화하고 재수집할까요?\n\n' +
+                        '• [확인]: 모든 게임 초기화 후 전체 재수집\n' +
+                        '• [취소]: 미완료 게임만 초기화 후 재수집'
+                    );
+                }
+                clearAllSleevesData(includeCompleted);
+                targetRows = rows.filter(r => includeCompleted || !r.querySelector('.b-sleeve-done')?.checked);
+            } else {
+                targetRows = rows.filter(r => !r.querySelector('.b-sleeves-text')?.value.trim());
+            }
+
+            if (!targetRows.length) {
+                showMessage('재수집할 대상 게임이 없습니다.', 'success');
+                return;
+            }
+
+            _stopBulkBggFetch = false;
+            const progBox = $('#bgg-bulk-progress-box');
+            const progText = $('#bgg-bulk-progress-text');
+            const progFill = $('#bgg-bulk-progress-fill');
+            progBox.style.display = 'block';
+            $('#bulk-auto-sleeve-btn').disabled = true;
+            $('#bulk-reset-and-refetch-all-btn').disabled = true;
+            $('#bulk-clear-all-sleeves-btn').disabled = true;
+
+            let matchedCnt = 0;
+            for (let i = 0; i < targetRows.length; i++) {
+                if (_stopBulkBggFetch) break;
+                const row = targetRows[i];
+                const g = allUserGames[parseInt(row.dataset.gameIdx, 10)];
+                const inp = row.querySelector('.b-sleeves-text');
+                if (!g || !inp) continue;
+
+                const pct = Math.round(((i + 1) / targetRows.length) * 100);
+                progFill.style.width = `${pct}%`;
+                progText.textContent = `🔄 BGG 슬리브 조회 중 (${i + 1} / ${targetRows.length} · ${pct}%): ${g.name}`;
+
+                g.sleeves = [];
+                g.sleeveSize = '';
+                g.sleeveCount = 0;
+                const { sleeves } = await autoFetchBggSleevesForGame(g, true, true);
+                if (sleeves.length > 0) {
+                    inp.value = formatSleevesToText(sleeves);
+                    matchedCnt++;
+                } else {
+                    inp.value = '';
+                }
+            }
+
+            $('#bulk-auto-sleeve-btn').disabled = false;
+            $('#bulk-reset-and-refetch-all-btn').disabled = false;
+            $('#bulk-clear-all-sleeves-btn').disabled = false;
+
+            if (_stopBulkBggFetch) {
+                progText.textContent = `⏹️ 중지됨 — 현재까지 ${matchedCnt}개 게임 슬리브 반영 완료`;
+                showMessage(`중지되었습니다. (${matchedCnt}개 게임 반영됨)`, 'success');
+            } else {
+                progText.textContent = `✅ 일괄 재수집 완료! 총 ${targetRows.length}개 중 ${matchedCnt}개 게임의 슬리브 규격이 입력되었습니다.`;
+                showMessage(`✨ BGG 일괄 재수집 완료! (${matchedCnt}개 게임 슬리브 자동 입력)`, 'success');
+            }
+            persistData();
+            renderFilteredGames();
+        }
+
         function saveBulkEditorChanges() {
+            let deductedCnt = 0, restoredCnt = 0;
             $$('#bulk-editor-tbody tr').forEach(row => {
                 const g = allUserGames[parseInt(row.dataset.gameIdx, 10)];
                 if (!g) return;
@@ -755,18 +1297,25 @@
                 if (!g.customFields) g.customFields = {};
                 g.customFields['구매일자'] = d;
                 g.customFields['구매가격'] = p;
-                g.customFields['슬리브'] = sDone ? 'O' : '';
                 g.sleeves = parsedSleeves;
                 g.sleeveSize = formatSleevesToText(parsedSleeves);
                 g.sleeveCount = parsedSleeves.reduce((sum, s) => sum + (s.count || 0), 0);
                 g.customFields['슬리브규격'] = g.sleeveSize;
                 g.customFields['슬리브매수'] = String(g.sleeveCount);
                 if (parsedSleeves.length > 0) rememberCustomSleevePreset(g.name, parsedSleeves);
+
+                if (sDone && !g.sleeveDeducted && parsedSleeves.length > 0) {
+                    if (applySleeveInventoryDelta(g, true, false)) deductedCnt++;
+                } else if (!sDone && g.sleeveDeducted) {
+                    if (applySleeveInventoryDelta(g, false, false)) restoredCnt++;
+                }
+                g.customFields['슬리브'] = sDone ? 'O' : '';
             });
             persistData();
             renderFilteredGames();
             $('#bulk-editor-modal').classList.add('hidden');
-            showMessage('전체 일괄 저장이 완료되었습니다!', 'success');
+            const extraMsg = (deductedCnt || restoredCnt) ? ` (재고 차감 ${deductedCnt}건, 환원 ${restoredCnt}건)` : '';
+            showMessage(`전체 일괄 저장 완료!${extraMsg}`, 'success');
         }
 
         function parsePrice(g) { return parseInt(String((g.customFields && g.customFields['구매가격']) ?? g.purchasePrice ?? 0).replace(/[^0-9]/g, ''), 10) || 0; }
@@ -774,7 +1323,7 @@
         function getBlNumId(g) {
             if (!g) return null;
             if (g.boardlifeNumId) return String(g.boardlifeNumId);
-            for (const c of [g.boardlifeId, g.bggId, g.id]) {
+            for (const c of [g.boardlifeId, g.id]) {
                 if (c) { const m = String(c).match(/(?:bl_|boardlife_)?(\d+)/); if (m) return m[1]; }
             }
             return null;
@@ -811,22 +1360,30 @@
             $('#sync-gist-header-btn').onclick = () => pullFromGist(true);
             $('#open-bulk-editor-btn').onclick = openBulkEditorModal;
             $('#bulk-save-btn').onclick = saveBulkEditorChanges;
-            $('#bulk-auto-sleeve-btn').onclick = () => {
-                let matchedCnt = 0;
-                $$('#bulk-editor-tbody tr').forEach(row => {
-                    const g = allUserGames[parseInt(row.dataset.gameIdx, 10)];
-                    const inp = row.querySelector('.b-sleeves-text');
-                    if (g && inp && !inp.value.trim()) {
-                        const detected = autoDetectSleevesForGame({ name: g.name });
-                        if (detected.length > 0) {
-                            inp.value = formatSleevesToText(detected);
-                            matchedCnt++;
-                        }
-                    }
-                });
-                showMessage(`✨ ${matchedCnt}개 게임의 복수 슬리브 규격을 자동 입력했습니다!`, 'success');
+
+            // 1. 슬리브 전체 초기화 버튼
+            $('#bulk-clear-all-sleeves-btn').onclick = () => {
+                if (!confirm('등록된 게임들의 슬리브 규격·매수 데이터를 모두 비울까요?')) return;
+                const cnt = clearAllSleevesData(true);
+                showMessage(`🗑️ 총 ${cnt}개 게임의 슬리브 정보를 모두 초기화했습니다.`, 'success');
             };
-            $('#bulk-editor-modal .modal-close-btn').onclick = () => $('#bulk-editor-modal').classList.add('hidden');
+
+            // 2. 빈칸만 BGG 수집 버튼
+            $('#bulk-auto-sleeve-btn').onclick = () => runBulkBggRefetch(true);
+
+            // 3. 전체 초기화 후 BGG 일괄 재수집 버튼
+            $('#bulk-reset-and-refetch-all-btn').onclick = () => {
+                if (!confirm('기존에 입력된 슬리브 수량을 초기화하고 BGG에서 전체 게임을 일괄 재수집할까요?')) return;
+                runBulkBggRefetch(false);
+            };
+
+            // 4. 일괄 수집 중지 버튼
+            $('#bgg-bulk-stop-btn').onclick = () => { _stopBulkBggFetch = true; };
+
+            $('#bulk-editor-modal .modal-close-btn').onclick = () => {
+                _stopBulkBggFetch = true;
+                $('#bulk-editor-modal').classList.add('hidden');
+            };
             $('#open-filter-btn').onclick = () => { $('#filter-sidebar').classList.add('open'); $('#filter-overlay').classList.remove('hidden'); };
             $('#close-filter-btn').onclick = $('#filter-overlay').onclick = () => { $('#filter-sidebar').classList.remove('open'); $('#filter-overlay').classList.add('hidden'); };
             $('#view-toggle-btn').onclick = () => {
@@ -945,23 +1502,40 @@
             if (!game) return;
             $('#detailModal').classList.remove('hidden');
             renderModalContent(game);
+            if ((!Array.isArray(game.sleeves) || game.sleeves.length === 0) && !game._bggAutoChecked) {
+                game._bggAutoChecked = true;
+                autoFetchBggSleevesForGame(game, false, true);
+            }
         }
 
         function buildSleeveRowsHtml(sleeves) {
+            const stockMap = getStockBySizeMap();
             const rows = (Array.isArray(sleeves) && sleeves.length > 0) ? sleeves : [{ size: '', count: '' }];
-            return rows.map((s, idx) => `
+            return rows.map((s, idx) => {
+                const normSz = String(s.size || '').trim().toLowerCase();
+                const owned = normSz && stockMap[normSz] !== undefined ? stockMap[normSz] : null;
+                const need = parseInt(s.count, 10) || 0;
+                const badgeClass = owned === null ? '' : (owned >= need ? 'ok' : 'short');
+                const badgeText = owned === null ? '재고 미등록' : `보유 ${owned}장`;
+
+                return `
                 <div class="sleeve-row-item" data-sidx="${idx}">
                     <input type="text" class="filter-input modal-sleeve-size-item" placeholder="규격 (예: 63.5x88)" value="${escapeHtmlSafe(s.size || '')}" style="flex:1; height:2.2rem;">
-                    <input type="number" class="filter-input modal-sleeve-count-item" placeholder="매수" value="${s.count || ''}" style="width:5.5rem; height:2.2rem;">
+                    <input type="number" class="filter-input modal-sleeve-count-item" placeholder="매수" value="${s.count || ''}" style="width:5.2rem; height:2.2rem;">
+                    <span class="stock-badge-inline ${badgeClass}" title="마이페이지 보유 슬리브 잔여 장수">${badgeText}</span>
                     <button type="button" class="detail-section-icon-btn btn-remove-sleeve-row" title="행 삭제" style="color:var(--delete-color);">&times;</button>
-                </div>`).join('');
+                </div>`;
+            }).join('');
         }
 
         function renderModalContent(game) {
             const custom = game.customFields || {};
             const displayName = custom['게임 이름'] || game.name;
             const coverImage = resolveCoverUrl(custom['대표 이미지'] || game.image || game.thumbnail) || './placeholder.png';
-            const bggSleeveUrl = game.bggId ? `https://boardgamegeek.com/boardgame/${game.bggId}/x/sleeves` : `https://bgc.moscow/bgg/?q=${encodeURIComponent(displayName)}`;
+            const searchName = game.originalName || game.engName || displayName;
+            const bggSleeveUrl = game.bggId
+                ? `https://boardgamegeek.com/boardgame/${game.bggId}/sleeves`
+                : `https://boardgamegeek.com/geeksearch.php?action=search&objecttype=boardgame&q=${encodeURIComponent(searchName)}`;
 
             const cval = key => custom[key] || '';
             const mkCheckbox = (label, key) => `<label class="management-checkbox-label"><input type="checkbox" class="sync-input" data-custom-key="${key}" ${(cval(key) === 'O' || cval(key) === 'true') ? 'checked' : ''}>${label}</label>`;
@@ -974,21 +1548,29 @@
                     </div>
                 </div>`;
 
+            const isDeducted = Boolean(game.sleeveDeducted);
+            const deductBtnLabel = isDeducted
+                ? '✅ 슬리브 완료 & 보유 재고 차감됨 (클릭 시 차감 취소·재고 환원)'
+                : '🛡️ 슬리브 완료 체크 & 보유 재고에서 즉시 차감';
+
             const purchaseTabHtml = `
                 <div class="detail-tab-section purchase-tab">
-                    <div class="management-subhead">관리 현황</div>
+                    <div class="management-subhead">관리 현황 (슬리브 완료 체크 시 재고 자동 차감)</div>
                     <div class="management-checks">
                         ${mkCheckbox('슬리브 완료', '슬리브')}
                         ${mkCheckbox('박스 아스테이지 완료', '포장')}
                         ${mkCheckbox('컴포 업그레이드', '컴포')}
                         ${mkCheckbox('확장판', '확장판')}
                     </div>
-                    <div class="management-subhead" style="margin-top: 1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.35rem;">
+                    <button type="button" id="modal-deduct-sleeve-btn" class="deduct-action-btn ${isDeducted ? 'deducted' : ''}">
+                        ${deductBtnLabel}
+                    </button>
+                    <div class="management-subhead" style="margin-top: 0.75rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.35rem;">
                         <span>복수 카드 슬리브 규격 &amp; 매수 ([M-2])</span>
                         <div style="display:flex; gap:0.4rem; align-items:center;">
-                            <button type="button" id="modal-auto-sleeve-btn" class="sleeve-chip" style="color:var(--md-primary); border-color:var(--md-primary);">✨ 자동매칭</button>
+                            <button type="button" id="modal-auto-sleeve-btn" class="sleeve-chip" style="color:var(--md-primary); border-color:var(--md-primary);">🔄 초기화 후 BGG 재수집</button>
                             <button type="button" id="modal-add-sleeve-row-btn" class="sleeve-chip">+ 규격 추가</button>
-                            <a href="${bggSleeveUrl}" target="_blank" style="font-size:0.75rem; color:var(--md-primary); text-decoration:none; font-weight:700;">🛡️ BGG ↗</a>
+                            <a href="${bggSleeveUrl}" target="_blank" style="font-size:0.75rem; color:var(--md-primary); text-decoration:none; font-weight:700;">BGG 원문 ↗</a>
                         </div>
                     </div>
                     <div id="modal-sleeve-rows-container">
@@ -1079,7 +1661,7 @@
         }
 
         function initModalListeners() {
-            $('#detailModal').addEventListener('click', (e) => {
+            $('#detailModal').addEventListener('click', async (e) => {
                 const modalEl = e.target.closest('.detail-content');
                 if (!modalEl) return;
                 const docId = modalEl.dataset.docId;
@@ -1101,6 +1683,14 @@
                     const t = e.target.dataset.tab;
                     modalEl.querySelectorAll('.detail-tab-btn').forEach(b => b.classList.toggle('active', b === e.target));
                     modalEl.querySelectorAll('.detail-tab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === t));
+                } else if (e.target.matches('#modal-deduct-sleeve-btn')) {
+                    if (!game) return;
+                    saveModalData(docId, modalEl);
+                    const targetDeduct = !game.sleeveDeducted;
+                    if (applySleeveInventoryDelta(game, targetDeduct, true)) {
+                        persistData();
+                        renderModalContent(game);
+                    }
                 } else if (e.target.matches('#modal-add-sleeve-row-btn')) {
                     const box = modalEl.querySelector('#modal-sleeve-rows-container');
                     const cur = collectModalSleeves(modalEl);
@@ -1108,14 +1698,12 @@
                     box.innerHTML = buildSleeveRowsHtml(cur);
                 } else if (e.target.matches('#modal-auto-sleeve-btn')) {
                     if (!game) return;
-                    const detected = autoDetectSleevesForGame({ name: game.name });
-                    if (detected.length > 0) {
-                        modalEl.querySelector('#modal-sleeve-rows-container').innerHTML = buildSleeveRowsHtml(detected);
-                        saveModalData(docId, modalEl);
-                        showMessage(`✨ ${detected.length}종의 슬리브 규격이 자동 입력되었습니다!`, 'success');
-                    } else {
-                        showMessage('내장 프리셋에 없는 게임입니다. 우측 BGG 링크를 참고해 입력하면 다음부터 자동 기억됩니다.', 'error');
-                    }
+                    e.target.textContent = '⏳ BGG 재수집 중...';
+                    game.sleeves = [];
+                    game.sleeveSize = '';
+                    game.sleeveCount = 0;
+                    await autoFetchBggSleevesForGame(game, false, true);
+                    renderModalContent(game);
                 } else if (e.target.matches('.btn-remove-sleeve-row')) {
                     const row = e.target.closest('.sleeve-row-item');
                     if (row) row.remove();
@@ -1132,8 +1720,30 @@
                         box.innerHTML = buildSleeveRowsHtml(cur);
                     }
                     saveModalData(docId, modalEl);
+                    modalEl.querySelector('#modal-sleeve-rows-container').innerHTML = buildSleeveRowsHtml(game.sleeves);
                 }
             });
+
+            $('#detailModal').addEventListener('change', (e) => {
+                const modalEl = e.target.closest('.detail-content');
+                if (!modalEl) return;
+                const docId = modalEl.dataset.docId;
+                const game = allUserGames.find(x => x.id === docId);
+                if (!game) return;
+
+                if (e.target.matches('.sync-input[data-custom-key="슬리브"]')) {
+                    saveModalData(docId, modalEl);
+                    const isChecked = e.target.checked;
+                    if (isChecked && !game.sleeveDeducted) {
+                        applySleeveInventoryDelta(game, true, true);
+                    } else if (!isChecked && game.sleeveDeducted) {
+                        applySleeveInventoryDelta(game, false, true);
+                    }
+                    persistData();
+                    renderModalContent(game);
+                }
+            });
+
             $('#detailModal').addEventListener('input', (e) => {
                 const modalEl = e.target.closest('.detail-content');
                 if (!modalEl) return;
@@ -1175,8 +1785,10 @@
                         docs.forEach(g => {
                             const dbNumId = getBlNumId(g);
                             const isAdded = (dbNumId && allUserGames.some(ug => getBlNumId(ug) === dbNumId)) || allUserGames.some(ug => ug.id === g.id);
-                            const previewSleeves = autoDetectSleevesForGame(g);
-                            const sleeveHint = previewSleeves.length ? `<span style="font-size:0.7rem; color:var(--md-primary);">🛡️ ${formatSleevesDisplay(previewSleeves)}</span>` : '';
+                            const cachedSleeves = autoDetectSleevesForGame(g);
+                            const sleeveHint = cachedSleeves.length
+                                ? `<span style="font-size:0.7rem; color:var(--md-primary);">🛡️ ${formatSleevesDisplay(cachedSleeves)}</span>`
+                                : `<span style="font-size:0.7rem; color:var(--text-secondary);">🛡️ 추가 시 BGG 슬리브 자동수집</span>`;
 
                             const item = document.createElement('div');
                             item.className = 'search-result-item';
@@ -1189,20 +1801,24 @@
                                 </div>
                                 <button class="add-btn" type="button" ${isAdded ? 'disabled' : ''}>${isAdded ? '추가됨' : '추가'}</button>`;
                             if (!isAdded) {
-                                item.querySelector('.add-btn').onclick = (ev) => {
+                                item.querySelector('.add-btn').onclick = async (ev) => {
                                     ev.target.disabled = true;
                                     ev.target.textContent = '추가됨';
                                     const newG = normalizeGameRecord({
                                         ...g,
                                         createdAt: Date.now(),
-                                        sleeves: previewSleeves,
+                                        sleeves: cachedSleeves,
                                         customFields: { '구매일자': new Date().toISOString().slice(0, 10), '구매가격': '', '대표 이미지': g.image || '' }
                                     });
                                     allUserGames.unshift(newG);
                                     persistData();
                                     renderFilteredGames();
-                                    const sMsg = newG.sleeves.length ? ` (슬리브 ${formatSleevesDisplay(newG.sleeves)} 자동입력)` : '';
-                                    showMessage(`${g.name} 추가 완료!${sMsg}`, 'success');
+
+                                    if (!newG.sleeves.length) {
+                                        await autoFetchBggSleevesForGame(newG, false, true);
+                                    } else {
+                                        showMessage(`✅ ${g.name} 추가 완료! (슬리브: ${formatSleevesDisplay(newG.sleeves)})`, 'success');
+                                    }
                                 };
                             }
                             resBox.appendChild(item);
@@ -1238,7 +1854,6 @@
                 reader.readAsText(file);
             };
 
-            /* 직접 추가 모달 및 실시간 매칭 */
             $('#open-manual-add-btn').onclick = () => {
                 $('#search-panel').classList.add('hidden');
                 $('#manual-purchase-date').value = new Date().toISOString().slice(0, 10);
@@ -1246,23 +1861,19 @@
             };
             $('#manual-add-panel .modal-close-btn').onclick = () => $('#manual-add-panel').classList.add('hidden');
 
-            $('#manual-name').addEventListener('input', (e) => {
-                const detected = autoDetectSleevesForGame({ name: e.target.value });
-                if (detected.length > 0 && !$('#manual-sleeves-text').value.trim()) {
-                    $('#manual-sleeves-text').value = formatSleevesToText(detected);
-                }
-            });
-
             $('#manual-match-btn').onclick = async () => {
                 const q = $('#manual-name').value.trim();
                 if (!q) { showMessage('게임 이름을 먼저 입력하세요.', 'error'); return; }
-                const detected = autoDetectSleevesForGame({ name: q });
-                if (detected.length > 0) $('#manual-sleeves-text').value = formatSleevesToText(detected);
+                const btn = $('#manual-match-btn');
+                btn.disabled = true;
+                btn.textContent = '⏳ BGG 조회중...';
 
+                let matchedGameObj = { name: q };
                 try {
                     const { docs } = await searchRealtimeBoardLifeDB(q, 5);
                     if (docs.length > 0) {
                         const top = docs[0];
+                        matchedGameObj = top;
                         $('#manual-name').value = top.name || q;
                         $('#manual-image-url').value = top.image || top.id || '';
                         $('#manual-minplayers').value = top.minplayers || '1';
@@ -1270,41 +1881,48 @@
                         $('#manual-minplaytime').value = top.minplaytime || '30';
                         $('#manual-maxplaytime').value = top.maxplaytime || '60';
                         $('#manual-complexity').value = top.complexity || '2.5';
-                        const autoSlv = autoDetectSleevesForGame(top);
-                        if (autoSlv.length > 0) $('#manual-sleeves-text').value = formatSleevesToText(autoSlv);
-                        showMessage(`🔍 '${top.name}' 정보 및 슬리브 매칭 완료!`, 'success');
-                    } else {
-                        showMessage(detected.length ? '슬리브 규격 자동 매칭 완료!' : 'DB 검색 결과가 없습니다.', detected.length ? 'success' : 'error');
                     }
-                } catch (e) {
-                    showMessage(detected.length ? '내장 슬리브 규격 매칭 완료!' : '실시간 DB 키 설정 후 이용 가능합니다.', detected.length ? 'success' : 'error');
+                } catch (e) {}
+
+                const { sleeves } = await autoFetchBggSleevesForGame(matchedGameObj, true, true);
+                if (sleeves.length > 0) {
+                    $('#manual-sleeves-text').value = formatSleevesToText(sleeves);
+                    showMessage(`🛡️ BGG 슬리브 매칭 완료: ${formatSleevesDisplay(sleeves)}`, 'success');
+                } else {
+                    showMessage('게임 기본 정보를 불러왔습니다.', 'success');
                 }
+                btn.disabled = false;
+                btn.textContent = '🔍 DB & BGG 슬리브 즉시 조회';
             };
 
-            $('#manual-add-form').onsubmit = (e) => {
+            $('#manual-add-form').onsubmit = async (e) => {
                 e.preventDefault();
                 const name = $('#manual-name').value.trim();
                 const imgUrl = resolveCoverUrl($('#manual-image-url').value.trim());
                 const manualSleeves = parseTextToSleeves($('#manual-sleeves-text').value.trim());
-                const finalSleeves = manualSleeves.length > 0 ? manualSleeves : autoDetectSleevesForGame({ name });
-                if (finalSleeves.length > 0) rememberCustomSleevePreset(name, finalSleeves);
 
-                allUserGames.unshift(normalizeGameRecord({
+                const newG = normalizeGameRecord({
                     id: `manual_${Date.now()}`, name, image: imgUrl,
                     minplayers: $('#manual-minplayers').value || '1', maxplayers: $('#manual-maxplayers').value || '4',
                     minplaytime: $('#manual-minplaytime').value || '30', maxplaytime: $('#manual-maxplaytime').value || '60',
                     complexity: $('#manual-complexity').value || '2.5', createdAt: Date.now(),
-                    sleeves: finalSleeves,
+                    sleeves: manualSleeves,
                     customFields: { '구매일자': $('#manual-purchase-date').value || '', '구매가격': $('#manual-purchase-price').value || '', '대표 이미지': imgUrl }
-                }));
+                });
+                allUserGames.unshift(newG);
                 persistData();
                 renderFilteredGames();
                 $('#manual-add-form').reset();
                 $('#manual-add-panel').classList.add('hidden');
-                showMessage(`${name} 추가 완료!`, 'success');
+
+                if (!newG.sleeves.length) {
+                    await autoFetchBggSleevesForGame(newG, false, true);
+                } else {
+                    rememberCustomSleevePreset(name, newG.sleeves);
+                    showMessage(`${name} 추가 완료!`, 'success');
+                }
             };
 
-            /* BoardLife URL 추가 모달 연결 */
             $('#open-boardlife-add-btn').onclick = () => {
                 $('#search-panel').classList.add('hidden');
                 $('#boardlife-add-panel').classList.remove('hidden');
@@ -1341,7 +1959,8 @@
                 renderFilteredGames();
                 $('#boardlife-add-form').reset();
                 $('#boardlife-add-panel').classList.add('hidden');
-                showMessage(`${newGame.name} 추가 완료!`, 'success');
+
+                await autoFetchBggSleevesForGame(newGame, false, true);
             };
         }
 
@@ -1396,7 +2015,7 @@
         function escapeHtmlSafe(s) { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; }
         function showMessage(msg, type = 'success') {
             const el = document.createElement('div'); el.className = `message ${type}`; el.textContent = msg;
-            $('.message-container').appendChild(el); setTimeout(() => el.remove(), 3000);
+            $('.message-container').appendChild(el); setTimeout(() => el.remove(), 3500);
         }
     </script>
 </body>

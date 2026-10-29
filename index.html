@@ -7,11 +7,13 @@
     <link rel="stylesheet" href="style.css?v=19">
     <meta name="theme-color" content="#F7F2FA">
     <style>
-        /* M-1 일괄 편집 표 모달 스타일 */
-        .bulk-editor-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        .bulk-editor-table th, .bulk-editor-table td { padding: 0.5rem; border-bottom: 1px solid var(--border-color); text-align: left; }
-        .bulk-editor-table th { background: var(--bg-secondary); color: var(--text-secondary); font-size: 0.75rem; }
-        .bulk-input { width: 100%; padding: 0.35rem 0.5rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-main); color: var(--text-primary); font-size: 0.85rem; }
+        .bulk-editor-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; min-width: 620px; }
+        .bulk-editor-table th, .bulk-editor-table td { padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--border-color); text-align: left; }
+        .bulk-editor-table th { background: var(--bg-secondary); color: var(--text-secondary); font-size: 0.75rem; position: sticky; top: 0; z-index: 2; }
+        .bulk-input { width: 100%; padding: 0.35rem 0.45rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-main); color: var(--text-primary); font-size: 0.82rem; box-sizing: border-box; }
+        .sleeve-preset-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.35rem; }
+        .sleeve-chip { padding: 0.2rem 0.5rem; font-size: 0.72rem; border-radius: 999px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-secondary); cursor: pointer; font-weight: 600; }
+        .sleeve-chip:hover { border-color: var(--md-primary); color: var(--md-primary); }
     </style>
 </head>
 <body>
@@ -20,19 +22,19 @@
         <aside id="filter-sidebar" class="filter-sidebar">
             <div class="filter-header">
                 <h3>상세 검색</h3>
-                <button id="close-filter-btn" class="close-btn">&times;</button>
+                <button id="close-filter-btn" class="close-btn" type="button">&times;</button>
             </div>
             <div class="controls">
                 <div class="filter-group">
-                    <button id="sort-btn" class="filter-sort-btn">정렬: 가나다순</button>
+                    <button id="sort-btn" class="filter-sort-btn" type="button">정렬: 가나다순</button>
                 </div>
                 <div class="search-box">
                     <label for="nameSearchInput">게임 이름</label>
                     <input type="text" id="nameSearchInput" class="filter-input" placeholder="게임 이름으로 검색">
                 </div>
                 <div class="search-box">
-                    <label for="genreSearchInput">장르</label>
-                    <input type="text" id="genreSearchInput" class="filter-input" placeholder="장르로 검색">
+                    <label for="genreSearchInput">장르 / 슬리브 규격</label>
+                    <input type="text" id="genreSearchInput" class="filter-input" placeholder="장르 또는 슬리브(예: 63.5x88)">
                 </div>
                 <div class="filter-group">
                     <label for="playerCountInput">플레이 인원</label>
@@ -48,13 +50,8 @@
                 <div class="filter-group">
                     <div class="section-header" style="margin-bottom: 0.5rem;">
                         <label style="margin-bottom: 0;">태그</label>
-                        <button id="open-global-tag-manager-btn" class="detail-section-icon-btn" title="태그 생성/수정/삭제">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
+                        <button id="open-global-tag-manager-btn" class="detail-section-icon-btn" type="button" title="태그 생성/수정/삭제">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         </button>
                     </div>
                     <div id="tag-filter-container" class="tag-filter-container"></div>
@@ -74,11 +71,13 @@
                     <div class="slider-wrapper">
                         <div class="slider-track"></div>
                         <div class="slider-range" id="difficultyRange"></div>
-                        <input type="range" id="difficultyMin" min="1" max="5" value="1" step="0.1" aria-label="최소 난이도">
-                        <input type="range" id="difficultyMax" min="1" max="5" value="5" step="0.1" aria-label="최대 난이도">
+                        <input type="range" id="difficultyMin" min="1" max="5" value="1" step="0.1">
+                        <input type="range" id="difficultyMax" min="1" max="5" value="5" step="0.1">
                     </div>
                     <div class="slider-values">
-                        <span id="difficultyMinValue">1.0</span> - <span id="difficultyMaxValue">5.0</span>
+                        <span id="difficultyMinValue">1.0</span>
+                        <span>-</span>
+                        <span id="difficultyMaxValue">5.0</span>
                     </div>
                 </div>
                 <div class="filter-group">
@@ -86,18 +85,17 @@
                     <div class="slider-wrapper">
                         <div class="slider-track"></div>
                         <div class="slider-range" id="timeRange"></div>
-                        <input type="range" id="timeMin" min="0" max="240" value="0" step="10" aria-label="최소 플레이 시간">
-                        <input type="range" id="timeMax" min="0" max="240" value="240" step="10" aria-label="최대 플레이 시간">
+                        <input type="range" id="timeMin" min="0" max="240" value="0" step="10">
+                        <input type="range" id="timeMax" min="0" max="240" value="240" step="10">
                     </div>
                     <div class="slider-values">
-                        <span id="timeMinValue">0분</span> - <span id="timeMaxValue">240분+</span>
+                        <span id="timeMinValue">0분</span>
+                        <span>-</span>
+                        <span id="timeMaxValue">240분+</span>
                     </div>
                 </div>
-
                 <div class="filter-group" style="margin-top: 1.5rem;">
-                    <button id="random-pick-btn" class="filter-sort-btn random-pick-btn">
-                        🎲 제비뽑기
-                    </button>
+                    <button id="random-pick-btn" class="filter-sort-btn random-pick-btn" type="button">🎲 제비뽑기</button>
                 </div>
             </div>
         </aside>
@@ -106,83 +104,42 @@
             <header id="page-header">
                 <h1 id="header-title">
                     <span id="user-nickname-line1">나의</span>
-                    <span id="header-subtitle">
-                        보드게임 책장 <span id="game-count-badge" class="game-count-badge">0</span>
-                    </span>
+                    <span id="header-subtitle">보드게임 책장 <span id="game-count-badge" class="game-count-badge">0</span></span>
                 </h1>
                 <div class="header-controls">
-                    <button id="open-bulk-editor-btn" class="action-icon-btn desktop-only-btn" title="엑셀형 일괄 편집">📝</button>
-                    <button id="add-game-button" class="action-icon-btn desktop-only-btn" title="게임 추가">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
+                    <button id="open-bulk-editor-btn" class="action-icon-btn" type="button" title="엑셀형 일괄 편집 ([M-1])">📝</button>
+                    <button id="add-game-button" class="action-icon-btn desktop-only-btn" type="button" title="게임 추가">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     </button>
-                    <button id="view-toggle-btn" class="action-icon-btn desktop-only-btn" title="보기 전환">
-                        <svg class="view-icon grid-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="14" width="7" height="7"></rect>
-                            <rect x="3" y="14" width="7" height="7"></rect>
-                        </svg>
-                        <svg class="view-icon list-icon hidden" xmlns="http://www.w3.org/2000/svg" width="20"
-                            height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="8" y1="6" x2="21" y2="6"></line>
-                            <line x1="8" y1="12" x2="21" y2="12"></line>
-                            <line x1="8" y1="18" x2="21" y2="18"></line>
-                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                        </svg>
+                    <button id="view-toggle-btn" class="action-icon-btn desktop-only-btn" type="button" title="보기 전환">
+                        <svg class="view-icon grid-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        <svg class="view-icon list-icon hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
                     </button>
                     <a href="./sessions.html" id="sessions-nav-btn" class="action-icon-btn desktop-only-btn" title="게임 기록">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                     </a>
                     <a href="./mypage.html" id="mypage-btn" class="action-icon-btn desktop-only-btn" title="마이페이지">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     </a>
-                    <button id="open-filter-btn" class="action-icon-btn" aria-label="필터 열기">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="3" y1="12" x2="21" y2="12"></line>
-                            <line x1="3" y1="6" x2="21" y2="6"></line>
-                            <line x1="3" y1="18" x2="21" y2="18"></line>
-                        </svg>
+                    <button id="open-filter-btn" class="action-icon-btn" type="button" aria-label="필터 열기">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                     </button>
                 </div>
             </header>
 
             <div class="mobile-app-bar-ext" id="mobile-app-bar-ext">
                 <div class="mobile-search-box">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     <input type="text" id="mobileSearchInput" placeholder="게임 이름 검색" autocomplete="off" />
                 </div>
-                <div class="player-chips-row" id="playerChipsRow" role="tablist" aria-label="플레이 인원">
+                <div class="player-chips-row" id="playerChipsRow" role="tablist">
                     <button type="button" class="player-chip active" data-players="0">전체</button>
+                    <button type="button" class="player-chip" data-players="1">1명</button>
                     <button type="button" class="player-chip" data-players="2">2명</button>
                     <button type="button" class="player-chip" data-players="3">3명</button>
                     <button type="button" class="player-chip" data-players="4">4명</button>
                     <button type="button" class="player-chip" data-players="5">5명</button>
-                    <button type="button" class="player-chip" data-players="6">6명</button>
-                    <button type="button" class="player-chip" data-players="7">7+</button>
+                    <button type="button" class="player-chip" data-players="6">6+</button>
                 </div>
             </div>
 
@@ -193,11 +150,7 @@
     </div>
 
     <button type="button" id="fab-add-game" class="mobile-fab" aria-label="게임 추가">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
     </button>
 
     <div id="filter-overlay" class="filter-overlay hidden"></div>
@@ -206,36 +159,27 @@
     <!-- 게임 추가 모달 -->
     <div class="modal hidden" id="search-panel">
         <div class="search-panel-content">
-            <button class="modal-close-btn">&times;</button>
+            <button class="modal-close-btn" type="button">&times;</button>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                 <h2 style="margin:0;">게임 추가</h2>
                 <button type="button" id="set-rt-token-btn" class="detail-title-action-btn" style="font-size:0.78rem;">🔑 실시간 DB 키 설정</button>
             </div>
             <div id="rt-db-status" style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:0.5rem;"></div>
-
             <div class="search-box" style="margin-top:0.25rem; margin-bottom: 1rem;">
-                <input type="text" id="bl-db-search-input" class="filter-input" placeholder="추가할 게임 이름을 검색하세요 (예: 글룸헤이븐, 보이드폴, ㅂㅇㄷㅍ)...">
+                <input type="text" id="bl-db-search-input" class="filter-input" placeholder="게임 이름, 초성(ㅂㅇㄷㅍ) 검색...">
             </div>
-
             <div id="bl-db-search-results" class="search-results-list" style="margin-bottom: 1rem;"></div>
-
             <div class="add-method-section">
                 <div class="add-method-section-label">기타 추가 방식</div>
                 <div class="add-method-cards">
                     <button id="open-manual-add-btn" class="add-method-card" type="button">
-                        <span class="add-method-icon" aria-hidden="true">✏️</span>
-                        <span class="add-method-title">직접 입력</span>
-                        <span class="add-method-desc">정보 직접 작성</span>
+                        <span class="add-method-icon">✏️</span><span class="add-method-title">직접 입력</span><span class="add-method-desc">정보 직접 작성</span>
                     </button>
                     <button id="open-boardlife-add-btn" class="add-method-card" type="button">
-                        <span class="add-method-icon" aria-hidden="true">🔗</span>
-                        <span class="add-method-title">URL 추가</span>
-                        <span class="add-method-desc">보드라이프 URL</span>
+                        <span class="add-method-icon">🔗</span><span class="add-method-title">URL 추가</span><span class="add-method-desc">보드라이프 URL</span>
                     </button>
                     <label class="add-method-card add-method-card-accent" style="cursor:pointer;">
-                        <span class="add-method-icon" aria-hidden="true">📂</span>
-                        <span class="add-method-title">JSON 복원</span>
-                        <span class="add-method-desc">백업 파일 불러오기</span>
+                        <span class="add-method-icon">📂</span><span class="add-method-title">JSON 복원</span><span class="add-method-desc">백업/키 불러오기</span>
                         <input type="file" id="quick-json-import" accept=".json" style="display:none;">
                     </label>
                 </div>
@@ -246,7 +190,7 @@
     <!-- 직접 추가 모달 -->
     <div class="modal hidden" id="manual-add-panel">
         <div class="search-panel-content">
-            <button class="modal-close-btn">&times;</button>
+            <button class="modal-close-btn" type="button">&times;</button>
             <h2>게임 직접 추가</h2>
             <form id="manual-add-form">
                 <div class="manual-add-grid">
@@ -261,64 +205,43 @@
                         <label for="manual-image-url">대표 이미지 URL 또는 보드라이프 번호</label>
                         <input type="text" id="manual-image-url" class="filter-input" placeholder="예: 14527 또는 https://...">
                     </div>
-                    <div class="form-group">
-                        <label for="manual-minplayers">최소 인원</label>
-                        <input type="number" id="manual-minplayers" class="filter-input" placeholder="예: 1">
-                    </div>
-                    <div class="form-group">
-                        <label for="manual-maxplayers">최대 인원</label>
-                        <input type="number" id="manual-maxplayers" class="filter-input" placeholder="예: 4">
-                    </div>
-                    <div class="form-group">
-                        <label for="manual-minplaytime">최소 시간(분)</label>
-                        <input type="number" id="manual-minplaytime" class="filter-input" placeholder="예: 30">
-                    </div>
-                    <div class="form-group">
-                        <label for="manual-maxplaytime">최대 시간(분)</label>
-                        <input type="number" id="manual-maxplaytime" class="filter-input" placeholder="예: 60">
-                    </div>
-                    <div class="form-group form-group-full">
-                        <label for="manual-complexity">난이도 (1-5)</label>
-                        <input type="number" id="manual-complexity" class="filter-input" step="0.01" min="1" max="5" placeholder="예: 2.5">
-                    </div>
-                    <div class="form-group">
-                        <label for="manual-purchase-date">구매일자</label>
-                        <input type="date" id="manual-purchase-date" class="filter-input">
-                    </div>
-                    <div class="form-group">
-                        <label for="manual-purchase-price">구매가격 (원)</label>
-                        <input type="number" id="manual-purchase-price" class="filter-input" placeholder="예: 50000">
-                    </div>
+                    <div class="form-group"><label>최소 인원</label><input type="number" id="manual-minplayers" class="filter-input" placeholder="1"></div>
+                    <div class="form-group"><label>최대 인원</label><input type="number" id="manual-maxplayers" class="filter-input" placeholder="4"></div>
+                    <div class="form-group"><label>최소 시간(분)</label><input type="number" id="manual-minplaytime" class="filter-input" placeholder="30"></div>
+                    <div class="form-group"><label>최대 시간(분)</label><input type="number" id="manual-maxplaytime" class="filter-input" placeholder="60"></div>
+                    <div class="form-group form-group-full"><label>난이도 (1-5)</label><input type="number" id="manual-complexity" class="filter-input" step="0.01" min="1" max="5" placeholder="2.5"></div>
+                    <div class="form-group"><label>구매일자</label><input type="date" id="manual-purchase-date" class="filter-input"></div>
+                    <div class="form-group"><label>구매가격 (원)</label><input type="number" id="manual-purchase-price" class="filter-input" placeholder="50000"></div>
                 </div>
                 <button type="submit" class="filter-sort-btn primary-action-btn" style="text-align: center; width: 100%;">책장에 추가</button>
             </form>
         </div>
     </div>
 
-    <!-- M-1 일괄 편집 모달 -->
+    <!-- [M-1] 엑셀형 일괄 편집 모달 -->
     <div class="modal hidden" id="bulk-editor-modal">
-        <div class="search-panel-content" style="width: 54rem; max-width: 95vw;">
-            <button class="modal-close-btn">&times;</button>
-            <h2>엑셀형 일괄 편집</h2>
-            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">구매일자, 구매가격, 슬리브 규격 및 매수를 표에서 한 번에 수정하고 저장하세요.</p>
-            <div style="max-height: 60vh; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+        <div class="search-panel-content" style="width: 58rem; max-width: 96vw;">
+            <button class="modal-close-btn" type="button">&times;</button>
+            <h2>📝 엑셀형 일괄 편집기 ([M-1])</h2>
+            <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:0.75rem;">전체 보유 게임의 구매일자, 구매가격, 슬리브 규격·매수·완료 여부를 한 화면에서 연속 입력(Tab 이동)하고 저장하세요.</p>
+            <div style="max-height: 62vh; overflow: auto; border: 1px solid var(--border-color); border-radius: 8px;">
                 <table class="bulk-editor-table">
                     <thead>
                         <tr>
                             <th>게임 이름</th>
-                            <th>구매일자</th>
-                            <th>구매가격(원)</th>
-                            <th>슬리브 규격</th>
-                            <th>매수</th>
-                            <th>슬리브완료</th>
+                            <th style="width:135px;">구매일자</th>
+                            <th style="width:110px;">구매가격(원)</th>
+                            <th style="width:120px;">슬리브 규격</th>
+                            <th style="width:80px;">매수</th>
+                            <th style="width:70px; text-align:center;">완료</th>
                         </tr>
                     </thead>
                     <tbody id="bulk-editor-tbody"></tbody>
                 </table>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;">
-                <button type="button" class="small-btn" onclick="$('#bulk-editor-modal').classList.add('hidden')">취소</button>
-                <button type="button" class="small-btn primary" id="bulk-save-btn">일괄 저장하기</button>
+                <button type="button" class="tag-apply-cancel-btn" onclick="document.getElementById('bulk-editor-modal').classList.add('hidden')">취소</button>
+                <button type="button" class="tag-apply-save-btn" id="bulk-save-btn">💾 전체 일괄 저장</button>
             </div>
         </div>
     </div>
@@ -326,14 +249,12 @@
     <!-- BoardLife URL Modal -->
     <div class="modal hidden" id="boardlife-add-panel">
         <div class="search-panel-content">
-            <button class="modal-close-btn">&times;</button>
+            <button class="modal-close-btn" type="button">&times;</button>
             <h2>BoardLife URL로 추가</h2>
-            <p style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 1rem;">
-                BoardLife 게임 페이지 주소(예: <code>https://boardlife.co.kr/game/14527</code>)를 붙여넣으세요.
-            </p>
+            <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:0.75rem;">보드라이프 게임 페이지 주소(예: <code>https://boardlife.co.kr/game/14527</code>) 또는 고유 번호만 입력하세요.</p>
             <form id="boardlife-add-form">
                 <div class="search-box">
-                    <input type="text" id="boardlife-url-input" class="filter-input" placeholder="https://boardlife.co.kr/game/14527" required>
+                    <input type="text" id="boardlife-url-input" class="filter-input" placeholder="https://boardlife.co.kr/game/14527 또는 14527" required>
                 </div>
                 <button type="submit" class="filter-sort-btn primary-action-btn" style="text-align: center; width: 100%; margin-top: 1rem;">정보 추출 및 추가</button>
             </form>
@@ -344,24 +265,12 @@
     <div class="loading hidden" id="loading"><div class="spinner"></div></div>
 
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
-        <a href="./" class="nav-item active" aria-label="책장">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
-            <span>책장</span>
-        </a>
-        <a href="./sessions.html" class="nav-item" aria-label="게임 기록">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <span>게임 기록</span>
-        </a>
-        <a href="./mypage.html" class="nav-item" aria-label="마이페이지">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            <span>마이페이지</span>
-        </a>
+        <a href="./" class="nav-item active"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg><span>책장</span></a>
+        <a href="./sessions.html" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg><span>게임 기록</span></a>
+        <a href="./mypage.html" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>마이페이지</span></a>
     </nav>
 
     <script>
-        /* =========================================================
-           1. 자모 분해 & 실시간 Firestore REST API 엔진
-           ========================================================= */
         (function (global) {
             const HANGUL_BASE = 0xAC00, HANGUL_END = 0xD7A3, MAX_INDEXED_KEY_LENGTH = 12;
             const CHOSUNG_LIST = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
@@ -370,7 +279,6 @@
             const JONGSUNG_LIST = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
             const COMPOUND_JONG = {'ㄳ':'ㄱㅅ','ㄵ':'ㄴㅈ','ㄶ':'ㄴㅎ','ㄺ':'ㄹㄱ','ㄻ':'ㄹㅁ','ㄼ':'ㄹㅂ','ㄽ':'ㄹㅅ','ㄾ':'ㄹㅌ','ㄿ':'ㄹㅍ','ㅀ':'ㄹㅎ','ㅄ':'ㅂㅅ'};
             const COMPOUND_JUNG = {'ㅘ':'ㅗㅏ','ㅙ':'ㅗㅐ','ㅚ':'ㅗㅣ','ㅝ':'ㅜㅓ','ㅞ':'ㅜㅔ','ㅟ':'ㅜㅣ','ㅢ':'ㅡㅣ'};
-
             function decomposeHangul(str) {
                 let out = '';
                 for (const ch of (str || '')) {
@@ -380,21 +288,8 @@
                         const cho = CHOSUNG_LIST[Math.floor(idx / 588)];
                         const jungRaw = JUNGSUNG_LIST[Math.floor((idx % 588) / 28)];
                         const jongRaw = JONGSUNG_LIST[idx % 28];
-                        const jung = COMPOUND_JUNG[jungRaw] || jungRaw;
-                        const jong = jongRaw ? (COMPOUND_JONG[jongRaw] || jongRaw) : '';
-                        out += cho + jung + jong;
-                    } else {
-                        out += COMPOUND_JONG[ch] || COMPOUND_JUNG[ch] || ch;
-                    }
-                }
-                return out;
-            }
-            function extractChosung(str) {
-                let out = '';
-                for (const ch of (str || '')) {
-                    const code = ch.charCodeAt(0);
-                    if (code >= HANGUL_BASE && code <= HANGUL_END) out += CHOSUNG_LIST[Math.floor((code - HANGUL_BASE) / 588)];
-                    else out += ch;
+                        out += cho + (COMPOUND_JUNG[jungRaw] || jungRaw) + (jongRaw ? (COMPOUND_JONG[jongRaw] || jongRaw) : '');
+                    } else out += COMPOUND_JONG[ch] || COMPOUND_JUNG[ch] || ch;
                 }
                 return out;
             }
@@ -402,13 +297,13 @@
             function isAllChosung(s) { if (!s) return false; for (const ch of s) { if (!CHOSUNG_SET.has(ch)) return false; } return true; }
             function buildSearchKey(input) {
                 const q = normalizeQuery(input);
-                if (q.length === 0) return { key: null, reason: 'empty' };
+                if (!q) return { key: null, reason: 'empty' };
                 const jamo = decomposeHangul(q);
                 if (jamo.length < 2) return { key: null, reason: 'too_short' };
                 return { key: jamo.slice(0, MAX_INDEXED_KEY_LENGTH), reason: 'ok' };
             }
             function buildExactNameKey(input) { const q = normalizeQuery(input); return q ? '=' + q : ''; }
-            global.SearchKeywords = { buildSearchKey, buildExactNameKey, normalizeQuery, isAllChosung, decomposeHangul, extractChosung };
+            global.SearchKeywords = { buildSearchKey, buildExactNameKey, normalizeQuery, isAllChosung, decomposeHangul };
         })(window);
 
         const FB_API_KEY = "AIzaSyCr3bsfOssOHnD1ART57EqpK9eaiA93ick";
@@ -424,25 +319,28 @@
         const FB_REFRESH_TOKEN_KEY = "MY_BG_FB_REFRESH_TOKEN_V1";
         const GIST_FILENAME = "myboardgames_db.json";
 
-        let _cachedIdToken = null;
-        let _cachedIdTokenExp = 0;
+        let _cachedIdToken = null, _cachedIdTokenExp = 0;
+        let allUserGames = [], allUserTags = [], currentSort = 'name-asc', currentViewMode = 'grid';
+        let debounceTimer, autoSaveDebounceTimer = null, boardLifeSearchDebounceTimer = null;
+
+        const $ = (s) => document.querySelector(s);
+        const $$ = (s) => document.querySelectorAll(s);
 
         async function getValidFirebaseIdToken() {
             if (_cachedIdToken && Date.now() < _cachedIdTokenExp) return _cachedIdToken;
-            const refreshToken = (localStorage.getItem(FB_REFRESH_TOKEN_KEY) || '').trim();
-            if (!refreshToken) return null;
+            const rt = (localStorage.getItem(FB_REFRESH_TOKEN_KEY) || '').trim();
+            if (!rt) return null;
             try {
-                const resp = await fetch(`https://securetoken.googleapis.com/v1/token?key=${FB_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(refreshToken)}`
+                const r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${FB_API_KEY}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(rt)}`
                 });
-                if (!resp.ok) return null;
-                const data = await resp.json();
-                if (data.id_token) {
-                    _cachedIdToken = data.id_token;
-                    _cachedIdTokenExp = Date.now() + 50 * 60 * 1000;
-                    if (data.refresh_token) localStorage.setItem(FB_REFRESH_TOKEN_KEY, data.refresh_token);
+                if (!r.ok) return null;
+                const d = await r.json();
+                if (d.id_token) {
+                    _cachedIdToken = d.id_token;
+                    _cachedIdTokenExp = Date.now() + (50 * 60 * 1000);
+                    if (d.refresh_token) localStorage.setItem(FB_REFRESH_TOKEN_KEY, d.refresh_token);
                     return _cachedIdToken;
                 }
             } catch (e) {}
@@ -455,24 +353,19 @@
             if ('integerValue' in v) return String(v.integerValue);
             if ('doubleValue' in v) return String(v.doubleValue);
             if ('booleanValue' in v) return Boolean(v.booleanValue);
-            if ('nullValue' in v) return null;
-            if ('timestampValue' in v) return v.timestampValue;
             if ('arrayValue' in v) return (v.arrayValue.values || []).map(parseFirestoreValue);
             if ('mapValue' in v) {
-                const out = {};
-                const fields = v.mapValue.fields || {};
-                for (const k in fields) out[k] = parseFirestoreValue(fields[k]);
-                return out;
+                const o = {};
+                for (const k in (v.mapValue.fields || {})) o[k] = parseFirestoreValue(v.mapValue.fields[k]);
+                return o;
             }
             return null;
         }
 
         function parseRestDoc(doc) {
             if (!doc || !doc.name) return null;
-            const id = doc.name.split('/').pop();
-            const out = { id };
-            const fields = doc.fields || {};
-            for (const k in fields) out[k] = parseFirestoreValue(fields[k]);
+            const out = { id: doc.name.split('/').pop() };
+            for (const k in (doc.fields || {})) out[k] = parseFirestoreValue(doc.fields[k]);
             return out;
         }
 
@@ -489,6 +382,21 @@
             return docs;
         }
 
+        async function fetchBoardlifeDocById(numId) {
+            const idToken = await getValidFirebaseIdToken();
+            const headers = {};
+            if (idToken) headers['Authorization'] = `Bearer ${idToken}`;
+            const resp = await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT_ID}/databases/(default)/documents/boardlifeGames/bl_${numId}`, { headers });
+            if (!resp.ok) return null;
+            const doc = await resp.json();
+            return parseRestDoc(doc);
+        }
+
+        function boardLifeMatchRank(name, normQ) {
+            const n = (name || '').replace(/\s+/g, '').toLowerCase();
+            return n === normQ ? 0 : n.startsWith(normQ) ? 1 : n.includes(normQ) ? 2 : 3;
+        }
+
         async function searchRealtimeBoardLifeDB(rawQuery, limitCount = 25) {
             const Sk = window.SearchKeywords;
             const trimmed = (rawQuery || '').trim();
@@ -501,7 +409,7 @@
                 where: { fieldFilter: { field: { fieldPath: 'searchKeywords' }, op: 'ARRAY_CONTAINS', value: { stringValue: built.key } } },
                 limit: limitCount
             };
-            const queryPromises = [runRestQuery(qNgram, idToken)];
+            const tasks = [runRestQuery(qNgram, idToken)];
 
             if (!Sk.isAllChosung(Sk.normalizeQuery(trimmed))) {
                 const qExact = {
@@ -518,121 +426,41 @@
                     orderBy: [{ field: { fieldPath: 'name' }, direction: 'ASCENDING' }],
                     limit: 10
                 };
-                queryPromises.push(runRestQuery(qExact, idToken).catch(() => []), runRestQuery(qPrefix, idToken).catch(() => []));
+                tasks.push(runRestQuery(qExact, idToken).catch(() => []), runRestQuery(qPrefix, idToken).catch(() => []));
             }
 
-            const [ngramDocs, exactDocs = [], prefixDocs = []] = await Promise.all(queryPromises);
-            const seen = new Set();
-            const merged = [];
+            const [ngramDocs, exactDocs = [], prefixDocs = []] = await Promise.all(tasks);
+            const seen = new Set(), merged = [];
             for (const d of [...exactDocs, ...prefixDocs, ...ngramDocs]) {
                 if (seen.has(d.id)) continue;
                 seen.add(d.id);
                 merged.push(d);
             }
-
             const normQ = Sk.normalizeQuery(trimmed);
             merged.sort((a, b) => {
-                const sa = boardLifeMatchRank(a.name, normQ);
-                const sb = boardLifeMatchRank(b.name, normQ);
-                if (sa !== sb) return sa - sb;
-                return (a.name || '').length - (b.name || '').length;
+                const sa = boardLifeMatchRank(a.name, normQ), sb = boardLifeMatchRank(b.name, normQ);
+                return sa !== sb ? sa - sb : (a.name || '').length - (b.name || '').length;
             });
-
             return { docs: merged, reason: 'ok' };
         }
 
-        async function findBestGameInDb(rawTitle) {
-            if (!rawTitle) return null;
-            const clean = rawTitle.replace(/\([^)]*\)/g, '').trim() || rawTitle.trim();
-            const numMatch = clean.match(/^(?:bl_)?(\d{1,6})$/i);
-            if (numMatch) {
-                const targetId = `bl_${numMatch[1]}`;
-                return { id: targetId, boardlifeNumId: numMatch[1], name: `보드라이프 #${numMatch[1]}`, image: `${STORAGE_BL_BASE}/${targetId}.webp` };
-            }
-            try {
-                const { docs } = await searchRealtimeBoardLifeDB(clean, 5);
-                if (docs.length > 0) return docs[0];
-            } catch (e) {}
-            return null;
+        function resolveCoverUrl(rawInput) {
+            if (!rawInput) return '';
+            const s = String(rawInput).trim();
+            const idMatch = s.match(/^(?:bl_)?(\d{1,6})$/i);
+            if (idMatch) return `${STORAGE_BL_BASE}/bl_${idMatch[1]}.webp`;
+            const urlMatch = s.match(/boardlife\.co\.kr\/(?:game\/|bbs_detail\.php\?[^#]*bbs_num=)(\d+)/i);
+            if (urlMatch) return `${STORAGE_BL_BASE}/bl_${urlMatch[1]}.webp`;
+            return s;
         }
-
-        function updateRtStatusUI() {
-            const el = document.getElementById('rt-db-status');
-            if (!el) return;
-            const hasToken = !!(localStorage.getItem(FB_REFRESH_TOKEN_KEY) || '').trim();
-            el.innerHTML = hasToken
-                ? '🟢 <strong>실시간 boardlifeGames 마스터 DB 연동 완료</strong> (글룸헤이븐 등 모든 신작 실시간 검색)'
-                : '🟠 실시간 DB 키 미등록 (상단 <strong>[🔑 실시간 DB 키 설정]</strong> 또는 <strong>[📂 JSON 복원]</strong>을 해주세요)';
-            el.style.color = hasToken ? 'var(--success-color)' : 'var(--error-color)';
-        }
-
-        /* =========================================================
-           2. 상태 및 정규화
-           ========================================================= */
-        let allUserGames = [];
-        let allUserTags = [];
-        let allPlayRecords = [];
-        let currentSort = 'name-asc';
-        let currentViewMode = 'grid';
-        let debounceTimer;
-        let autoSaveDebounceTimer = null;
-        let boardLifeSearchDebounceTimer = null;
-        let _searchSeq = 0;
-
-        const dom = {
-            userNicknameLine1: $('#user-nickname-line1'),
-            gameListContainer: $('#gameListContainer'),
-            gameCountBadge: $('#game-count-badge'),
-            messageContainer: $('.message-container'),
-            loading: $('#loading'),
-            filterSidebar: $('#filter-sidebar'),
-            openFilterBtn: $('#open-filter-btn'),
-            closeFilterBtn: $('#close-filter-btn'),
-            filterOverlay: $('#filter-overlay'),
-            sortBtn: $('#sort-btn'),
-            nameSearchInput: $('#nameSearchInput'),
-            genreSearchInput: $('#genreSearchInput'),
-            playerCountInput: $('#playerCountInput'),
-            bestPlayerToggle: $('#bestPlayerToggle'),
-            hideExpansionsToggle: $('#hideExpansionsToggle'),
-            tagFilterContainer: $('#tag-filter-container'),
-            openGlobalTagManagerBtn: $('#open-global-tag-manager-btn'),
-            difficultyMin: $('#difficultyMin'),
-            difficultyMax: $('#difficultyMax'),
-            difficultyRange: $('#difficultyRange'),
-            difficultyMinValue: $('#difficultyMinValue'),
-            difficultyMaxValue: $('#difficultyMaxValue'),
-            timeMin: $('#timeMin'),
-            timeMax: $('#timeMax'),
-            timeRange: $('#timeRange'),
-            timeMinValue: $('#timeMinValue'),
-            timeMaxValue: $('#timeMaxValue'),
-            addGameButton: $('#add-game-button'),
-            viewToggleButton: $('#view-toggle-btn'),
-            randomPickBtn: $('#random-pick-btn'),
-            searchPanel: $('#search-panel'),
-            openManualAddBtn: $('#open-manual-add-btn'),
-            openBoardlifeAddBtn: $('#open-boardlife-add-btn'),
-            manualAddPanel: $('#manual-add-panel'),
-            manualAddForm: $('#manual-add-form'),
-            boardlifeAddPanel: $('#boardlife-add-panel'),
-            boardlifeAddForm: $('#boardlife-add-form'),
-            boardlifeUrlInput: $('#boardlife-url-input'),
-            detailModal: $('#detailModal'),
-            mobileSearchInput: $('#mobileSearchInput'),
-            playerChipsRow: $('#playerChipsRow'),
-            fabAddGame: $('#fab-add-game')
-        };
 
         function normalizeGameRecord(raw) {
             if (!raw) return null;
             const custom = { ...(raw.customFields || {}) };
             if (raw.purchasePrice && !custom['구매가격']) custom['구매가격'] = String(raw.purchasePrice);
             if (raw.purchaseDate && !custom['구매일자']) custom['구매일자'] = String(raw.purchaseDate);
-
             const name = raw.name || raw.title || custom['게임 이름'] || '이름 없음';
-            const rawImg = custom['대표 이미지'] || raw.image || raw.thumbnail || '';
-            const resolvedImg = resolveCoverUrl(rawImg);
+            const resolvedImg = resolveCoverUrl(custom['대표 이미지'] || raw.image || raw.thumbnail || '');
             if (resolvedImg && !custom['대표 이미지']) custom['대표 이미지'] = resolvedImg;
 
             return {
@@ -646,7 +474,7 @@
                 minplaytime: String(raw.minplaytime ?? raw.time ?? '30'),
                 maxplaytime: String(raw.maxplaytime ?? raw.time ?? '60'),
                 complexity: String(raw.complexity ?? raw.weight ?? '2.5'),
-                categories: Array.isArray(raw.categories) ? raw.categories : (raw.category ? [raw.category] : []),
+                categories: Array.isArray(raw.categories) ? raw.categories : [],
                 themes: Array.isArray(raw.themes) ? raw.themes : [],
                 mechanics: Array.isArray(raw.mechanics) ? raw.mechanics : [],
                 bestplayercounts: Array.isArray(raw.bestplayercounts) ? raw.bestplayercounts : [],
@@ -654,7 +482,6 @@
                 memo: raw.memo || '',
                 memoPublic: raw.memoPublic !== false,
                 myRating: raw.myRating ?? null,
-                // [M-2] 슬리브 규격 및 매수 필드 추가
                 sleeveSize: raw.sleeveSize || custom['슬리브규격'] || '',
                 sleeveCount: parseInt(raw.sleeveCount || custom['슬리브매수'] || '0', 10) || 0,
                 customFields: custom,
@@ -663,7 +490,7 @@
         }
 
         function persistData() {
-            allUserGames = allUserGames.map(normalizeGameRecord);
+            allUserGames = allUserGames.map(normalizeGameRecord).filter(Boolean);
             localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(allUserGames));
             localStorage.setItem(TAGS_STORAGE_KEY, JSON.stringify(allUserTags));
             syncToGistSilent();
@@ -692,544 +519,312 @@
         async function pullFromGistSilent() {
             try {
                 const cfg = JSON.parse(localStorage.getItem(GIST_CONFIG_KEY) || '{}');
-                if (!cfg.token || !cfg.gistId || cfg.autoSync === false) return;
-                const resp = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
-                    headers: { 'Authorization': `Bearer ${cfg.token}` }
+                if (!cfg.token || !cfg.gistId || cfg.autoSync === false) return false;
+                const res = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+                    headers: { 'Authorization': `Bearer ${cfg.token}` },
+                    cache: 'no-store'
                 });
-                if (!resp.ok) return;
-                const data = await resp.json();
-                const fileObj = data.files[GIST_FILENAME] || Object.values(data.files)[0];
-                if (!fileObj || !fileObj.content) return;
-                const parsed = JSON.parse(fileObj.content);
-                if (parsed.firebaseRefreshToken) {
-                    localStorage.setItem(FB_REFRESH_TOKEN_KEY, parsed.firebaseRefreshToken);
-                    updateRtStatusUI();
-                }
-                if (Array.isArray(parsed.games)) {
-                    allUserGames = parsed.games.map(normalizeGameRecord);
+                if (!res.ok) return false;
+                const data = await res.json();
+                const file = data.files && (data.files[GIST_FILENAME] || Object.values(data.files)[0]);
+                if (!file || !file.content) return false;
+                const parsed = JSON.parse(file.content);
+                if (parsed.firebaseRefreshToken) localStorage.setItem(FB_REFRESH_TOKEN_KEY, parsed.firebaseRefreshToken);
+                if (Array.isArray(parsed.games) && parsed.games.length > 0) {
+                    allUserGames = parsed.games.map(normalizeGameRecord).filter(Boolean);
                     localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(allUserGames));
                 }
                 if (Array.isArray(parsed.tags)) {
                     allUserTags = parsed.tags;
-                    localStorage.setItem(TAGS_STORAGE_KEY, JSON.stringify(parsed.tags));
+                    localStorage.setItem(TAGS_STORAGE_KEY, JSON.stringify(allUserTags));
                 }
-                if (Array.isArray(parsed.sessions)) {
-                    allPlayRecords = parsed.sessions;
-                    localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(allPlayRecords));
-                }
+                if (Array.isArray(parsed.sessions)) localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(parsed.sessions));
                 if (Array.isArray(parsed.players)) localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(parsed.players));
-                renderTagFilters();
-                renderFilteredGames();
-            } catch (e) {}
+                return true;
+            } catch (e) {
+                return false;
+            }
         }
 
-        /* =========================================================
-           3. 앱 초기화
-           ========================================================= */
-        document.addEventListener('DOMContentLoaded', async () => {
-            initDarkMode();
-            const nick = localStorage.getItem(NICKNAME_KEY) || '나';
-            dom.userNicknameLine1.textContent = nick.endsWith('의') ? nick : `${nick}의`;
+        function updateRtStatusUI() {
+            const el = $('#rt-db-status');
+            if (!el) return;
+            const hasToken = !!(localStorage.getItem(FB_REFRESH_TOKEN_KEY) || '').trim();
+            el.innerHTML = hasToken
+                ? '🟢 <strong>실시간 보드라이프 마스터 DB 연동됨</strong>'
+                : '🟠 실시간 DB 키 미등록 (상단 <strong>[🔑 실시간 DB 키 설정]</strong> 또는 <strong>[📂 JSON 복원]</strong> 필요)';
+            el.style.color = hasToken ? 'var(--success-color)' : 'var(--error-color)';
+        }
 
-            allPlayRecords = JSON.parse(localStorage.getItem(SESSIONS_STORAGE_KEY) || '[]');
-            allUserTags = JSON.parse(localStorage.getItem(TAGS_STORAGE_KEY) || '[]');
+        function updateSliderUI() {
+            const dMin = parseFloat($('#difficultyMin').value);
+            const dMax = parseFloat($('#difficultyMax').value);
+            $('#difficultyMinValue').textContent = Math.min(dMin, dMax).toFixed(1);
+            $('#difficultyMaxValue').textContent = Math.max(dMin, dMax).toFixed(1);
+            const dLeft = ((Math.min(dMin, dMax) - 1) / 4) * 100;
+            const dRight = ((Math.max(dMin, dMax) - 1) / 4) * 100;
+            $('#difficultyRange').style.left = `${dLeft}%`;
+            $('#difficultyRange').style.width = `${dRight - dLeft}%`;
+
+            const tMin = parseInt($('#timeMin').value, 10);
+            const tMax = parseInt($('#timeMax').value, 10);
+            const realTMin = Math.min(tMin, tMax);
+            const realTMax = Math.max(tMin, tMax);
+            $('#timeMinValue').textContent = `${realTMin}분`;
+            $('#timeMaxValue').textContent = realTMax >= 240 ? '240분+' : `${realTMax}분`;
+            const tLeft = (realTMin / 240) * 100;
+            const tRight = (realTMax / 240) * 100;
+            $('#timeRange').style.left = `${tLeft}%`;
+            $('#timeRange').style.width = `${tRight - tLeft}%`;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+            const nick = localStorage.getItem(NICKNAME_KEY) || '나';
+            $('#user-nickname-line1').textContent = nick.endsWith('의') ? nick : `${nick}의`;
 
             try {
-                const r = await fetch('./myboardgames_my_data.json');
-                if (r.ok) {
-                    const repoData = await r.json();
-                    if (repoData.firebaseRefreshToken && !localStorage.getItem(FB_REFRESH_TOKEN_KEY)) {
-                        localStorage.setItem(FB_REFRESH_TOKEN_KEY, repoData.firebaseRefreshToken);
-                    }
-                    if (!localStorage.getItem(GAMES_STORAGE_KEY) && Array.isArray(repoData.games)) {
-                        allUserGames = repoData.games.map(normalizeGameRecord);
-                        if (Array.isArray(repoData.tags)) allUserTags = repoData.tags;
-                        if (Array.isArray(repoData.sessions)) localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(repoData.sessions));
-                        if (Array.isArray(repoData.players)) localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(repoData.players));
-                        persistData();
-                    }
-                }
-            } catch (e) {}
+                allUserTags = JSON.parse(localStorage.getItem(TAGS_STORAGE_KEY) || '[]');
+            } catch (e) { allUserTags = []; }
 
-            const savedGames = localStorage.getItem(GAMES_STORAGE_KEY);
-            if (savedGames) {
-                allUserGames = JSON.parse(savedGames).map(normalizeGameRecord);
-            } else {
-                allUserGames = [
-                    normalizeGameRecord({
-                        id: 'bl_14527',
-                        name: '보이드폴',
-                        image: `${STORAGE_BL_BASE}/bl_14527.webp`,
-                        minplayers: '1', maxplayers: '4', minplaytime: '90', maxplaytime: '240',
-                        complexity: '4.59', bestplayercounts: ['1', '3'],
-                        categories: ['전략', 'SF'],
-                        plays: 6,
-                        sleeveSize: '63.5x88', sleeveCount: 160,
-                        customFields: { '구매일자': '2026-10-20', '구매가격': '168000', '슬리브': 'O' }
-                    })
-                ];
-                persistData();
-            }
+            try {
+                const savedGames = localStorage.getItem(GAMES_STORAGE_KEY);
+                if (savedGames) allUserGames = JSON.parse(savedGames).map(normalizeGameRecord).filter(Boolean);
+            } catch (e) { allUserGames = []; }
 
             initFilterListeners();
-            initMobileSidebar();
             initAddGameModals();
             initModalListeners();
-            initViewToggle();
-            initMobileAppLikeUI();
-
-            updateRtStatusUI();
+            updateSliderUI();
             renderTagFilters();
             renderFilteredGames();
 
-            // [E-4] 책장 -> 기록 페이지 직행 지원 (sessionAddGame 파라미터 처리)
-            try {
-                const qp = new URLSearchParams(window.location.search);
-                if (qp.get('sessionAddGame') === '1') {
-                    // 세션 페이지로 리다이렉트하면서 해당 게임 선택
-                    const gameId = qp.get('gameId');
-                    if (gameId) {
-                        localStorage.setItem('bgs_quick_add_game', gameId);
-                        location.href = './sessions.html';
-                        return;
-                    }
-                }
-            } catch (_) {}
-
-            await pullFromGistSilent();
+            const pulled = await pullFromGistSilent();
+            if (pulled) {
+                renderTagFilters();
+                renderFilteredGames();
+            }
         });
 
-        function initDarkMode() {
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-                document.body.classList.add('dark-mode');
-            }
-        }
-
-        /* =========================================================
-           4. 실시간 검색 UI 핸들러
-           ========================================================= */
-        function boardLifeMatchRank(name, normQ) {
-            const n = (name || '').replace(/\s+/g, '').toLowerCase();
-            return n === normQ ? 0 : n.startsWith(normQ) ? 1 : n.includes(normQ) ? 2 : 3;
-        }
-
-        async function handleBoardLifeDBSearch() {
-            const mySeq = ++_searchSeq;
-            const queryField = ($('#bl-db-search-input')?.value || '').trim();
-            const resultsEl = $('#bl-db-search-results');
-            if (!resultsEl) return;
-
-            const Sk = window.SearchKeywords;
-            const built = Sk.buildSearchKey(queryField);
-            if (!built.key) {
-                resultsEl.innerHTML = built.reason === 'too_short'
-                    ? '<p style="text-align:center; color:var(--text-light); padding:1rem;">2글자 이상 입력해주세요.</p>'
-                    : '';
-                return;
-            }
-
-            resultsEl.innerHTML = '<div class="spinner" style="margin: 1rem auto;"></div>';
-
-            try {
-                const { docs } = await searchRealtimeBoardLifeDB(queryField, 30);
-                if (mySeq !== _searchSeq) return;
-
-                if (docs.length === 0) {
-                    resultsEl.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:1rem;">검색 결과가 없습니다.</p>';
-                    return;
-                }
-
-                resultsEl.innerHTML = '';
-                docs.forEach(g => {
-                    const dbNumId = getBlNumId(g);
-                    const isAdded = (dbNumId && allUserGames.some(ug => getBlNumId(ug) === dbNumId)) || allUserGames.some(ug => ug.id === g.id);
-                    const item = document.createElement('div');
-                    item.className = 'search-result-item';
-                    item.style.cssText = 'display:grid; grid-template-columns:40px 1fr auto; gap:10px; align-items:center;';
-
-                    const thumbUrl = g.image || g.thumbnail || './placeholder.png';
-                    item.innerHTML = `
-                        <img src="${thumbUrl}" alt="${escapeHtmlSafe(g.name)}" referrerpolicy="no-referrer" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid var(--border-color);">
-                        <div style="display:flex; flex-direction:column; overflow:hidden;">
-                            <span class="name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtmlSafe(g.name)}</span>
-                            <span class="year" style="font-size:0.8em; color:var(--text-secondary);">${g.yearPublished || ''}</span>
-                        </div>
-                        <button class="add-btn" ${isAdded ? 'disabled' : ''}>${isAdded ? '추가됨' : '추가'}</button>`;
-
-                    if (!isAdded) {
-                        item.querySelector('.add-btn').addEventListener('click', (e) => {
-                            e.target.disabled = true;
-                            handleAddBoardLifeDBGame(g, e.target);
-                        });
-                    }
-                    resultsEl.appendChild(item);
-                });
-            } catch (err) {
-                resultsEl.innerHTML = `
-                    <div style="text-align:center; padding:1rem; color:var(--error-color); font-size:0.9rem;">
-                        실시간 DB 조회를 위해 상단의 <strong>[🔑 실시간 DB 키 설정]</strong> 또는 <strong>[📂 JSON 복원]</strong>으로 인증 키를 등록해주세요.
-                    </div>`;
-            }
-        }
-
-        function handleAddBoardLifeDBGame(blGame, buttonEl) {
-            const docId = blGame.id || `bl_${Date.now()}`;
-            const isAutoExp = (blGame.themes || []).some(t => t.includes('본판이 필요한 확장')) || (blGame.categories || []).some(c => c.includes('확장') || c.toLowerCase().includes('expansion'));
-            const customFields = { '구매일자': '', '구매가격': '', '대표 이미지': blGame.image || '' };
-            if (isAutoExp) customFields['확장판'] = 'true';
-
-            const newGame = normalizeGameRecord({
-                ...blGame,
-                id: docId,
-                boardlifeId: docId,
-                createdAt: Date.now(),
-                customFields
-            });
-
-            const idx = allUserGames.findIndex(g => g.id === docId);
-            if (idx >= 0) allUserGames[idx] = newGame;
-            else allUserGames.unshift(newGame);
-
-            persistData();
-            renderFilteredGames();
-            showMessage(`${blGame.name} 추가 완료!`, 'success');
-            if (buttonEl) buttonEl.textContent = '추가됨';
-        }
-
-        /* =========================================================
-           5. 엑셀형 일괄 편집 모드 (M-1)
-           ========================================================= */
+        /* [M-1] 엑셀형 일괄 편집기 */
         function openBulkEditorModal() {
             const tbody = $('#bulk-editor-tbody');
             tbody.innerHTML = allUserGames.map((g, idx) => `
                 <tr data-game-idx="${idx}">
-                    <td style="font-weight:600;">${escapeHtmlSafe(g.name)}</td>
+                    <td style="font-weight:600;">${escapeHtmlSafe(g.customFields?.['게임 이름'] || g.name)}</td>
                     <td><input type="date" class="bulk-input b-date" value="${parseDateYMD(g)}"></td>
-                    <td><input type="number" class="bulk-input b-price" value="${parsePrice(g)}" placeholder="0"></td>
+                    <td><input type="number" class="bulk-input b-price" value="${parsePrice(g) || ''}" placeholder="0"></td>
                     <td><input type="text" class="bulk-input b-sleeve-size" value="${escapeHtmlSafe(g.sleeveSize || '')}" placeholder="예: 63.5x88"></td>
-                    <td><input type="number" class="bulk-input b-sleeve-count" value="${g.sleeveCount || ''}" placeholder="매수"></td>
+                    <td><input type="number" class="bulk-input b-sleeve-count" value="${g.sleeveCount || ''}" placeholder="0"></td>
                     <td style="text-align:center;"><input type="checkbox" class="b-sleeve-done" ${(g.customFields && (g.customFields['슬리브'] === 'O' || g.customFields['슬리브'] === 'true')) ? 'checked' : ''}></td>
                 </tr>`).join('');
             $('#bulk-editor-modal').classList.remove('hidden');
         }
 
         function saveBulkEditorChanges() {
-            const rows = $$('#bulk-editor-tbody tr');
-            rows.forEach(row => {
-                const idx = parseInt(row.dataset.gameIdx, 10);
-                const g = allUserGames[idx];
+            $$('#bulk-editor-tbody tr').forEach(row => {
+                const g = allUserGames[parseInt(row.dataset.gameIdx, 10)];
                 if (!g) return;
                 const d = row.querySelector('.b-date').value;
                 const p = row.querySelector('.b-price').value;
                 const sSize = row.querySelector('.b-sleeve-size').value.trim();
                 const sCnt = parseInt(row.querySelector('.b-sleeve-count').value, 10) || 0;
                 const sDone = row.querySelector('.b-sleeve-done').checked;
-
                 if (!g.customFields) g.customFields = {};
                 g.customFields['구매일자'] = d;
                 g.customFields['구매가격'] = p;
                 g.customFields['슬리브'] = sDone ? 'O' : '';
-                g.purchaseDate = d;
-                g.purchasePrice = parseInt(p, 10) || 0;
+                g.customFields['슬리브규격'] = sSize;
+                g.customFields['슬리브매수'] = String(sCnt);
                 g.sleeveSize = sSize;
                 g.sleeveCount = sCnt;
             });
             persistData();
             renderFilteredGames();
             $('#bulk-editor-modal').classList.add('hidden');
-            showMessage('모든 변경사항이 일괄 저장되었습니다.', 'success');
+            showMessage('전체 일괄 저장이 완료되었습니다!', 'success');
         }
 
-        function parsePrice(g) {
-            const raw = (g.customFields && g.customFields['구매가격']) ?? g.purchasePrice ?? 0;
-            return parseInt(String(raw).replace(/[^0-9]/g, ''), 10) || 0;
-        }
-        function parseDateYMD(g) {
-            const raw = (g.customFields && g.customFields['구매일자']) || g.purchaseDate || '';
-            return String(raw).trim().slice(0, 10);
+        function parsePrice(g) { return parseInt(String((g.customFields && g.customFields['구매가격']) ?? g.purchasePrice ?? 0).replace(/[^0-9]/g, ''), 10) || 0; }
+        function parseDateYMD(g) { return String((g.customFields && g.customFields['구매일자']) || g.purchaseDate || '').trim().slice(0, 10); }
+        function getBlNumId(g) {
+            if (!g) return null;
+            if (g.boardlifeNumId) return String(g.boardlifeNumId);
+            for (const c of [g.boardlifeId, g.bggId, g.id]) {
+                if (c) { const m = String(c).match(/(?:bl_|boardlife_)?(\d+)/); if (m) return m[1]; }
+            }
+            return null;
         }
 
-        /* =========================================================
-           6. 필터링 및 그리드/리스트 렌더링
-           ========================================================= */
         function initFilterListeners() {
-            const debouncedRender = () => {
+            ['#playerCountInput', '#bestPlayerToggle', '#hideExpansionsToggle'].forEach(s => $(s).addEventListener('input', renderFilteredGames));
+            ['#difficultyMin', '#difficultyMax', '#timeMin', '#timeMax'].forEach(s => $(s).addEventListener('input', () => {
+                updateSliderUI();
+                renderFilteredGames();
+            }));
+            ['#nameSearchInput', '#genreSearchInput'].forEach(s => $(s).addEventListener('input', () => {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(renderFilteredGames, 200);
-            };
-            const savedHideExp = localStorage.getItem('hideExpansions');
-            if (savedHideExp !== null) dom.hideExpansionsToggle.checked = savedHideExp === 'true';
-
-            [dom.playerCountInput, dom.bestPlayerToggle, dom.difficultyMin, dom.difficultyMax, dom.timeMin, dom.timeMax]
-                .forEach(input => input.addEventListener('input', renderFilteredGames));
-
-            dom.hideExpansionsToggle.addEventListener('input', () => {
-                localStorage.setItem('hideExpansions', dom.hideExpansionsToggle.checked);
+            }));
+            $('#tag-filter-container').addEventListener('change', renderFilteredGames);
+            $('#sort-btn').onclick = () => {
+                const map = { 'name-asc': 'name-desc', 'name-desc': 'difficulty-asc', 'difficulty-asc': 'difficulty-desc', 'difficulty-desc': 'recent-desc', 'recent-desc': 'name-asc' };
+                const txt = { 'name-asc': '정렬: 가나다순', 'name-desc': '정렬: 가나다역순', 'difficulty-asc': '정렬: 난이도 오름차순', 'difficulty-desc': '정렬: 난이도 내림차순', 'recent-desc': '정렬: 최근 추가된 순' };
+                currentSort = map[currentSort];
+                $('#sort-btn').textContent = txt[currentSort];
                 renderFilteredGames();
-            });
-            [dom.nameSearchInput, dom.genreSearchInput].forEach(input => input.addEventListener('input', debouncedRender));
-            dom.tagFilterContainer.addEventListener('change', renderFilteredGames);
-            dom.sortBtn.addEventListener('click', cycleSort);
-            dom.randomPickBtn.addEventListener('click', randomPickGame);
-
-            initRangeSlider(dom.difficultyMin, dom.difficultyMax, dom.difficultyRange, dom.difficultyMinValue, dom.difficultyMaxValue, 1, 5, 0.1, v => v.toFixed(1));
-            initRangeSlider(dom.timeMin, dom.timeMax, dom.timeRange, dom.timeMinValue, dom.timeMaxValue, 0, 240, 10, v => v >= 240 ? "240분+" : `${v}분`);
-            dom.openGlobalTagManagerBtn.addEventListener('click', openGlobalTagManager);
+            };
+            $('#random-pick-btn').onclick = () => {
+                const list = applyFiltersToGames(allUserGames);
+                if (!list.length) { showMessage('조건에 맞는 게임이 없습니다.', 'error'); return; }
+                const picked = list[Math.floor(Math.random() * list.length)];
+                showMessage(`🎲 제비뽑기 결과: ${picked.name}`, 'success');
+                setTimeout(() => openDetailModal(picked.id), 400);
+            };
             $('#open-bulk-editor-btn').onclick = openBulkEditorModal;
             $('#bulk-save-btn').onclick = saveBulkEditorChanges;
-            $('#bulk-editor-modal').querySelector('.modal-close-btn').onclick = () => $('#bulk-editor-modal').classList.add('hidden');
-        }
-
-        function initRangeSlider(minInput, maxInput, rangeEl, minValEl, maxValEl, min, max, step, formatCallback) {
-            const update = () => {
-                let minVal = parseFloat(minInput.value), maxVal = parseFloat(maxInput.value);
-                if (minVal > maxVal) [minVal, maxVal] = [maxVal, minVal];
-                const minPct = ((minVal - min) / (max - min)) * 100, maxPct = ((maxVal - min) / (max - min)) * 100;
-                rangeEl.style.left = `${minPct}%`;
-                rangeEl.style.width = `${maxPct - minPct}%`;
-                minValEl.textContent = formatCallback(minVal);
-                maxValEl.textContent = formatCallback(maxVal);
+            $('#bulk-editor-modal .modal-close-btn').onclick = () => $('#bulk-editor-modal').classList.add('hidden');
+            $('#open-filter-btn').onclick = () => { $('#filter-sidebar').classList.add('open'); $('#filter-overlay').classList.remove('hidden'); };
+            $('#close-filter-btn').onclick = $('#filter-overlay').onclick = () => { $('#filter-sidebar').classList.remove('open'); $('#filter-overlay').classList.add('hidden'); };
+            $('#view-toggle-btn').onclick = () => {
+                currentViewMode = currentViewMode === 'grid' ? 'list' : 'grid';
+                $('#view-toggle-btn .grid-icon').classList.toggle('hidden', currentViewMode === 'list');
+                $('#view-toggle-btn .list-icon').classList.toggle('hidden', currentViewMode === 'grid');
+                renderFilteredGames();
             };
-            minInput.addEventListener('input', update);
-            maxInput.addEventListener('input', update);
-            update();
+            $('#mobileSearchInput').oninput = (e) => { $('#nameSearchInput').value = e.target.value; renderFilteredGames(); };
+            $('#playerChipsRow').onclick = (e) => {
+                const chip = e.target.closest('.player-chip');
+                if (!chip) return;
+                $$('#playerChipsRow .player-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                $('#playerCountInput').value = chip.dataset.players === '0' ? '' : chip.dataset.players;
+                renderFilteredGames();
+            };
+            $('#fab-add-game').onclick = () => $('#add-game-button').click();
+            $('#open-global-tag-manager-btn').onclick = openGlobalTagManager;
         }
 
         function renderTagFilters() {
-            dom.tagFilterContainer.innerHTML = '';
-            if (allUserTags.length === 0) {
-                dom.tagFilterContainer.innerHTML = '<p class="filter-no-tags-info">태그를 생성/관리하려면 + 버튼을 누르세요.</p>';
-                return;
-            }
-            allUserTags.forEach(tag => {
-                const tagEl = document.createElement('div');
-                tagEl.className = 'tag-filter-item';
-                tagEl.innerHTML = `
-                    <input type="checkbox" id="tag-${tag.id}" data-tag-id="${tag.id}">
-                    <label for="tag-${tag.id}">
-                        <span class="tag-color-dot" style="background-color: ${tag.color};"></span>
-                        ${escapeHtmlSafe(tag.name)}
-                    </label>`;
-                dom.tagFilterContainer.appendChild(tagEl);
-            });
-        }
-
-        function getCurrentFilters() {
-            return {
-                name: dom.nameSearchInput.value.toLowerCase(),
-                genre: dom.genreSearchInput.value.toLowerCase(),
-                players: parseInt(dom.playerCountInput.value, 10) || 0,
-                bestOnly: dom.bestPlayerToggle.checked,
-                hideExpansions: dom.hideExpansionsToggle.checked,
-                tags: Array.from(dom.tagFilterContainer.querySelectorAll('input:checked')).map(el => el.dataset.tagId),
-                diffMin: parseFloat(dom.difficultyMin.value),
-                diffMax: parseFloat(dom.difficultyMax.value),
-                timeMin: parseInt(dom.timeMin.value, 10),
-                timeMax: parseInt(dom.timeMax.value, 10)
-            };
+            const box = $('#tag-filter-container');
+            box.innerHTML = allUserTags.length === 0 ? '<p class="filter-no-tags-info">+ 버튼으로 태그 생성</p>' : allUserTags.map(t => `
+                <div class="tag-filter-item">
+                    <input type="checkbox" id="tag-${t.id}" data-tag-id="${t.id}">
+                    <label for="tag-${t.id}"><span class="tag-color-dot" style="background-color:${t.color};"></span>${escapeHtmlSafe(t.name)}</label>
+                </div>`).join('');
         }
 
         function applyFiltersToGames(games) {
-            const filters = getCurrentFilters();
-            return games.filter(game => {
-                const customName = game.customFields && game.customFields['게임 이름'];
-                const gameName = customName || game.name || '';
-                if (filters.name && !gameName.toLowerCase().includes(filters.name)) return false;
+            const nameQ = $('#nameSearchInput').value.toLowerCase();
+            const genreQ = $('#genreSearchInput').value.toLowerCase();
+            const players = parseInt($('#playerCountInput').value, 10) || 0;
+            const bestOnly = $('#bestPlayerToggle').checked;
+            const hideExp = $('#hideExpansionsToggle').checked;
+            const checkedTags = Array.from($$('#tag-filter-container input:checked')).map(el => el.dataset.tagId);
+            const rawDMin = parseFloat($('#difficultyMin').value), rawDMax = parseFloat($('#difficultyMax').value);
+            const dMin = Math.min(rawDMin, rawDMax), dMax = Math.max(rawDMin, rawDMax);
+            const rawTMin = parseInt($('#timeMin').value, 10), rawTMax = parseInt($('#timeMax').value, 10);
+            const tMin = Math.min(rawTMin, rawTMax), tMax = Math.max(rawTMin, rawTMax);
 
-                if (filters.hideExpansions) {
-                    const categories = game.categories || [];
-                    const themes = game.themes || [];
-                    const customGenre = (game.customFields && game.customFields['장르']) || '';
-                    const isExpChecked = game.customFields && (game.customFields['확장판'] === 'true' || game.customFields['확장판'] === 'O');
-                    const isExp = isExpChecked || categories.some(c => c.toLowerCase().includes('expansion') || c.includes('확장')) ||
-                        themes.some(t => t.includes('본판이 필요한 확장')) || customGenre.includes('확장');
+            return games.filter(g => {
+                const gName = (g.customFields?.['게임 이름'] || g.name || '').toLowerCase();
+                if (nameQ && !gName.includes(nameQ)) return false;
+                if (hideExp) {
+                    const isExp = g.customFields?.['확장판'] === 'O' || g.customFields?.['확장판'] === 'true' || (g.categories || []).some(c => c.includes('확장') || c.toLowerCase().includes('expansion')) || (g.themes || []).some(t => t.includes('본판이 필요한 확장'));
                     if (isExp) return false;
                 }
-
-                if (filters.genre) {
-                    const searchIn = [...(game.categories || []), ...(game.themes || []), ...(game.mechanics || []), (game.customFields && game.customFields['장르']) || ''].join(' ').toLowerCase();
-                    if (!searchIn.includes(filters.genre)) return false;
+                if (genreQ) {
+                    const hay = [...(g.categories || []), ...(g.themes || []), ...(g.mechanics || []), g.sleeveSize || ''].join(' ').toLowerCase();
+                    if (!hay.includes(genreQ)) return false;
                 }
-
-                if (filters.players > 0) {
-                    const minP = parseInt(game.minplayers, 10), maxP = parseInt(game.maxplayers, 10);
-                    if (!isNaN(minP) && filters.players < minP) return false;
-                    if (!isNaN(maxP) && maxP > 0 && filters.players > maxP) return false;
-                    if (filters.bestOnly) {
-                        if (!game.bestplayercounts || game.bestplayercounts.length === 0) return false;
-                        const matchBest = (bc, n) => {
-                            const s = String(bc).trim();
-                            if (s.endsWith('+')) return n >= parseInt(s.slice(0, -1), 10);
-                            if (s.includes('-') || s.includes('~')) {
-                                const [a, b] = s.split(/[-~]/).map(x => parseInt(x.trim(), 10));
-                                return n >= a && n <= b;
-                            }
-                            return parseInt(s, 10) === n;
-                        };
-                        if (!game.bestplayercounts.some(bc => matchBest(bc, filters.players))) return false;
-                    }
+                if (players > 0) {
+                    const minP = parseInt(g.minplayers, 10), maxP = parseInt(g.maxplayers, 10);
+                    if (!isNaN(minP) && players < minP) return false;
+                    if (!isNaN(maxP) && maxP > 0 && players > maxP) return false;
+                    if (bestOnly && !(g.bestplayercounts || []).some(b => String(b).includes(String(players)))) return false;
                 }
-
-                const compVal = parseFloat(game.complexity);
-                if ((filters.diffMin > 1 || filters.diffMax < 5) && !isNaN(compVal) && compVal > 0) {
-                    if (compVal < filters.diffMin || compVal > filters.diffMax) return false;
-                }
-
-                const gMinT = parseInt(game.minplaytime, 10), gMaxT = parseInt(game.maxplaytime, 10);
-                const fMaxT = filters.timeMax >= 240 ? Infinity : filters.timeMax;
-                if ((filters.timeMin > 0 || filters.timeMax < 240) && !isNaN(gMinT) && !isNaN(gMaxT) && (gMinT > 0 || gMaxT > 0)) {
-                    if (gMaxT < filters.timeMin || gMinT > fMaxT) return false;
-                }
-
-                if (filters.tags.length > 0) {
-                    const gTags = game.tags || [];
-                    if (!filters.tags.every(tid => gTags.includes(tid))) return false;
-                }
+                const c = parseFloat(g.complexity);
+                if ((dMin > 1 || dMax < 5) && !isNaN(c) && c > 0 && (c < dMin || c > dMax)) return false;
+                const minT = parseInt(g.minplaytime, 10), maxT = parseInt(g.maxplaytime, 10);
+                if ((tMin > 0 || tMax < 240) && !isNaN(minT) && !isNaN(maxT) && maxT > 0 && (maxT < tMin || minT > (tMax >= 240 ? Infinity : tMax))) return false;
+                if (checkedTags.length > 0 && !checkedTags.every(tid => (g.tags || []).includes(tid))) return false;
                 return true;
             });
         }
 
-        function cycleSort() {
-            const sortCycle = { 'name-asc': 'name-desc', 'name-desc': 'difficulty-asc', 'difficulty-asc': 'difficulty-desc', 'difficulty-desc': 'recent-desc', 'recent-desc': 'name-asc' };
-            const sortText = { 'name-asc': '정렬: 가나다순', 'name-desc': '정렬: 가나다역순', 'difficulty-asc': '정렬: 난이도 오름차순', 'difficulty-desc': '정렬: 난이도 내림차순', 'recent-desc': '정렬: 최근 추가된 순' };
-            currentSort = sortCycle[currentSort];
-            dom.sortBtn.textContent = sortText[currentSort];
-            renderFilteredGames();
-        }
-
-        function sortGames(games) {
-            games.sort((a, b) => {
-                const nameA = (a.customFields && a.customFields['게임 이름']) || a.name || '';
-                const nameB = (b.customFields && b.customFields['게임 이름']) || b.name || '';
-                switch (currentSort) {
-                    case 'name-asc': return nameA.localeCompare(nameB, 'ko');
-                    case 'name-desc': return nameB.localeCompare(nameA, 'ko');
-                    case 'difficulty-asc': return (parseFloat(a.complexity) || 0) - (parseFloat(b.complexity) || 0);
-                    case 'difficulty-desc': return (parseFloat(b.complexity) || 0) - (parseFloat(a.complexity) || 0);
-                    case 'recent-desc': return (b.createdAt || 0) - (a.createdAt || 0);
-                    default: return 0;
-                }
-            });
-        }
-
         function renderFilteredGames() {
-            const filtered = applyFiltersToGames(allUserGames);
-            sortGames(filtered);
-            const container = dom.gameListContainer;
-            container.innerHTML = '';
-            dom.gameCountBadge.textContent = filtered.length;
+            const list = applyFiltersToGames(allUserGames);
+            list.sort((a, b) => {
+                const nA = a.customFields?.['게임 이름'] || a.name || '', nB = b.customFields?.['게임 이름'] || b.name || '';
+                if (currentSort === 'name-asc') return nA.localeCompare(nB, 'ko');
+                if (currentSort === 'name-desc') return nB.localeCompare(nA, 'ko');
+                if (currentSort === 'difficulty-asc') return (parseFloat(a.complexity) || 0) - (parseFloat(b.complexity) || 0);
+                if (currentSort === 'difficulty-desc') return (parseFloat(b.complexity) || 0) - (parseFloat(a.complexity) || 0);
+                return (b.createdAt || 0) - (a.createdAt || 0);
+            });
 
-            if (filtered.length === 0) {
-                container.innerHTML = '<p class="empty-state-text">해당하는 게임이 없습니다.</p>';
-                container.className = 'game-grid';
+            const container = $('#gameListContainer');
+            container.innerHTML = '';
+            $('#game-count-badge').textContent = list.length;
+            container.className = currentViewMode === 'grid' ? 'game-grid' : 'game-list';
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 3.5rem 1rem; color: var(--text-secondary);">
+                        <p style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">표시할 보드게임이 없습니다.</p>
+                        <p style="font-size: 0.85rem;">우측 상단 <strong>[＋]</strong> 버튼(모바일 우측 하단 버튼)에서 게임을 추가하거나 <strong>[📂 JSON 복원]</strong>, 또는 <strong>마이페이지 &rarr; Gist 불러오기</strong>를 진행해 주세요.</p>
+                    </div>`;
                 return;
             }
-            container.className = currentViewMode === 'grid' ? 'game-grid' : 'game-list';
-            filtered.forEach(game => renderGameCard(game, container));
-        }
 
-        function tagTextColor(hexColor) {
-            if (!hexColor || typeof hexColor !== 'string') return '#ffffff';
-            let h = hexColor.replace('#', '').trim();
-            if (h.length === 3) h = h.split('').map(c => c + c).join('');
-            if (h.length !== 6) return '#ffffff';
-            const r = parseInt(h.substr(0, 2), 16), g = parseInt(h.substr(2, 2), 16), b = parseInt(h.substr(4, 2), 16);
-            return ((0.299 * r + 0.587 * g + 0.114 * b) / 255) > 0.6 ? '#1a1a1a' : '#ffffff';
-        }
+            list.forEach(game => {
+                const item = document.createElement('div');
+                const displayName = game.customFields?.['게임 이름'] || game.name;
+                const imageUrl = resolveCoverUrl(game.customFields?.['대표 이미지'] || game.image || game.thumbnail) || 'https://placehold.co/300x300/6750A4/ffffff?text=BG';
+                const tagsHtml = (game.tags || []).map(tid => {
+                    const t = allUserTags.find(x => x.id === tid);
+                    return t ? `<span class="card-tag" style="background-color:${t.color};">${escapeHtmlSafe(t.name)}</span>` : '';
+                }).join('');
 
-        function formatPlayersRange(game) {
-            const minP = parseInt(game.minplayers, 10), maxP = parseInt(game.maxplayers, 10);
-            if (!isNaN(minP) && !isNaN(maxP) && maxP > 0) return minP === maxP ? `${minP}명` : `${minP}–${maxP}명`;
-            return !isNaN(minP) && minP > 0 ? `${minP}명` : '';
-        }
-
-        function formatTimeRange(game) {
-            const minT = parseInt(game.minplaytime, 10), maxT = parseInt(game.maxplaytime, 10);
-            if (!isNaN(minT) && !isNaN(maxT) && maxT > 0) return minT === maxT ? `${minT}분` : `${minT}–${maxT}분`;
-            return !isNaN(minT) && minT > 0 ? `${minT}분` : '';
-        }
-
-        function renderGameCard(game, container) {
-            const item = document.createElement('div');
-            const custom = game.customFields || {};
-            const displayName = custom['게임 이름'] || game.name;
-            const imageUrl = resolveCoverUrl(custom['대표 이미지'] || game.image || game.thumbnail) || 'https://placehold.co/300x300/6750A4/ffffff?text=' + encodeURIComponent(displayName);
-
-            let tagsHtml = '';
-            (game.tags || []).forEach(tagId => {
-                const tag = allUserTags.find(t => t.id === tagId);
-                if (tag) tagsHtml += `<span class="card-tag" style="background-color:${tag.color};color:${tagTextColor(tag.color)};">${escapeHtmlSafe(tag.name)}</span>`;
-            });
-
-            if (currentViewMode === 'grid') {
-                item.className = 'game-card-grid';
-                const subtitleTxt = [formatPlayersRange(game), formatTimeRange(game)].filter(Boolean).join(' · ');
-                item.innerHTML = `
-                    <div class="game-image">
-                        <div class="card-tags-container">${tagsHtml}</div>
-                        <img src="${imageUrl}" alt="${escapeHtmlSafe(displayName)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='https://placehold.co/300x300/6750A4/ffffff?text=BG'">
-                    </div>
-                    <div class="game-title-grid">
-                        <h3>${escapeHtmlSafe(displayName)}</h3>
-                        ${subtitleTxt ? `<div class="game-card-subtitle">${subtitleTxt}</div>` : ''}
-                    </div>`;
-            } else {
-                item.className = 'game-list-item';
-                const priceTxt = custom['구매가격'] ? `${Number(String(custom['구매가격']).replace(/[^0-9]/g, '')).toLocaleString()}원` : '-';
-                item.innerHTML = `
-                    <div class="list-item-header">
-                        <div>
-                            <h3>${escapeHtmlSafe(displayName)}</h3>
-                            <div class="list-item-tags">${tagsHtml}</div>
+                if (currentViewMode === 'grid') {
+                    item.className = 'game-card-grid';
+                    item.innerHTML = `
+                        <div class="game-image">
+                            <div class="card-tags-container">${tagsHtml}</div>
+                            <img src="${imageUrl}" alt="${escapeHtmlSafe(displayName)}" loading="lazy" referrerpolicy="no-referrer">
                         </div>
-                    </div>
-                    <div class="list-item-details">
-                        <div class="list-detail-item"><strong>플레이 인원</strong><span>${formatPlayersRange(game) || '-'}</span></div>
-                        <div class="list-detail-item"><strong>베스트 인원</strong><span>${(game.bestplayercounts && game.bestplayercounts.join(', ')) || '-'}</span></div>
-                        <div class="list-detail-item"><strong>플레이 시간</strong><span>${formatTimeRange(game) || '-'}</span></div>
-                        <div class="list-detail-item"><strong>난이도</strong><span>${game.complexity || 0}/5</span></div>
-                        <div class="list-detail-item"><strong>구매일자</strong><span>${parseDateYMD(game) || '-'}</span></div>
-                        <div class="list-detail-item"><strong>구매가격</strong><span>${priceTxt}</span></div>
-                        ${game.sleeveSize ? `<div class="list-detail-item"><strong>슬리브</strong><span>${game.sleeveSize} (${game.sleeveCount || 0}장)</span></div>` : ''}
-                    </div>`;
-            }
-            item.addEventListener('click', () => openDetailModal(game.id));
-            container.appendChild(item);
+                        <div class="game-title-grid"><h3>${escapeHtmlSafe(displayName)}</h3></div>`;
+                } else {
+                    item.className = 'game-list-item';
+                    item.innerHTML = `
+                        <div class="list-item-header"><div><h3>${escapeHtmlSafe(displayName)}</h3><div class="list-item-tags">${tagsHtml}</div></div></div>
+                        <div class="list-item-details">
+                            <div class="list-detail-item"><strong>인원</strong><span>${game.minplayers}-${game.maxplayers}명</span></div>
+                            <div class="list-detail-item"><strong>난이도</strong><span>${game.complexity}/5</span></div>
+                            <div class="list-detail-item"><strong>구매가</strong><span>${parsePrice(game).toLocaleString()}원</span></div>
+                            <div class="list-detail-item"><strong>슬리브</strong><span>${game.sleeveSize ? `${game.sleeveSize} (${game.sleeveCount}장)` : '-'}</span></div>
+                        </div>`;
+                }
+                item.onclick = () => openDetailModal(game.id);
+                container.appendChild(item);
+            });
         }
 
-        /* =========================================================
-           7. 상세 모달 ( [E-4] 오늘 플레이 기록 남기기 버튼 포함 )
-           ========================================================= */
-        async function openDetailModal(docId) {
-            dom.detailModal.classList.remove('hidden');
+        function openDetailModal(docId) {
             const game = allUserGames.find(g => g.id === docId);
-            if (!game) { dom.detailModal.classList.add('hidden'); return; }
+            if (!game) return;
+            $('#detailModal').classList.remove('hidden');
             renderModalContent(game);
         }
 
         function renderModalContent(game) {
             const custom = game.customFields || {};
             const displayName = custom['게임 이름'] || game.name;
-            const coverImage = resolveCoverUrl(custom['대표 이미지'] || game.image || game.thumbnail) || './placeholder.png';
-            const allImages = [coverImage, ...(custom['추가이미지'] || [])].filter(Boolean);
-
-            const pmin = game.minplayers || 0, pmax = game.maxplayers || 0;
-            const playerStr = (pmin === pmax) ? `${pmax}명` : `${pmin}-${pmax}명`;
-            const tmin = game.minplaytime || 0, tmax = game.maxplaytime || 0;
-            const timeStr = (tmin === tmax) ? `${tmax}분` : `${tmin}-${tmax}분`;
-            const difficultyStr = `${(parseFloat(game.complexity) || 0).toFixed(1)}/5`;
-            const ratingStr = game.rating && parseFloat(game.rating) > 0 ? `⭐ ${parseFloat(game.rating).toFixed(1)} /10` : '';
-            const bestArr = Array.isArray(game.bestplayercounts) ? game.bestplayercounts.filter(Boolean) : [];
-            const bestStr = bestArr.length ? bestArr.join(', ') + '명' : '';
+            const coverImage = resolveCoverUrl(custom['대표 이미지'] || game.image || game.thumbnail) || 'https://placehold.co/300x300/6750A4/ffffff?text=BG';
+            const bggSleeveUrl = game.bggId ? `https://boardgamegeek.com/boardgame/${game.bggId}/x/sleeves` : `https://bgc.moscow/bgg/?q=${encodeURIComponent(displayName)}`;
 
             const cval = key => custom[key] || '';
-            const mkCheckbox = (label, key) => `
-                <label class="management-checkbox-label">
-                    <input type="checkbox" class="sync-input" data-custom-key="${key}" ${(cval(key) === 'O' || cval(key) === 'true') ? 'checked' : ''}>
-                    ${label}
-                </label>`;
+            const mkCheckbox = (label, key) => `<label class="management-checkbox-label"><input type="checkbox" class="sync-input" data-custom-key="${key}" ${(cval(key) === 'O' || cval(key) === 'true') ? 'checked' : ''}>${label}</label>`;
             const mkInput = (label, key, placeholder, type, suffix = '') => `
                 <div class="management-row column">
                     <span class="management-label" style="font-size: 0.9em; color: var(--text-secondary);"><strong>${label}</strong></span>
@@ -1237,23 +832,6 @@
                         <input type="${type}" class="sync-input" data-custom-key="${key}" placeholder="${placeholder}" value="${escapeHtmlSafe(cval(key))}">
                         ${suffix ? `<span class="suffix">${suffix}</span>` : ''}
                     </div>
-                </div>`;
-
-            const tagChipsHtml = (game.tags || []).map(tagId => {
-                const tag = allUserTags.find(t => t.id === tagId);
-                return tag ? `<span class="detail-tag-chip" style="background-color:${tag.color};color:${tagTextColor(tag.color)};">${escapeHtmlSafe(tag.name)}</span>` : '';
-            }).join('');
-
-            const myRating = game.myRating || null;
-            const ratingBtnLabel = myRating ? `★ ${myRating % 1 === 0 ? myRating : Number(myRating).toFixed(1)}` : '★ -';
-
-            const memoTabHtml = `
-                <div class="detail-tab-section memo-tab">
-                    <div class="toggle-group memo-public-toggle-row">
-                        <label class="toggle-switch"><input type="checkbox" id="memo-public-toggle" ${game.memoPublic ? 'checked' : ''}><span class="toggle-slider"></span></label>
-                        <label class="toggle-label">메모 공개</label>
-                    </div>
-                    <textarea id="memo-textarea" class="memo-box" placeholder="메모를 입력하세요...">${escapeHtmlSafe(game.memo || '')}</textarea>
                 </div>`;
 
             const purchaseTabHtml = `
@@ -1265,311 +843,187 @@
                         ${mkCheckbox('컴포 업그레이드', '컴포')}
                         ${mkCheckbox('확장판', '확장판')}
                     </div>
-                    <div class="management-subhead" style="margin-top: 1rem;">구매 및 슬리브 정보</div>
+                    <div class="management-subhead" style="margin-top: 1rem; display:flex; justify-content:space-between; align-items:center;">
+                        <span>카드 슬리브 규격 &amp; 매수 ([M-2])</span>
+                        <a href="${bggSleeveUrl}" target="_blank" style="font-size:0.78rem; color:var(--md-primary); text-decoration:none;">🛡️ BGG 슬리브 조회 ↗</a>
+                    </div>
+                    <div style="display:flex; gap:0.5rem; margin-bottom:0.25rem;">
+                        <input type="text" id="modal-sleeve-size" class="filter-input" placeholder="규격 (예: 63.5x88)" value="${escapeHtmlSafe(game.sleeveSize || '')}" style="flex:1; height:2.3rem;">
+                        <input type="number" id="modal-sleeve-count" class="filter-input" placeholder="매수" value="${game.sleeveCount || ''}" style="width:5.5rem; height:2.3rem;">
+                    </div>
+                    <div class="sleeve-preset-chips">
+                        <span class="sleeve-chip" data-preset-size="63.5x88">63.5x88 (스탠다드)</span>
+                        <span class="sleeve-chip" data-preset-size="56x87">56x87 (미국표준)</span>
+                        <span class="sleeve-chip" data-preset-size="59x92">59x92 (유로)</span>
+                        <span class="sleeve-chip" data-preset-size="45x68">45x68 (미니유로)</span>
+                    </div>
+                    <div class="management-subhead" style="margin-top: 1rem;">구매 및 커버 정보</div>
                     ${mkInput('구매 시기', '구매일자', 'YYYY-MM-DD', 'date')}
                     ${mkInput('구매 금액', '구매가격', '0', 'number', '원')}
-                    <div class="management-row column">
-                        <span class="management-label" style="font-size: 0.9em; color: var(--text-secondary);"><strong>슬리브 규격 &amp; 매수 ([M-2])</strong></span>
-                        <div style="display:flex; gap:0.5rem;">
-                            <input type="text" id="modal-sleeve-size" class="filter-input" placeholder="예: 63.5x88" value="${escapeHtmlSafe(game.sleeveSize || '')}" style="flex:1;">
-                            <input type="number" id="modal-sleeve-count" class="filter-input" placeholder="매수" value="${game.sleeveCount || ''}" style="width:5.5rem;">
-                        </div>
-                    </div>
                     ${mkInput('대표 커버 이미지 URL', '대표 이미지', 'https://...', 'text')}
                 </div>`;
 
-            dom.detailModal.innerHTML = `
-                <div class="detail-content detail-content-v2" data-doc-id="${game.id}">
-                    <button class="modal-close-btn" style="z-index:100;">&times;</button>
-                    <div class="modal-left">
-                        <img src="${coverImage}" alt="${escapeHtmlSafe(displayName)}" referrerpolicy="no-referrer" onerror="this.src='https://placehold.co/400x400/6750A4/ffffff?text=BG'">
-                        <button class="image-manage-icon-btn" id="image-manage-icon-btn" title="커버 다시 매칭">📸</button>
-                    </div>
+            $('#detailModal').innerHTML = `
+                <div class="detail-content detail-content-v2" data-doc-id="${escapeHtmlSafe(game.id)}">
+                    <button class="modal-close-btn" type="button" style="z-index:100;">&times;</button>
+                    <div class="modal-left"><img src="${coverImage}" alt="${escapeHtmlSafe(displayName)}" referrerpolicy="no-referrer"></div>
                     <div class="modal-right">
                         <div class="dashboard-content">
                             <div class="detail-header-block">
-                                <div class="detail-title-row">
-                                    <h2 class="detail-game-title">${escapeHtmlSafe(displayName)}</h2>
-                                </div>
-                                ${tagChipsHtml ? `<div class="detail-tag-row">${tagChipsHtml}</div>` : ''}
+                                <h2 class="detail-game-title">${escapeHtmlSafe(displayName)}</h2>
                                 <div class="detail-actions-row">
-                                    ${ratingStr ? `<span class="detail-action-pill detail-action-pill-info">${ratingStr}</span>` : ''}
-                                    <button id="my-rating-btn" class="detail-action-pill my-rating-btn" type="button">${ratingBtnLabel}</button>
                                     <button id="manage-tags-btn" class="detail-action-pill" type="button">🏷️ 태그</button>
-                                    <a href="./sessions.html?sessionAddGame=1&gameId=${game.id}" class="detail-action-pill" style="text-decoration:none; background:var(--md-primary); color:var(--md-on-primary);">📅 오늘 플레이 기록</a>
+                                    <a href="./sessions.html?sessionAddGame=1&gameId=${encodeURIComponent(game.id)}" class="detail-action-pill" style="text-decoration:none; background:var(--md-primary); color:var(--md-on-primary);">📅 오늘 플레이 기록 ([E-4])</a>
                                 </div>
                             </div>
-
                             <div class="quick-stats-grid">
-                                <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">${playerStr}</div><div class="stat-label">인원</div></div>
-                                ${bestStr ? `<div class="stat-card stat-card-best"><div class="stat-icon">⭐</div><div class="stat-value">${bestStr}</div><div class="stat-label">베스트</div></div>` : ''}
-                                <div class="stat-card"><div class="stat-icon">⏱️</div><div class="stat-value">${timeStr}</div><div class="stat-label">시간</div></div>
-                                <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-value">${difficultyStr}</div><div class="stat-label">난이도</div></div>
+                                <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">${game.minplayers}-${game.maxplayers}명</div><div class="stat-label">인원</div></div>
+                                <div class="stat-card"><div class="stat-icon">⏱️</div><div class="stat-value">${game.minplaytime}-${game.maxplaytime}분</div><div class="stat-label">시간</div></div>
+                                <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-value">${(parseFloat(game.complexity)||0).toFixed(1)}/5</div><div class="stat-label">난이도</div></div>
                             </div>
-
-                            <div class="detail-tab-bar" role="tablist">
-                                <button type="button" class="detail-tab-btn active" data-tab="purchase" role="tab">구매/슬리브</button>
-                                <button type="button" class="detail-tab-btn" data-tab="memo" role="tab">메모</button>
-                                <button type="button" class="detail-tab-btn" data-tab="play" role="tab">플레이</button>
+                            <div class="detail-tab-bar">
+                                <button type="button" class="detail-tab-btn active" data-tab="purchase">구매/슬리브</button>
+                                <button type="button" class="detail-tab-btn" data-tab="memo">메모</button>
                             </div>
-
                             <div class="detail-tab-panels">
                                 <div class="detail-tab-panel active" data-tab="purchase">${purchaseTabHtml}</div>
-                                <div class="detail-tab-panel" data-tab="memo">${memoTabHtml}</div>
-                                <div class="detail-tab-panel" data-tab="play"><div class="play-tab-loading">불러오는 중…</div></div>
+                                <div class="detail-tab-panel" data-tab="memo"><textarea id="memo-textarea" class="memo-box" placeholder="메모를 입력하세요...">${escapeHtmlSafe(game.memo || '')}</textarea></div>
                             </div>
                         </div>
                         <div class="modal-footer" style="justify-content: flex-end; gap: 0.5rem;">
-                            <button id="delete-game-btn" class="detail-section-icon-btn" style="color:var(--delete-color);" title="삭제">🗑️</button>
-                            <button id="edit-mode-btn" class="detail-section-icon-btn edit-mode-btn" title="수정/저장">✏️</button>
+                            <button id="delete-game-btn" class="detail-section-icon-btn" type="button" style="color:var(--delete-color);" title="삭제">🗑️</button>
                         </div>
                     </div>
                 </div>`;
-
-            const playPanel = dom.detailModal.querySelector('.detail-tab-panel[data-tab="play"]');
-            if (playPanel) renderPlayTabForGame(game, playPanel);
-        }
-
-        function renderPlayTabForGame(game, panelEl) {
-            const allRecs = JSON.parse(localStorage.getItem(SESSIONS_STORAGE_KEY) || '[]');
-            const matchesGame = (g) => g.gameId === game.id || g.gameName === game.name;
-            const matching = allRecs.filter(rec => (rec.games || rec.gameResults || []).some(matchesGame));
-
-            if (matching.length === 0) {
-                panelEl.innerHTML = `
-                    <div class="play-tab-empty">
-                        <div class="play-tab-empty-icon">🎲</div>
-                        <div class="play-tab-empty-msg">아직 이 게임의 플레이 기록이 없어요.</div>
-                    </div>
-                    <a href="./sessions.html?sessionAddGame=1&gameId=${game.id}" class="play-tab-link-btn">📅 오늘 기록 남기러 가기</a>`;
-                return;
-            }
-
-            const totalPlays = matching.reduce((sum, rec) => {
-                const g = (rec.games || rec.gameResults || []).find(matchesGame);
-                return sum + Math.max((g?.rounds || []).length, 1);
-            }, 0);
-
-            const cardsHtml = matching.map(rec => {
-                const g = (rec.games || rec.gameResults || []).find(matchesGame);
-                const plays = Math.max((g?.rounds || []).length, 1);
-                const players = (rec.players || []).join(', ');
-                return `
-                    <div class="play-record-card">
-                        <div class="play-record-card-header">
-                            <span class="play-record-date">${escapeHtmlSafe(String(rec.date || ''))}</span>
-                            <span class="play-record-plays">${plays}판</span>
-                            ${rec.rating ? `<span class="play-record-rating">${'★'.repeat(rec.rating)}</span>` : ''}
-                        </div>
-                        ${players ? `<div class="play-record-players">👥 ${escapeHtmlSafe(players)}</div>` : ''}
-                        ${rec.memo ? `<div class="play-record-memo">${escapeHtmlSafe(rec.memo)}</div>` : ''}
-                    </div>`;
-            }).join('');
-
-            panelEl.innerHTML = `
-                <div class="play-tab-stats">
-                    <div class="play-tab-stat"><div class="play-tab-stat-value">${totalPlays}</div><div class="play-tab-stat-label">총 플레이</div></div>
-                    <div class="play-tab-stat"><div class="play-tab-stat-value">${matching.length}</div><div class="play-tab-stat-label">기록</div></div>
-                </div>
-                <div class="play-record-list">${cardsHtml}</div>
-                <a href="./sessions.html" class="play-tab-link-btn" style="margin-top:0.75rem;">📅 전체 게임 기록 보기</a>`;
         }
 
         function saveModalData(docId, modalContentEl) {
             const game = allUserGames.find(g => g.id === docId);
-            if (!game) return;
+            if (!game || !modalContentEl) return;
             const newCustom = { ...(game.customFields || {}) };
-
-            modalContentEl.querySelectorAll('.sync-input[type="checkbox"]').forEach(el => {
-                const k = el.dataset.customKey;
-                if (k) newCustom[k] = el.checked ? 'O' : '';
-            });
-            modalContentEl.querySelectorAll('.sync-input:not([type="checkbox"])').forEach(el => {
-                const k = el.dataset.customKey;
-                if (k) newCustom[k] = el.value.trim();
-            });
-
-            if (newCustom['대표 이미지']) {
-                newCustom['대표 이미지'] = resolveCoverUrl(newCustom['대표 이미지']);
-                game.image = newCustom['대표 이미지'];
-            }
-
+            modalContentEl.querySelectorAll('.sync-input[type="checkbox"]').forEach(el => { newCustom[el.dataset.customKey] = el.checked ? 'O' : ''; });
+            modalContentEl.querySelectorAll('.sync-input:not([type="checkbox"])').forEach(el => { newCustom[el.dataset.customKey] = el.value.trim(); });
+            if (newCustom['대표 이미지']) game.image = resolveCoverUrl(newCustom['대표 이미지']);
             const sSizeEl = modalContentEl.querySelector('#modal-sleeve-size');
             const sCntEl = modalContentEl.querySelector('#modal-sleeve-count');
-            if (sSizeEl) game.sleeveSize = sSizeEl.value.trim();
-            if (sCntEl) game.sleeveCount = parseInt(sCntEl.value, 10) || 0;
-
+            if (sSizeEl) { game.sleeveSize = sSizeEl.value.trim(); newCustom['슬리브규격'] = game.sleeveSize; }
+            if (sCntEl) { game.sleeveCount = parseInt(sCntEl.value, 10) || 0; newCustom['슬리브매수'] = String(game.sleeveCount); }
             const memoArea = modalContentEl.querySelector('#memo-textarea');
-            const pubToggle = modalContentEl.querySelector('#memo-public-toggle');
             if (memoArea) game.memo = memoArea.value;
-            if (pubToggle) game.memoPublic = pubToggle.checked;
-
-            const editMinP = modalContentEl.querySelector('#edit-minp');
-            if (editMinP) {
-                game.minplayers = editMinP.value;
-                game.maxplayers = modalContentEl.querySelector('#edit-maxp')?.value || editMinP.value;
-                game.minplaytime = modalContentEl.querySelector('#edit-mint')?.value || '0';
-                game.maxplaytime = modalContentEl.querySelector('#edit-maxt')?.value || '0';
-                game.complexity = modalContentEl.querySelector('#edit-diff')?.value || '0';
-            }
-
             game.customFields = newCustom;
             persistData();
             renderFilteredGames();
         }
 
         function initModalListeners() {
-            dom.detailModal.addEventListener('click', async (e) => {
-                const modalContentEl = e.target.closest('.detail-content');
-                if (!modalContentEl) return;
-                const docId = modalContentEl.dataset.docId;
-                const game = allUserGames.find(g => g.id === docId);
-                if (!game) return;
-
-                if (e.target.matches('.modal-close-btn')) {
-                    saveModalData(docId, modalContentEl);
-                    dom.detailModal.classList.add('hidden');
-                } else if (e.target.matches('#edit-mode-btn') || e.target.closest('#edit-mode-btn')) {
-                    const btn = modalContentEl.querySelector('#edit-mode-btn');
-                    if (btn.dataset.mode === 'editing') {
-                        saveModalData(docId, modalContentEl);
-                        btn.dataset.mode = '';
-                        btn.textContent = '✏️';
-                        btn.classList.remove('saving');
-                        renderModalContent(allUserGames.find(g => g.id === docId));
-                        showMessage('변경사항이 저장되었습니다.', 'success');
-                    } else {
-                        btn.dataset.mode = 'editing';
-                        btn.textContent = '💾';
-                        btn.classList.add('saving');
-                        const statsGrid = modalContentEl.querySelector('.quick-stats-grid');
-                        if (statsGrid) {
-                            statsGrid.innerHTML = `
-                                <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value" style="display:flex; justify-content:center; align-items:center;">
-                                    <input type="number" id="edit-minp" value="${game.minplayers || 1}" style="width:2.5ch; background:transparent; border:none; border-bottom:1px solid var(--md-primary); color:inherit; text-align:center;">-<input type="number" id="edit-maxp" value="${game.maxplayers || 4}" style="width:2.5ch; background:transparent; border:none; border-bottom:1px solid var(--md-primary); color:inherit; text-align:center;">명
-                                </div></div>
-                                <div class="stat-card"><div class="stat-icon">⏱️</div><div class="stat-value" style="display:flex; justify-content:center; align-items:center;">
-                                    <input type="number" id="edit-mint" value="${game.minplaytime || 30}" style="width:3.5ch; background:transparent; border:none; border-bottom:1px solid var(--md-primary); color:inherit; text-align:center;">-<input type="number" id="edit-maxt" value="${game.maxplaytime || 60}" style="width:3.5ch; background:transparent; border:none; border-bottom:1px solid var(--md-primary); color:inherit; text-align:center;">분
-                                </div></div>
-                                <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-value" style="display:flex; justify-content:center; align-items:center;">
-                                    <input type="number" step="0.1" id="edit-diff" value="${game.complexity || 2.5}" style="width:3ch; background:transparent; border:none; border-bottom:1px solid var(--md-primary); color:inherit; text-align:center;">/ 5
-                                </div></div>`;
-                        }
+            $('#detailModal').addEventListener('click', (e) => {
+                if (e.target === $('#detailModal')) {
+                    const modalEl = $('#detailModal .detail-content');
+                    if (modalEl) saveModalData(modalEl.dataset.docId, modalEl);
+                    $('#detailModal').classList.add('hidden');
+                    return;
+                }
+                const modalEl = e.target.closest('.detail-content');
+                if (!modalEl) return;
+                const docId = modalEl.dataset.docId;
+                const presetChip = e.target.closest('.sleeve-chip[data-preset-size]');
+                if (presetChip) {
+                    const sizeInput = modalEl.querySelector('#modal-sleeve-size');
+                    if (sizeInput) {
+                        sizeInput.value = presetChip.dataset.presetSize;
+                        saveModalData(docId, modalEl);
+                        showMessage(`슬리브 규격 ${presetChip.dataset.presetSize} 적용됨`, 'success');
                     }
+                    return;
+                }
+                if (e.target.matches('.modal-close-btn')) {
+                    saveModalData(docId, modalEl);
+                    $('#detailModal').classList.add('hidden');
                 } else if (e.target.matches('#delete-game-btn') || e.target.closest('#delete-game-btn')) {
-                    if (confirm(`'${game.name}' 게임을 책장에서 삭제할까요?`)) {
+                    if (confirm('이 게임을 책장에서 삭제할까요?')) {
                         allUserGames = allUserGames.filter(g => g.id !== docId);
                         persistData();
                         renderFilteredGames();
-                        dom.detailModal.classList.add('hidden');
-                        showMessage('게임이 삭제되었습니다.', 'success');
+                        $('#detailModal').classList.add('hidden');
                     }
-                } else if (e.target.matches('#manage-tags-btn') || e.target.closest('#manage-tags-btn')) {
-                    openTagApplyModal(docId, game.tags || []);
-                } else if (e.target.matches('#my-rating-btn') || e.target.closest('#my-rating-btn')) {
-                    openRatingModal(docId, game.myRating || null);
-                } else if (e.target.matches('#image-manage-icon-btn') || e.target.closest('#image-manage-icon-btn')) {
-                    try {
-                        const hit = await findBestGameInDb(game.name);
-                        if (hit && hit.image) {
-                            game.image = hit.image;
-                            if (!game.customFields) game.customFields = {};
-                            game.customFields['대표 이미지'] = hit.image;
-                            persistData();
-                            renderFilteredGames();
-                            renderModalContent(game);
-                            showMessage(`✅ '${hit.name}' 커버 이미지로 업데이트되었습니다!`, 'success');
-                            return;
-                        }
-                    } catch (err) {}
-                    const newUrl = prompt('새 커버 이미지 URL 또는 보드라이프 번호(예: 14527):', (game.customFields && game.customFields['대표 이미지']) || game.image || '');
-                    if (newUrl !== null && newUrl.trim() !== '') {
-                        const resolved = resolveCoverUrl(newUrl.trim());
-                        game.image = resolved;
-                        if (!game.customFields) game.customFields = {};
-                        game.customFields['대표 이미지'] = resolved;
-                        persistData();
-                        renderFilteredGames();
-                        renderModalContent(game);
-                    }
+                } else if (e.target.matches('#manage-tags-btn')) {
+                    const g = allUserGames.find(x => x.id === docId);
+                    if (g) openTagApplyModal(docId, g.tags || []);
                 } else if (e.target.matches('.detail-tab-btn')) {
-                    const targetTab = e.target.dataset.tab;
-                    modalContentEl.querySelectorAll('.detail-tab-btn').forEach(b => b.classList.toggle('active', b === e.target));
-                    modalContentEl.querySelectorAll('.detail-tab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === targetTab));
+                    const t = e.target.dataset.tab;
+                    modalEl.querySelectorAll('.detail-tab-btn').forEach(b => b.classList.toggle('active', b === e.target));
+                    modalEl.querySelectorAll('.detail-tab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === t));
                 }
+            });
+            $('#detailModal').addEventListener('input', (e) => {
+                const modalEl = e.target.closest('.detail-content');
+                if (!modalEl) return;
+                clearTimeout(autoSaveDebounceTimer);
+                autoSaveDebounceTimer = setTimeout(() => saveModalData(modalEl.dataset.docId, modalEl), 600);
             });
         }
 
-        /* =========================================================
-           8. 추가 모달 및 실시간 토큰 설정
-           ========================================================= */
         function initAddGameModals() {
-            dom.addGameButton.onclick = () => {
-                dom.searchPanel.classList.remove('hidden');
+            $('#add-game-button').onclick = () => {
+                $('#search-panel').classList.remove('hidden');
                 updateRtStatusUI();
-                const inputEl = $('#bl-db-search-input');
-                if (inputEl) { inputEl.value = ''; $('#bl-db-search-results').innerHTML = ''; setTimeout(() => inputEl.focus(), 50); }
+                $('#bl-db-search-input').value = '';
+                $('#bl-db-search-results').innerHTML = '';
+                setTimeout(() => $('#bl-db-search-input').focus(), 50);
             };
-            dom.searchPanel.querySelector('.modal-close-btn').onclick = () => dom.searchPanel.classList.add('hidden');
+            $('#search-panel .modal-close-btn').onclick = () => $('#search-panel').classList.add('hidden');
 
             $('#set-rt-token-btn').onclick = () => {
-                const cur = localStorage.getItem(FB_REFRESH_TOKEN_KEY) || '';
-                const input = prompt('mybgshelf.web.app 콘솔에서 추출한 실시간 검색 키(refreshToken)를 붙여넣으세요:', cur);
+                const input = prompt('mybgshelf.web.app 콘솔에서 추출한 실시간 검색 키(refreshToken)를 붙여넣으세요:', localStorage.getItem(FB_REFRESH_TOKEN_KEY) || '');
                 if (input !== null) {
                     localStorage.setItem(FB_REFRESH_TOKEN_KEY, input.trim());
                     _cachedIdToken = null;
-                    _cachedIdTokenExp = 0;
                     updateRtStatusUI();
-                    showMessage('✅ 실시간 DB 연동 키가 저장되었습니다.', 'success');
+                    syncToGistSilent();
                 }
             };
 
-            const blDbInput = $('#bl-db-search-input');
-            if (blDbInput) {
-                blDbInput.addEventListener('input', () => {
-                    clearTimeout(boardLifeSearchDebounceTimer);
-                    boardLifeSearchDebounceTimer = setTimeout(async () => {
-                        const q = blDbInput.value.trim();
-                        const resBox = $('#bl-db-search-results');
-                        if (!q) { resBox.innerHTML = ''; return; }
-                        resBox.innerHTML = '<div class="spinner" style="margin: 1rem auto;"></div>';
-                        try {
-                            const { docs } = await searchRealtimeBoardLifeDB(q, 30);
-                            if (docs.length === 0) {
-                                resBox.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:1rem;">검색 결과가 없습니다.</p>';
-                                return;
+            $('#bl-db-search-input').addEventListener('input', (e) => {
+                clearTimeout(boardLifeSearchDebounceTimer);
+                boardLifeSearchDebounceTimer = setTimeout(async () => {
+                    const q = e.target.value.trim();
+                    const resBox = $('#bl-db-search-results');
+                    if (!q) { resBox.innerHTML = ''; return; }
+                    resBox.innerHTML = '<div class="spinner" style="margin: 1rem auto;"></div>';
+                    try {
+                        const { docs } = await searchRealtimeBoardLifeDB(q, 25);
+                        if (!docs.length) { resBox.innerHTML = '<p style="text-align:center; padding:1rem;">검색 결과가 없습니다.</p>'; return; }
+                        resBox.innerHTML = '';
+                        docs.forEach(g => {
+                            const dbNumId = getBlNumId(g);
+                            const isAdded = (dbNumId && allUserGames.some(ug => getBlNumId(ug) === dbNumId)) || allUserGames.some(ug => ug.id === g.id);
+                            const item = document.createElement('div');
+                            item.className = 'search-result-item';
+                            item.style.cssText = 'display:grid; grid-template-columns:40px 1fr auto; gap:10px; align-items:center;';
+                            item.innerHTML = `
+                                <img src="${g.image || 'https://placehold.co/40x40/6750A4/ffffff?text=BG'}" referrerpolicy="no-referrer" style="width:40px; height:40px; object-fit:cover; border-radius:4px;">
+                                <div style="display:flex; flex-direction:column; overflow:hidden;"><span class="name">${escapeHtmlSafe(g.name)}</span><span class="year">${g.yearPublished || ''}</span></div>
+                                <button type="button" class="add-btn" ${isAdded ? 'disabled' : ''}>${isAdded ? '추가됨' : '추가'}</button>`;
+                            if (!isAdded) {
+                                item.querySelector('.add-btn').onclick = (ev) => {
+                                    ev.target.disabled = true;
+                                    ev.target.textContent = '추가됨';
+                                    const newG = normalizeGameRecord({ ...g, createdAt: Date.now(), customFields: { '구매일자': '', '구매가격': '', '대표 이미지': g.image || '' } });
+                                    allUserGames.unshift(newG);
+                                    persistData();
+                                    renderFilteredGames();
+                                    showMessage(`${g.name} 추가 완료!`, 'success');
+                                };
                             }
-                            resBox.innerHTML = '';
-                            docs.forEach(g => {
-                                const dbNumId = getBlNumId(g);
-                                const isAdded = (dbNumId && allUserGames.some(ug => getBlNumId(ug) === dbNumId)) || allUserGames.some(ug => ug.id === g.id);
-                                const item = document.createElement('div');
-                                item.className = 'search-result-item';
-                                item.style.cssText = 'display:grid; grid-template-columns:40px 1fr auto; gap:10px; align-items:center;';
-                                const thumbUrl = g.image || g.thumbnail || './placeholder.png';
-                                item.innerHTML = `
-                                    <img src="${thumbUrl}" alt="${escapeHtmlSafe(g.name)}" referrerpolicy="no-referrer" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid var(--border-color);">
-                                    <div style="display:flex; flex-direction:column; overflow:hidden;">
-                                        <span class="name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtmlSafe(g.name)}</span>
-                                        <span class="year" style="font-size:0.8em; color:var(--text-secondary);">${g.yearPublished || ''}</span>
-                                    </div>
-                                    <button class="add-btn" ${isAdded ? 'disabled' : ''}>${isAdded ? '추가됨' : '추가'}</button>`;
-                                if (!isAdded) {
-                                    item.querySelector('.add-btn').onclick = (e) => {
-                                        e.target.disabled = true;
-                                        handleAddBoardLifeDBGame(g, e.target);
-                                    };
-                                }
-                                resBox.appendChild(item);
-                            });
-                        } catch (e) {
-                            resBox.innerHTML = '<div style="text-align:center; padding:1rem; color:var(--error-color);">실시간 검색 키(refreshToken)를 상단 버튼에서 설정해주세요.</div>';
-                        }
-                    }, 150);
-                });
-            }
+                            resBox.appendChild(item);
+                        });
+                    } catch (err) {
+                        resBox.innerHTML = '<div style="text-align:center; padding:1rem; color:var(--error-color);">상단 [🔑 실시간 DB 키 설정] 또는 [📂 JSON 복원]을 먼저 진행해주세요.</div>';
+                    }
+                }, 150);
+            });
 
-            $('#quick-json-import').addEventListener('change', (e) => {
+            $('#quick-json-import').onchange = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
@@ -1578,7 +1032,7 @@
                         const parsed = JSON.parse(ev.target.result);
                         if (parsed.firebaseRefreshToken) localStorage.setItem(FB_REFRESH_TOKEN_KEY, parsed.firebaseRefreshToken);
                         const gArr = Array.isArray(parsed) ? parsed : (parsed.games || []);
-                        allUserGames = gArr.map(normalizeGameRecord);
+                        allUserGames = gArr.map(normalizeGameRecord).filter(Boolean);
                         if (parsed.tags) allUserTags = parsed.tags;
                         if (parsed.sessions) localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(parsed.sessions));
                         if (parsed.players) localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(parsed.players));
@@ -1586,192 +1040,168 @@
                         updateRtStatusUI();
                         renderTagFilters();
                         renderFilteredGames();
-                        dom.searchPanel.classList.add('hidden');
-                        showMessage(`🎉 총 ${allUserGames.length}개 게임 복원 완료!`, 'success');
+                        $('#search-panel').classList.add('hidden');
+                        showMessage(`총 ${allUserGames.length}개 게임 복원 완료!`, 'success');
                     } catch (err) { showMessage('올바른 JSON 파일이 아닙니다.', 'error'); }
                 };
                 reader.readAsText(file);
-            });
-
-            dom.openManualAddBtn.onclick = () => {
-                dom.searchPanel.classList.add('hidden');
-                $('#manual-purchase-date').value = new Date().toISOString().slice(0, 10);
-                dom.manualAddPanel.classList.remove('hidden');
             };
-            dom.manualAddPanel.querySelector('.modal-close-btn').onclick = () => dom.manualAddPanel.classList.add('hidden');
+
+            /* 직접 입력 모달 & 실시간 매칭 버튼 연결 */
+            $('#open-manual-add-btn').onclick = () => {
+                $('#search-panel').classList.add('hidden');
+                $('#manual-purchase-date').value = new Date().toISOString().slice(0, 10);
+                $('#manual-add-panel').classList.remove('hidden');
+            };
+            $('#manual-add-panel .modal-close-btn').onclick = () => $('#manual-add-panel').classList.add('hidden');
 
             $('#manual-match-btn').onclick = async () => {
                 const name = $('#manual-name').value.trim();
-                if (!name) return;
-                const hit = await findBestGameInDb(name);
-                if (hit) {
-                    $('#manual-image-url').value = hit.image || '';
-                    $('#manual-minplayers').value = hit.minplayers || '1';
-                    $('#manual-maxplayers').value = hit.maxplayers || '4';
-                    $('#manual-minplaytime').value = hit.minplaytime || '30';
-                    $('#manual-maxplaytime').value = hit.maxplaytime || '60';
-                    $('#manual-complexity').value = hit.complexity || '2.5';
-                    showMessage(`✅ '${hit.name}' 매칭 완료!`, 'success');
-                } else {
-                    showMessage('일치하는 게임이 없습니다.', 'error');
+                if (!name) { showMessage('매칭할 게임 이름을 먼저 입력하세요.', 'error'); return; }
+                const btn = $('#manual-match-btn');
+                const origTxt = btn.textContent;
+                btn.textContent = '검색중...';
+                btn.disabled = true;
+                try {
+                    const { docs } = await searchRealtimeBoardLifeDB(name, 5);
+                    if (docs && docs.length > 0) {
+                        const top = docs[0];
+                        $('#manual-name').value = top.name || name;
+                        $('#manual-image-url').value = top.image || resolveCoverUrl(top.id);
+                        $('#manual-minplayers').value = top.minplayers || '1';
+                        $('#manual-maxplayers').value = top.maxplayers || '4';
+                        $('#manual-minplaytime').value = top.minplaytime || '30';
+                        $('#manual-maxplaytime').value = top.maxplaytime || '60';
+                        $('#manual-complexity').value = top.complexity || '2.5';
+                        showMessage(`'${top.name}' 정보를 자동으로 채웠습니다!`, 'success');
+                    } else {
+                        showMessage('일치하는 게임을 찾지 못했습니다.', 'error');
+                    }
+                } catch (err) {
+                    showMessage('실시간 DB 키 설정 후 이용할 수 있습니다.', 'error');
+                } finally {
+                    btn.textContent = origTxt;
+                    btn.disabled = false;
                 }
             };
 
-            dom.manualAddForm.onsubmit = async (e) => {
+            $('#manual-add-form').onsubmit = (e) => {
                 e.preventDefault();
                 const name = $('#manual-name').value.trim();
-                if (!name) return;
-                let imgUrl = resolveCoverUrl($('#manual-image-url').value.trim());
-                if (!imgUrl) {
-                    const hit = await findBestGameInDb(name);
-                    if (hit && hit.image) imgUrl = hit.image;
-                }
-                const newGame = normalizeGameRecord({
-                    id: `manual_${Date.now()}`,
-                    name,
-                    image: imgUrl,
-                    minplayers: $('#manual-minplayers').value || '1',
-                    maxplayers: $('#manual-maxplayers').value || '4',
-                    minplaytime: $('#manual-minplaytime').value || '30',
-                    maxplaytime: $('#manual-maxplaytime').value || '60',
-                    complexity: $('#manual-complexity').value || '2.5',
-                    isManual: true,
-                    createdAt: Date.now(),
-                    customFields: {
-                        '구매일자': $('#manual-purchase-date').value || '',
-                        '구매가격': $('#manual-purchase-price').value || '',
-                        '대표 이미지': imgUrl
-                    }
-                });
-                allUserGames.unshift(newGame);
+                const imgUrl = resolveCoverUrl($('#manual-image-url').value.trim());
+                allUserGames.unshift(normalizeGameRecord({
+                    id: `manual_${Date.now()}`, name, image: imgUrl,
+                    minplayers: $('#manual-minplayers').value || '1', maxplayers: $('#manual-maxplayers').value || '4',
+                    minplaytime: $('#manual-minplaytime').value || '30', maxplaytime: $('#manual-maxplaytime').value || '60',
+                    complexity: $('#manual-complexity').value || '2.5', createdAt: Date.now(),
+                    customFields: { '구매일자': $('#manual-purchase-date').value || '', '구매가격': $('#manual-purchase-price').value || '', '대표 이미지': imgUrl }
+                }));
                 persistData();
                 renderFilteredGames();
-                dom.manualAddForm.reset();
-                dom.manualAddPanel.classList.add('hidden');
+                $('#manual-add-form').reset();
+                $('#manual-add-panel').classList.add('hidden');
                 showMessage(`${name} 추가 완료!`, 'success');
             };
 
-            dom.openBoardlifeAddBtn.onclick = () => {
-                dom.searchPanel.classList.add('hidden');
-                dom.boardlifeAddPanel.classList.remove('hidden');
+            /* 보드라이프 URL 추가 모달 연결 */
+            $('#open-boardlife-add-btn').onclick = () => {
+                $('#search-panel').classList.add('hidden');
+                $('#boardlife-url-input').value = '';
+                $('#boardlife-add-panel').classList.remove('hidden');
             };
-            dom.boardlifeAddPanel.querySelector('.modal-close-btn').onclick = () => dom.boardlifeAddPanel.classList.add('hidden');
+            $('#boardlife-add-panel .modal-close-btn').onclick = () => $('#boardlife-add-panel').classList.add('hidden');
+
+            $('#boardlife-add-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const rawUrl = $('#boardlife-url-input').value.trim();
+                const numMatch = rawUrl.match(/(?:game\/|bbs_num=|^)(\d{1,6})/i);
+                if (!numMatch) {
+                    showMessage('올바른 보드라이프 URL 또는 게임 번호를 입력해주세요.', 'error');
+                    return;
+                }
+                const numId = numMatch[1];
+                const fetched = await fetchBoardlifeDocById(numId).catch(() => null);
+                const coverUrl = `${STORAGE_BL_BASE}/bl_${numId}.webp`;
+                if (fetched) {
+                    const newG = normalizeGameRecord({
+                        ...fetched,
+                        id: fetched.id || `bl_${numId}`,
+                        image: fetched.image || coverUrl,
+                        createdAt: Date.now(),
+                        customFields: { '구매일자': new Date().toISOString().slice(0, 10), '구매가격': '', '대표 이미지': fetched.image || coverUrl }
+                    });
+                    allUserGames.unshift(newG);
+                    showMessage(`${newG.name} 정보 추출 및 추가 완료!`, 'success');
+                } else {
+                    const fallbackName = prompt('마스터 DB에서 이름을 조회할 수 없습니다. 게임 이름을 입력해주세요:', `보드라이프 #${numId}`);
+                    if (!fallbackName) return;
+                    allUserGames.unshift(normalizeGameRecord({
+                        id: `bl_${numId}`,
+                        name: fallbackName.trim(),
+                        image: coverUrl,
+                        createdAt: Date.now(),
+                        customFields: { '구매일자': new Date().toISOString().slice(0, 10), '구매가격': '', '대표 이미지': coverUrl }
+                    }));
+                    showMessage(`${fallbackName} 추가 완료!`, 'success');
+                }
+                persistData();
+                renderFilteredGames();
+                $('#boardlife-add-panel').classList.add('hidden');
+            };
+        }
+
+        function openTagApplyModal(docId, currentGameTags) {
+            let currentTags = [...currentGameTags];
+            const modalEl = document.createElement('div');
+            modalEl.className = 'modal tag-manage-modal';
+            modalEl.innerHTML = `<div class="search-panel-content tag-apply-panel">
+                <button class="modal-close-btn" type="button">&times;</button><h2>태그 적용/해제</h2>
+                <div class="tag-apply-grid">${allUserTags.length === 0 ? '<p style="color:var(--text-secondary);">생성된 태그가 없습니다.</p>' : allUserTags.map(t => `<button type="button" class="tag-apply-chip ${currentTags.includes(t.id) ? 'selected' : ''}" data-tag-id="${t.id}" style="--tag-color:${t.color};"><span class="tag-apply-check">✓</span><span class="tag-apply-dot" style="background-color:${t.color};"></span><span>${escapeHtmlSafe(t.name)}</span></button>`).join('')}</div>
+                <div class="tag-apply-footer"><button id="save-tags-btn" type="button" class="tag-apply-save-btn">적용</button></div>
+            </div>`;
+            modalEl.querySelector('.modal-close-btn').onclick = () => modalEl.remove();
+            modalEl.querySelectorAll('.tag-apply-chip').forEach(c => {
+                c.onclick = () => {
+                    const tid = c.dataset.tagId;
+                    if (currentTags.includes(tid)) currentTags = currentTags.filter(x => x !== tid);
+                    else currentTags.push(tid);
+                    c.classList.toggle('selected');
+                };
+            });
+            modalEl.querySelector('#save-tags-btn').onclick = () => {
+                const g = allUserGames.find(x => x.id === docId);
+                if (g) { g.tags = currentTags; persistData(); renderFilteredGames(); renderModalContent(g); }
+                modalEl.remove();
+            };
+            document.body.appendChild(modalEl);
         }
 
         function openGlobalTagManager() {
             const modalEl = document.createElement('div');
             modalEl.className = 'modal tag-manage-modal';
             const render = () => {
-                const listHtml = allUserTags.map(tag => `
-                    <div class="tag-manage-item" data-tag-id="${tag.id}">
-                        <div class="tag-manage-item-info">
-                            <span class="tag-color-dot" style="background-color:${tag.color};"></span>
-                            <span>${escapeHtmlSafe(tag.name)}</span>
-                        </div>
-                        <button class="tag-delete-btn" data-tag-id="${tag.id}">&times;</button>
-                    </div>`).join('');
-                modalEl.innerHTML = `
-                    <div class="search-panel-content">
-                        <button class="modal-close-btn">&times;</button>
-                        <h2>전체 태그 관리</h2>
-                        <div class="tag-manage-list">${listHtml || '<p>생성된 태그가 없습니다.</p>'}</div>
-                        <div class="tag-create-form">
-                            <input type="text" id="new-tag-name" class="filter-input" placeholder="새 태그 이름 (3자 이하)" maxlength="3">
-                            <input type="color" id="new-tag-color" value="#6750A4" style="width:42px; height:42px; border:none; cursor:pointer;">
-                            <button id="create-tag-btn" class="detail-section-btn">생성</button>
-                        </div>
-                    </div>`;
+                modalEl.innerHTML = `<div class="search-panel-content"><button class="modal-close-btn" type="button">&times;</button><h2>전체 태그 관리</h2>
+                    <div class="tag-manage-list">${allUserTags.map(t => `<div class="tag-manage-item"><div class="tag-manage-item-info"><span class="tag-color-dot" style="background-color:${t.color};"></span><span>${escapeHtmlSafe(t.name)}</span></div><button type="button" class="tag-delete-btn" data-id="${t.id}">&times;</button></div>`).join('')}</div>
+                    <div class="tag-create-form"><input type="text" id="new-tag-name" class="filter-input" placeholder="태그명" maxlength="6"><input type="color" id="new-tag-color" value="#6750A4" style="width:40px;height:40px;border:none;"><button type="button" id="create-tag-btn" class="detail-section-btn">생성</button></div></div>`;
                 modalEl.querySelector('.modal-close-btn').onclick = () => modalEl.remove();
-                modalEl.querySelectorAll('.tag-delete-btn').forEach(btn => {
-                    btn.onclick = () => {
-                        const tid = btn.dataset.tagId;
-                        allUserTags = allUserTags.filter(t => t.id !== tid);
-                        allUserGames.forEach(g => g.tags = (g.tags || []).filter(id => id !== tid));
-                        persistData();
-                        renderTagFilters();
-                        renderFilteredGames();
-                        render();
-                    };
+                modalEl.querySelectorAll('.tag-delete-btn').forEach(b => {
+                    b.onclick = () => { allUserTags = allUserTags.filter(t => t.id !== b.dataset.id); persistData(); renderTagFilters(); renderFilteredGames(); render(); };
                 });
                 modalEl.querySelector('#create-tag-btn').onclick = () => {
-                    const name = modalEl.querySelector('#new-tag-name').value.trim();
-                    const color = modalEl.querySelector('#new-tag-color').value;
-                    if (!name) return;
-                    allUserTags.push({ id: `t_${Date.now()}`, name, color });
-                    persistData();
-                    renderTagFilters();
-                    render();
+                    const n = modalEl.querySelector('#new-tag-name').value.trim();
+                    if (!n) return;
+                    allUserTags.push({ id: `t_${Date.now()}`, name: n, color: modalEl.querySelector('#new-tag-color').value });
+                    persistData(); renderTagFilters(); render();
                 };
             };
             render();
             document.body.appendChild(modalEl);
         }
 
-        function initMobileSidebar() {
-            dom.openFilterBtn.onclick = () => { dom.filterSidebar.classList.add('open'); dom.filterOverlay.classList.remove('hidden'); };
-            const close = () => { dom.filterSidebar.classList.remove('open'); dom.filterOverlay.classList.add('hidden'); };
-            dom.closeFilterBtn.onclick = close;
-            dom.filterOverlay.onclick = close;
-        }
-
-        function initViewToggle() {
-            const updateIcon = () => {
-                const g = dom.viewToggleButton.querySelector('.grid-icon'), l = dom.viewToggleButton.querySelector('.list-icon');
-                if (currentViewMode === 'grid') { g.classList.add('hidden'); l.classList.remove('hidden'); l.classList.add('active'); }
-                else { l.classList.add('hidden'); g.classList.remove('hidden'); g.classList.add('active'); }
-            };
-            updateIcon();
-            dom.viewToggleButton.onclick = () => {
-                currentViewMode = currentViewMode === 'grid' ? 'list' : 'grid';
-                updateIcon();
-                renderFilteredGames();
-            };
-        }
-
-        function initMobileAppLikeUI() {
-            if (dom.mobileSearchInput && dom.nameSearchInput) {
-                dom.mobileSearchInput.addEventListener('input', () => {
-                    dom.nameSearchInput.value = dom.mobileSearchInput.value;
-                    dom.nameSearchInput.dispatchEvent(new Event('input'));
-                });
-            }
-            if (dom.playerChipsRow && dom.playerCountInput) {
-                dom.playerChipsRow.addEventListener('click', (e) => {
-                    const chip = e.target.closest('.player-chip');
-                    if (!chip) return;
-                    const val = chip.dataset.players;
-                    dom.playerChipsRow.querySelectorAll('.player-chip').forEach(c => c.classList.remove('active'));
-                    chip.classList.add('active');
-                    dom.playerCountInput.value = val === '0' ? '' : val;
-                    renderFilteredGames();
-                });
-            }
-            if (dom.fabAddGame && dom.addGameButton) {
-                dom.fabAddGame.onclick = () => dom.addGameButton.click();
-            }
-        }
-
-        function randomPickGame() {
-            const filtered = applyFiltersToGames(allUserGames);
-            if (filtered.length === 0) { showMessage('조건에 맞는 게임이 없습니다.', 'error'); return; }
-            const picked = filtered[Math.floor(Math.random() * filtered.length)];
-            showMessage(`🎲 제비뽑기 결과: ${picked.name}`, 'success');
-            setTimeout(() => openDetailModal(picked.id), 400);
-        }
-
-        function escapeHtmlSafe(str) {
-            if (str == null) return '';
-            const div = document.createElement('div');
-            div.textContent = String(str);
-            return div.innerHTML;
-        }
-
-        function showMessage(message, type = 'success') {
-            const el = document.createElement('div');
-            el.className = `message ${type}`;
-            el.textContent = message;
-            dom.messageContainer.appendChild(el);
-            setTimeout(() => el.remove(), 3000);
+        function escapeHtmlSafe(s) { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; }
+        function showMessage(msg, type = 'success') {
+            const el = document.createElement('div'); el.className = `message ${type}`; el.textContent = msg;
+            $('.message-container').appendChild(el); setTimeout(() => el.remove(), 3000);
         }
     </script>
 </body>

@@ -5,116 +5,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>게임 기록 - 나의 보드게임 책장</title>
     <link rel="stylesheet" href="style.css?v=19">
+    <meta name="theme-color" content="#F7F2FA">
     <style>
         .sessions-fullscreen-layout { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; background: var(--bg-main); }
         .sessions-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--bg-card); border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
         .sessions-header h1 { font-size: 1.1rem; font-weight: 700; margin: 0; }
-        .sessions-body { flex: 1; overflow-y: auto; padding: 1rem; max-width: 36rem; margin: 0 auto; width: 100%; box-sizing: border-box; }
-        
-        /* 직관적인 전적 카드 스타일 [L-1] */
-        .session-card-compact { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; margin-bottom: 0.875rem; box-shadow: 0 1px 4px var(--shadow-color); cursor: pointer; }
-        .sc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.82rem; color: var(--text-secondary); }
-        .sc-body { display: flex; gap: 0.75rem; align-items: center; }
-        .sc-thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; background: var(--bg-secondary); flex-shrink: 0; }
-        .sc-info { flex: 1; min-width: 0; }
-        .sc-gname { font-weight: 700; font-size: 0.98rem; margin-bottom: 0.2rem; }
-        .sc-result { font-size: 0.84rem; color: var(--text-primary); }
+        .sessions-body { flex: 1; overflow-y: auto; padding: 1rem 1rem 5.5rem 1rem; max-width: 38rem; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        .sync-bar { display: flex; justify-content: space-between; align-items: center; font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 0.6rem; }
 
-        /* [E-1] 원터치 참여자 칩 바 스타일 */
-        .chip-bar { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+        /* [L-2] 접이식 월간 달력 */
+        .cal-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.75rem; margin-bottom: 0.875rem; }
+        .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-weight: 700; font-size: 0.9rem; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 0.78rem; }
+        .cal-day { padding: 6px 2px; border-radius: 6px; cursor: pointer; user-select: none; }
+        .cal-day:hover { background: var(--bg-secondary); }
+        .cal-day.has-play { font-weight: 800; color: var(--md-primary); background: var(--md-primary-container, #eaddff); }
+        .cal-day.selected { outline: 2px solid var(--md-primary); }
+
+        /* [L-1] 컴팩트 전적 요약 카드 */
+        .session-card-compact { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.75rem; box-shadow: 0 1px 4px var(--shadow-color); cursor: pointer; }
+        .sc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); gap: 0.5rem; }
+        .sc-game-row { display: flex; gap: 0.75rem; align-items: center; padding: 0.45rem 0; border-top: 1px dashed var(--border-color); }
+        .sc-game-row:first-of-type { border-top: none; }
+        .sc-thumb { width: 52px; height: 52px; object-fit: cover; border-radius: 8px; background: var(--bg-secondary); flex-shrink: 0; }
+        .sc-score-pills { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.3rem; }
+        .sc-pill { font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); }
+        .sc-pill.winner { background: #fef3c7; color: #92400e; font-weight: 700; border: 1px solid #f59e0b; }
+
+        /* [E-1] 원터치 참여자 칩 바 */
+        .chip-bar { display: flex; flex-wrap: wrap; gap: 0.4rem; }
         .member-chip { padding: 0.35rem 0.75rem; border-radius: 999px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-secondary); font-size: 0.82rem; font-weight: 600; cursor: pointer; }
-        .member-chip.active { background: var(--md-primary); color: var(--md-on-primary); border-color: var(--md-primary); }
+        .member-chip.active { background: var(--md-primary); color: var(--md-on-primary, #fff); border-color: var(--md-primary); }
 
-        /* [E-3] 협동/솔로 결과 토글 버튼 */
-        .coop-toggle-group { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
-        .coop-btn { flex: 1; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); font-weight: 700; cursor: pointer; font-size: 0.9rem; }
+        /* [E-3] 협동/솔로 스위치 */
+        .coop-toggle-group { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+        .coop-btn { flex: 1; padding: 0.55rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); font-weight: 700; cursor: pointer; font-size: 0.85rem; color: var(--text-primary); }
         .coop-btn.win.active { background: #dcfce7; color: #166534; border-color: #22c55e; }
         .coop-btn.lose.active { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
 
-        .edit-section { background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border-color); margin-bottom: 1rem; }
-        .edit-section-title { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.75rem; text-transform: uppercase; }
-        .small-btn { padding: 0.45rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); cursor: pointer; font-size: 0.82rem; font-weight: 600; }
+        .edit-section { background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border-color); margin-bottom: 0.875rem; }
+        .edit-section-title { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center; }
+        .small-btn { padding: 0.4rem 0.7rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
         .small-btn.primary { background: var(--md-primary); color: #fff; border-color: var(--md-primary); }
     </style>
 </head>
 <body>
     <div class="sessions-fullscreen-layout">
         <header class="sessions-header">
-            <a href="./" class="action-icon-btn" title="책장으로 돌아가기">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            </a>
+            <a href="./" class="action-icon-btn" title="책장으로 돌아가기">←</a>
             <h1>게임 기록 및 전적</h1>
-            <button id="add-session-btn" class="action-icon-btn" title="새 기록 추가">＋</button>
+            <div style="display:flex; gap:0.4rem;">
+                <button id="sync-gist-btn" class="action-icon-btn" type="button" title="Gist에서 최신 데이터 불러오기(Pull)">☁️</button>
+                <button id="toggle-cal-btn" class="action-icon-btn" type="button" title="월간 달력 접기/펼치기">📅</button>
+                <button id="add-session-btn" class="action-icon-btn" type="button" title="새 기록 추가">＋</button>
+            </div>
         </header>
 
-        <div class="sessions-body" id="sessions-body">
-            <!-- [L-2] 검색 및 미니 캘린더 필터 바 -->
-            <div style="margin-bottom:1rem; display:flex; gap:0.5rem;">
-                <input type="text" id="session-search-input" class="filter-input" placeholder="게임명 또는 참여자 검색...">
+        <div class="sessions-body">
+            <div class="sync-bar">
+                <span id="session-count-label">총 0건의 플레이 기록</span>
+                <span id="sync-status-text"></span>
             </div>
 
+            <!-- 목록 뷰 -->
             <div id="sessions-list-view">
+                <div id="calendar-panel" class="cal-box">
+                    <div class="cal-nav">
+                        <button type="button" class="small-btn" id="cal-prev-btn">◀</button>
+                        <span id="cal-month-title"></span>
+                        <button type="button" class="small-btn" id="cal-next-btn">▶</button>
+                    </div>
+                    <div id="cal-grid" class="cal-grid"></div>
+                </div>
+
+                <div style="display:flex; gap:0.5rem; margin-bottom:0.875rem;">
+                    <input type="text" id="session-search-input" class="filter-input" placeholder="게임 이름, 참여자, 메모 검색..." style="height:2.4rem;">
+                    <button type="button" id="clear-date-filter-btn" class="small-btn" style="display:none; white-space:nowrap;">전체 날짜</button>
+                </div>
+
                 <div id="sessions-list-container"></div>
             </div>
 
-            <!-- 직관적 작성 화면 -->
+            <!-- 작성/편집 뷰 -->
             <div id="sessions-edit-view" style="display:none;">
                 <div class="edit-section">
-                    <div class="edit-section-title">날짜</div>
+                    <div class="edit-section-title">플레이 날짜</div>
                     <input type="date" id="session-date" class="filter-input">
                 </div>
 
                 <div class="edit-section">
-                    <div class="edit-section-title">참여자 ([E-1] 원터치 선택)</div>
+                    <div class="edit-section-title">
+                        <span>참여자 ([E-1] 원터치 선택 · '나' 기본 포함)</span>
+                        <button type="button" id="reset-players-btn" class="small-btn" style="padding:0.15rem 0.45rem; font-size:0.72rem;">'나'만 선택</button>
+                    </div>
                     <div id="quick-member-chips" class="chip-bar"></div>
                     <div style="display:flex; gap:0.5rem; margin-top:0.6rem;">
-                        <input type="text" id="new-player-input" class="filter-input" placeholder="새 멤버 이름 입력 후 추가">
-                        <button class="small-btn" id="add-player-btn" type="button">추가</button>
+                        <input type="text" id="new-player-input" class="filter-input" placeholder="새 멤버 이름 입력" style="height:2.3rem;">
+                        <button class="small-btn" id="add-player-btn" type="button" style="white-space:nowrap;">+ 추가</button>
                     </div>
                 </div>
 
                 <div class="edit-section">
-                    <div class="edit-section-title">플레이한 게임</div>
+                    <div class="edit-section-title">플레이한 게임 ([E-3] 경쟁·협동 스위치 &amp; 최고점 자동 🏆)</div>
                     <div id="edit-games-container" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:0.75rem;"></div>
-                    <button class="small-btn primary" id="pick-game-btn" type="button" style="width:100%; padding:0.65rem;">+ 내 책장에서 게임 고르기</button>
+                    <button class="small-btn primary" id="pick-game-btn" type="button" style="width:100%; padding:0.65rem;">+ 내 책장에서 게임 추가</button>
                 </div>
 
                 <div class="edit-section">
-                    <div class="edit-section-title">만족도 별점 &amp; 메모</div>
-                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
-                        <span>만족도:</span>
-                        <div id="star-row" style="font-size:1.4rem; cursor:pointer; color:#f59e0b;">★★★★★</div>
-                    </div>
-                    <textarea id="session-memo" class="memo-box" placeholder="오늘의 소감이나 특이사항을 적어보세요..." rows="3"></textarea>
+                    <div class="edit-section-title">오늘의 메모</div>
+                    <textarea id="session-memo" class="memo-box" placeholder="승리 전략이나 재미있었던 순간을 기록하세요..." rows="3"></textarea>
                 </div>
 
                 <div style="display:flex; gap:0.5rem; margin-bottom:2rem;">
-                    <button class="small-btn" id="cancel-edit-btn" style="flex:1; padding:0.75rem;">취소</button>
-                    <button class="small-btn primary" id="save-session-btn" style="flex:1; padding:0.75rem;">기록 저장하기</button>
+                    <button class="small-btn" id="cancel-edit-btn" type="button" style="flex:1; padding:0.75rem;">취소</button>
+                    <button class="small-btn primary" id="save-session-btn" type="button" style="flex:1; padding:0.75rem;">💾 기록 저장</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 게임 선택 바텀시트 -->
-    <div class="bottom-sheet-overlay" id="game-picker-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200;">
-        <div class="bottom-sheet" style="position:fixed; bottom:0; left:0; right:0; background:var(--bg-card); border-radius:16px 16px 0 0; padding:1.25rem; max-height:70vh; display:flex; flex-direction:column;">
-            <h3>내 책장 게임 선택</h3>
-            <input type="text" id="game-picker-search" class="filter-input" placeholder="게임 이름 검색..." style="margin:0.5rem 0;">
-            <div id="game-picker-list" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:0.5rem;"></div>
+    <!-- 게임 선택 모달 -->
+    <div id="game-picker-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200;">
+        <div style="position:fixed; bottom:0; left:0; right:0; background:var(--bg-card); border-radius:16px 16px 0 0; padding:1.25rem; max-height:75vh; display:flex; flex-direction:column; max-width:38rem; margin:0 auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0;">내 책장 게임 선택</h3>
+                <button type="button" id="close-picker-btn" class="small-btn">닫기</button>
+            </div>
+            <input type="text" id="game-picker-search" class="filter-input" placeholder="게임 이름 검색..." style="margin:0.65rem 0;">
+            <div id="game-picker-list" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:0.4rem;"></div>
         </div>
     </div>
 
-    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
-        <a href="./" class="nav-item" aria-label="책장">
+    <div class="message-container"></div>
+
+    <nav class="mobile-bottom-nav">
+        <a href="./" class="nav-item">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
             <span>책장</span>
         </a>
-        <a href="./sessions.html" class="nav-item active" aria-label="게임 기록">
+        <a href="./sessions.html" class="nav-item active">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             <span>게임 기록</span>
         </a>
-        <a href="./mypage.html" class="nav-item" aria-label="마이페이지">
+        <a href="./mypage.html" class="nav-item">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             <span>마이페이지</span>
         </a>
@@ -122,337 +155,502 @@
 
     <script>
         const GAMES_STORAGE_KEY = "MY_BG_SHELF_DATA_V1";
+        const TAGS_STORAGE_KEY = "MY_BG_TAGS_V1";
         const SESSIONS_STORAGE_KEY = "MY_BG_SESSIONS_V1";
         const PLAYERS_STORAGE_KEY = "MY_BG_PLAYERS_V1";
         const GIST_CONFIG_KEY = "MY_BG_GIST_CONFIG_V1";
+        const NICKNAME_KEY = "MY_BG_NICKNAME_V1";
+        const FB_REFRESH_TOKEN_KEY = "MY_BG_FB_REFRESH_TOKEN_V1";
         const GIST_FILENAME = "myboardgames_db.json";
+        const STORAGE_BL_BASE = "https://storage.googleapis.com/mybgshelf.firebasestorage.app/boardlife_games";
 
-        let allSessions = [];
-        let allPlayers = ['나', '배우자', '아이', '모임원'];
-        let myGames = [];
-        let editState = null;
+        const $ = (s) => document.querySelector(s);
+        let allSessions = [], allPlayers = [], myGames = [], editState = null;
+        let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
+        let selectedDateFilter = null, pickerFilteredList = [];
 
-        document.addEventListener('DOMContentLoaded', () => {
+        function escapeHtml(s) {
+            return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function resolveCoverUrl(rawInput) {
+            if (!rawInput) return '';
+            const s = String(rawInput).trim();
+            const idMatch = s.match(/^(?:bl_)?(\d{1,6})$/i);
+            if (idMatch) return `${STORAGE_BL_BASE}/bl_${idMatch[1]}.webp`;
+            const urlMatch = s.match(/boardlife\.co\.kr\/(?:game\/|bbs_detail\.php\?[^#]*bbs_num=)(\d+)/i);
+            if (urlMatch) return `${STORAGE_BL_BASE}/bl_${urlMatch[1]}.webp`;
+            return s;
+        }
+
+        function normDateStr(raw) {
+            if (!raw) return '';
+            if (typeof raw === 'string') return raw.slice(0, 10);
+            if (raw.seconds) return new Date(raw.seconds * 1000).toISOString().slice(0, 10);
+            return '';
+        }
+
+        function loadLocalData() {
+            try { allSessions = JSON.parse(localStorage.getItem(SESSIONS_STORAGE_KEY) || '[]'); } catch (e) { allSessions = []; }
+            try {
+                const rawP = JSON.parse(localStorage.getItem(PLAYERS_STORAGE_KEY) || '["나", "배우자", "아이", "모임원"]');
+                allPlayers = (Array.isArray(rawP) ? rawP : []).map(p => typeof p === 'string' ? p : p?.name).filter(Boolean);
+            } catch (e) { allPlayers = ['나', '배우자', '아이', '모임원']; }
+            if (!allPlayers.includes('나')) allPlayers.unshift('나');
+            try { myGames = JSON.parse(localStorage.getItem(GAMES_STORAGE_KEY) || '[]'); } catch (e) { myGames = []; }
+        }
+
+        async function pullFromGist(manual = false) {
+            try {
+                const cfg = JSON.parse(localStorage.getItem(GIST_CONFIG_KEY) || '{}');
+                if (!cfg.token || !cfg.gistId) {
+                    if (manual) alert('마이페이지에서 Gist Token과 Gist ID를 먼저 설정해주세요.');
+                    return false;
+                }
+                $('#sync-status-text').textContent = '☁️ 동기화 확인 중...';
+                const res = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+                    headers: { 'Authorization': `Bearer ${cfg.token}` }, cache: 'no-store'
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                const file = data.files && (data.files[GIST_FILENAME] || Object.values(data.files)[0]);
+                if (!file || !file.content) throw new Error('Empty');
+                const parsed = JSON.parse(file.content);
+
+                if (parsed.firebaseRefreshToken) localStorage.setItem(FB_REFRESH_TOKEN_KEY, parsed.firebaseRefreshToken);
+                if (Array.isArray(parsed.games)) localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(parsed.games));
+                if (Array.isArray(parsed.tags)) localStorage.setItem(TAGS_STORAGE_KEY, JSON.stringify(parsed.tags));
+                if (Array.isArray(parsed.sessions)) localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(parsed.sessions));
+                if (Array.isArray(parsed.players)) localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(parsed.players));
+
+                loadLocalData();
+                renderCalendar();
+                renderSessionList();
+                $('#sync-status-text').textContent = '☁️ Gist 동기화 완료';
+                return true;
+            } catch (e) {
+                $('#sync-status-text').textContent = '⚠️ Gist 연동 실패';
+                return false;
+            }
+        }
+
+        async function syncToGistSilent() {
+            try {
+                const cfg = JSON.parse(localStorage.getItem(GIST_CONFIG_KEY) || '{}');
+                if (!cfg.token || !cfg.gistId || cfg.autoSync === false) return;
+                $('#sync-status-text').textContent = '☁️ 클라우드 저장 중...';
+                const payload = {
+                    updatedAt: new Date().toISOString(),
+                    firebaseRefreshToken: localStorage.getItem(FB_REFRESH_TOKEN_KEY) || '',
+                    games: JSON.parse(localStorage.getItem(GAMES_STORAGE_KEY) || '[]'),
+                    tags: JSON.parse(localStorage.getItem(TAGS_STORAGE_KEY) || '[]'),
+                    sessions: allSessions,
+                    players: allPlayers
+                };
+                const res = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${cfg.token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ files: { [GIST_FILENAME]: { content: JSON.stringify(payload, null, 2) } } })
+                });
+                if (res.ok) $('#sync-status-text').textContent = '☁️ 클라우드 저장됨';
+            } catch (e) {
+                $('#sync-status-text').textContent = '⚠️ 자동 저장 실패';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
-
-            allSessions = JSON.parse(localStorage.getItem(SESSIONS_STORAGE_KEY) || '[]');
-            allPlayers = JSON.parse(localStorage.getItem(PLAYERS_STORAGE_KEY) || '["나", "배우자", "아이", "모임원"]');
-            myGames = JSON.parse(localStorage.getItem(GAMES_STORAGE_KEY) || '[]');
-
+            loadLocalData();
+            renderCalendar();
             renderSessionList();
 
-            // [E-4] 책장에서 '오늘 플레이 기록' 버튼을 눌러 넘어온 경우 자동 처리
-            try {
-                const qp = new URLSearchParams(window.location.search);
-                if (qp.get('sessionAddGame') === '1' || localStorage.getItem('bgs_quick_add_game')) {
-                    const gid = qp.get('gameId') || localStorage.getItem('bgs_quick_add_game');
-                    localStorage.removeItem('bgs_quick_add_game');
-                    const targetGame = myGames.find(g => g.id === gid);
-                    openEdit(null);
-                    if (targetGame) {
-                        editState.games.push({
-                            gameId: targetGame.id,
-                            gameName: targetGame.name || targetGame.title,
-                            gameThumbnail: targetGame.image || targetGame.thumbnail || '',
-                            mode: 'compete', // compete | coop | none
-                            coopResult: 'win',
-                            rounds: [{ scores: {}, winner: '' }]
-                        });
-                        renderEditGames();
-                    }
-                    const cleanUrl = new URL(window.location);
-                    cleanUrl.searchParams.delete('sessionAddGame');
-                    cleanUrl.searchParams.delete('gameId');
-                    history.replaceState({}, '', cleanUrl);
-                }
-            } catch (_) {}
+            const cfg = JSON.parse(localStorage.getItem(GIST_CONFIG_KEY) || '{}');
+            if (cfg.token && cfg.gistId && allSessions.length === 0 && myGames.length === 0) {
+                await pullFromGist(false);
+            }
 
+            // [E-4] 책장 상세 모달에서 넘어온 경우 자동 폼 오픈
+            const qp = new URLSearchParams(window.location.search);
+            if (qp.get('sessionAddGame') === '1') {
+                const gid = qp.get('gameId');
+                const target = myGames.find(g => String(g.id) === String(gid));
+                openEdit(null);
+                if (target) {
+                    editState.games.push({
+                        gameId: target.id,
+                        gameName: target.customFields?.['게임 이름'] || target.name || '게임',
+                        gameThumbnail: resolveCoverUrl(target.customFields?.['대표 이미지'] || target.image || ''),
+                        mode: 'compete',
+                        coopResult: 'win',
+                        rounds: [{ scores: {}, winners: [] }]
+                    });
+                    renderEditGames();
+                }
+                history.replaceState({}, '', location.pathname);
+            }
+
+            $('#sync-gist-btn').onclick = () => pullFromGist(true);
+            $('#toggle-cal-btn').onclick = () => {
+                const p = $('#calendar-panel');
+                p.style.display = p.style.display === 'none' ? 'block' : 'none';
+            };
+            $('#cal-prev-btn').onclick = () => { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar(); };
+            $('#cal-next-btn').onclick = () => { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar(); };
+            $('#clear-date-filter-btn').onclick = () => setDateFilter(null);
             $('#add-session-btn').onclick = () => openEdit(null);
             $('#cancel-edit-btn').onclick = closeEdit;
             $('#save-session-btn').onclick = saveSession;
-            $('#add-player-btn').onclick = () => {
-                const val = $('#new-player-input').value.trim();
-                if (!val) return;
-                if (!allPlayers.includes(val)) {
-                    allPlayers.push(val);
+            $('#session-search-input').oninput = () => renderSessionList();
+
+            const handleAddPlayer = () => {
+                const v = $('#new-player-input').value.trim();
+                if (!v) return;
+                if (!allPlayers.includes(v)) {
+                    allPlayers.push(v);
                     localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(allPlayers));
+                    syncToGistSilent();
                 }
-                if (editState && !editState.players.includes(val)) editState.players.push(val);
+                if (editState && !editState.players.includes(v)) editState.players.push(v);
                 $('#new-player-input').value = '';
                 renderMemberChips();
+                renderEditGames();
             };
+            $('#add-player-btn').onclick = handleAddPlayer;
+            $('#new-player-input').onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddPlayer(); } };
+            $('#reset-players-btn').onclick = () => { if (editState) { editState.players = ['나']; renderMemberChips(); renderEditGames(); } };
+
             $('#pick-game-btn').onclick = () => {
+                $('#game-picker-search').value = '';
                 renderGamePickerList('');
                 $('#game-picker-overlay').style.display = 'block';
             };
-            $('#game-picker-overlay').onclick = (e) => { if (e.target.id === 'game-picker-overlay') e.target.style.display = 'none'; };
+            $('#close-picker-btn').onclick = () => { $('#game-picker-overlay').style.display = 'none'; };
+            $('#game-picker-overlay').onclick = (e) => { if (e.target.id === 'game-picker-overlay') $('#game-picker-overlay').style.display = 'none'; };
             $('#game-picker-search').oninput = (e) => renderGamePickerList(e.target.value);
-            $('#session-search-input').oninput = (e) => renderSessionList(e.target.value);
         });
 
-        function renderSessionList(searchFilter = '') {
-            const container = $('#sessions-list-container');
-            const q = searchFilter.trim().toLowerCase();
+        function setDateFilter(dStr) {
+            selectedDateFilter = selectedDateFilter === dStr ? null : dStr;
+            $('#clear-date-filter-btn').style.display = selectedDateFilter ? 'inline-block' : 'none';
+            renderCalendar();
+            renderSessionList();
+        }
 
-            const filtered = allSessions.filter(s => {
+        function renderCalendar() {
+            $('#cal-month-title').textContent = `${calYear}년 ${calMonth + 1}월`;
+            const playDates = new Set(allSessions.map(s => normDateStr(s.date || s.playDate)));
+            const firstDay = new Date(calYear, calMonth, 1).getDay();
+            const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+            let html = ['일','월','화','수','목','금','토'].map(d => `<div style="color:var(--text-secondary);font-weight:600;">${d}</div>`).join('');
+            for (let i = 0; i < firstDay; i++) html += '<div></div>';
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const hasPlay = playDates.has(dStr);
+                const isSel = selectedDateFilter === dStr;
+                html += `<div class="cal-day ${hasPlay ? 'has-play' : ''} ${isSel ? 'selected' : ''}" data-date="${dStr}">${d}${hasPlay ? '🎲' : ''}</div>`;
+            }
+            const grid = $('#cal-grid');
+            grid.innerHTML = html;
+            grid.querySelectorAll('.cal-day').forEach(el => {
+                el.onclick = () => setDateFilter(el.dataset.date);
+            });
+        }
+
+        function renderSessionList() {
+            $('#session-count-label').textContent = `총 ${allSessions.length}건의 플레이 기록`;
+            const q = ($('#session-search-input')?.value || '').trim().toLowerCase();
+            const sorted = [...allSessions].sort((a, b) => normDateStr(b.date || b.playDate).localeCompare(normDateStr(a.date || a.playDate)));
+            const filtered = sorted.filter(s => {
+                const dStr = normDateStr(s.date || s.playDate);
+                if (selectedDateFilter && dStr !== selectedDateFilter) return false;
                 if (!q) return true;
-                const matchMemo = (s.memo || '').toLowerCase().includes(q);
-                const matchPlayer = (s.players || []).some(p => p.toLowerCase().includes(q));
-                const matchGame = (s.games || []).some(g => (g.gameName || '').toLowerCase().includes(q));
-                return matchMemo || matchPlayer || matchGame;
+                const games = s.games || s.gameResults || [];
+                const hay = [s.memo || '', ...(s.players || []), ...games.map(g => g.gameName || '')].join(' ').toLowerCase();
+                return hay.includes(q);
             });
 
-            if (filtered.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:3rem; color:var(--text-secondary);">해당하는 게임 기록이 없습니다.</div>';
+            const box = $('#sessions-list-container');
+            if (!filtered.length) {
+                box.innerHTML = '<div style="text-align:center; padding:3rem 1rem; color:var(--text-secondary);">표시할 기록이 없습니다.<br><small>우측 상단 <strong>＋</strong> 버튼으로 추가하거나 <strong>☁️</strong> 버튼으로 Gist에서 불러오세요.</small></div>';
                 return;
             }
 
-            container.innerHTML = filtered.map(s => {
-                const firstG = (s.games || [])[0] || {};
-                const thumb = firstG.gameThumbnail || 'https://placehold.co/60x60/6750A4/ffffff?text=BG';
-                const gNames = (s.games || []).map(g => g.gameName).join(', ');
-                
-                // 직관적 결과 요약 [L-1]
-                let resultSummary = '';
-                if (firstG.mode === 'coop') {
-                    resultSummary = firstG.coopResult === 'win' ? '🎉 협동전 승리 (클리어)' : '💀 협동전 패배 (실패)';
-                } else if (firstG.rounds && firstG.rounds.length > 0) {
-                    const r1 = firstG.rounds[0];
-                    if (r1.winner) resultSummary = `🥇 우승자: <strong>${r1.winner}</strong>`;
-                    else if (r1.scores && Object.keys(r1.scores).length > 0) {
-                        const topP = Object.entries(r1.scores).sort((a,b)=>b[1]-a[1])[0];
-                        if (topP) resultSummary = `🥇 ${topP[0]} (${topP[1]}점)`;
+            box.innerHTML = filtered.map(s => {
+                const dStr = normDateStr(s.date || s.playDate);
+                const games = s.games || s.gameResults || [];
+                const gamesHtml = games.map(g => {
+                    const thumb = resolveCoverUrl(g.gameThumbnail) || 'https://placehold.co/52x52/6750A4/ffffff?text=BG';
+                    const rounds = g.rounds || [];
+                    let badges = '';
+                    if (g.mode === 'coop') {
+                        badges = g.coopResult === 'lose'
+                            ? `<span class="sc-pill" style="background:#fee2e2;color:#991b1b;font-weight:700;">💀 협동/솔로 실패</span>`
+                            : `<span class="sc-pill winner">🎉 협동/솔로 클리어!</span>`;
+                    } else if (rounds.length > 0) {
+                        badges = rounds.map((r, ri) => {
+                            const winners = Array.isArray(r.winners) ? r.winners : (r.winner ? [r.winner] : []);
+                            const entries = Object.entries(r.scores || {});
+                            if (entries.length > 0) {
+                                return entries.map(([p, sc]) => `<span class="sc-pill ${winners.includes(p) ? 'winner' : ''}">${winners.includes(p) ? '🥇 ' : ''}${escapeHtml(p)} ${escapeHtml(sc)}점</span>`).join('');
+                            }
+                            if (winners.length > 0) return `<span class="sc-pill winner">🥇 ${escapeHtml(winners.join(', '))} 승</span>`;
+                            return `<span class="sc-pill">${ri + 1}판 완료</span>`;
+                        }).join(' ');
                     }
-                }
+                    return `
+                        <div class="sc-game-row">
+                            <img src="${escapeHtml(thumb)}" class="sc-thumb" referrerpolicy="no-referrer">
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-weight:700; font-size:0.95rem;">${escapeHtml(g.gameName || '게임')} <small style="color:var(--text-secondary);">(${Math.max(rounds.length, 1)}판)</small></div>
+                                <div class="sc-score-pills">${badges}</div>
+                            </div>
+                        </div>`;
+                }).join('');
 
                 return `
-                    <div class="session-card-compact" onclick="openEdit('${s.id}')">
+                    <div class="session-card-compact" data-sid="${escapeHtml(s.id)}">
                         <div class="sc-top">
-                            <span>📅 ${s.date}</span>
-                            <button type="button" class="small-btn" style="color:var(--error-color); padding:0.1rem 0.4rem;" onclick="event.stopPropagation(); deleteSession('${s.id}')">삭제</button>
+                            <span>📅 <strong>${escapeHtml(dStr)}</strong> · 👥 ${escapeHtml((s.players || []).join(', '))}</span>
+                            <button type="button" class="small-btn btn-del-session" data-sid="${escapeHtml(s.id)}" style="color:var(--error-color); padding:0.15rem 0.45rem;">삭제</button>
                         </div>
-                        <div class="sc-body">
-                            <img src="${thumb}" class="sc-thumb" referrerpolicy="no-referrer" onerror="this.src='https://placehold.co/60x60/6750A4/ffffff?text=BG'">
-                            <div class="sc-info">
-                                <div class="sc-gname">${escapeHtmlSafe(gNames)}</div>
-                                <div class="sc-result">${resultSummary || (s.players ? '참여자: ' + s.players.join(', ') : '')}</div>
-                            </div>
-                        </div>
+                        ${gamesHtml}
+                        ${s.memo ? `<div style="margin-top:0.5rem; font-size:0.82rem; color:var(--text-secondary); background:var(--bg-secondary); padding:0.4rem 0.6rem; border-radius:6px;">💬 ${escapeHtml(s.memo)}</div>` : ''}
                     </div>`;
             }).join('');
+
+            box.querySelectorAll('.session-card-compact').forEach(card => {
+                card.onclick = (e) => {
+                    if (e.target.closest('.btn-del-session')) return;
+                    openEdit(card.dataset.sid);
+                };
+            });
+            box.querySelectorAll('.btn-del-session').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteSession(btn.dataset.sid);
+                };
+            });
         }
 
         function openEdit(sessionId) {
             const todayStr = new Date().toISOString().slice(0, 10);
             if (sessionId) {
-                const found = allSessions.find(s => s.id === sessionId);
+                const found = allSessions.find(s => String(s.id) === String(sessionId));
                 if (found) {
                     editState = JSON.parse(JSON.stringify(found));
+                    editState.date = normDateStr(found.date || found.playDate) || todayStr;
+                    editState.players = Array.isArray(found.players) && found.players.length ? [...found.players] : ['나'];
+                    editState.games = (found.games || found.gameResults || []).map(g => ({
+                        ...g,
+                        mode: g.mode || 'compete',
+                        coopResult: g.coopResult || 'win',
+                        rounds: (g.rounds && g.rounds.length) ? g.rounds.map(r => ({
+                            scores: { ...(r.scores || {}) },
+                            winners: Array.isArray(r.winners) ? [...r.winners] : (r.winner ? [r.winner] : [])
+                        })) : [{ scores: {}, winners: [] }]
+                    }));
                 }
             } else {
-                editState = {
-                    id: `s_${Date.now()}`,
-                    date: todayStr,
-                    players: ['나'],
-                    games: [],
-                    rating: 5,
-                    memo: ''
-                };
+                editState = { id: `s_${Date.now()}`, date: selectedDateFilter || todayStr, players: ['나'], games: [], memo: '' };
             }
-
             $('#sessions-list-view').style.display = 'none';
-            $('#session-search-input').style.display = 'none';
-            $('#sessions-edit-view').style.display = 'flex';
+            $('#sessions-edit-view').style.display = 'block';
             $('#add-session-btn').style.display = 'none';
-
             $('#session-date').value = editState.date;
-            $('#session-memo').value = editState.memo;
+            $('#session-memo').value = editState.memo || '';
             renderMemberChips();
             renderEditGames();
         }
 
         function closeEdit() {
             $('#sessions-edit-view').style.display = 'none';
-            $('#sessions-list-view').style.display = '';
-            $('#session-search-input').style.display = '';
+            $('#sessions-list-view').style.display = 'block';
             $('#add-session-btn').style.display = '';
             editState = null;
+            renderCalendar();
             renderSessionList();
         }
 
         function renderMemberChips() {
             const box = $('#quick-member-chips');
-            box.innerHTML = allPlayers.map(p => {
-                const isSel = editState.players.includes(p);
-                return `<button type="button" class="member-chip ${isSel ? 'active' : ''}" onclick="togglePlayer('${p}')">👤 ${p}</button>`;
-            }).join('');
-        }
-
-        function togglePlayer(name) {
-            if (editState.players.includes(name)) {
-                if (editState.players.length === 1) { showMessage('최소 1명은 참여해야 합니다.', 'error'); return; }
-                editState.players = editState.players.filter(p => p !== name);
-            } else {
-                editState.players.push(name);
-            }
-            renderMemberChips();
+            box.innerHTML = allPlayers.map((p, idx) => `
+                <button type="button" class="member-chip ${editState.players.includes(p) ? 'active' : ''}" data-pidx="${idx}">👤 ${escapeHtml(p)}</button>
+            `).join('');
+            box.querySelectorAll('.member-chip').forEach(btn => {
+                btn.onclick = () => {
+                    const name = allPlayers[parseInt(btn.dataset.pidx, 10)];
+                    if (editState.players.includes(name)) {
+                        if (editState.players.length > 1) editState.players = editState.players.filter(x => x !== name);
+                    } else {
+                        editState.players.push(name);
+                    }
+                    renderMemberChips();
+                    renderEditGames();
+                };
+            });
         }
 
         function renderEditGames() {
             const box = $('#edit-games-container');
-            if (editState.games.length === 0) {
-                box.innerHTML = '<p style="text-align:center; color:var(--text-secondary); font-size:0.85rem;">선택된 게임이 없습니다. 아래 버튼을 눌러 추가하세요.</p>';
+            if (!editState.games.length) {
+                box.innerHTML = '<p style="text-align:center; color:var(--text-secondary); font-size:0.85rem; margin:0.5rem 0;">아래 버튼을 눌러 플레이한 게임을 추가하세요.</p>';
                 return;
             }
-
             box.innerHTML = editState.games.map((g, gIdx) => {
                 const mode = g.mode || 'compete';
                 let bodyHtml = '';
-
                 if (mode === 'coop') {
                     bodyHtml = `
                         <div class="coop-toggle-group">
-                            <button type="button" class="coop-btn win ${g.coopResult === 'win' ? 'active' : ''}" onclick="setCoopResult(${gIdx}, 'win')">🎉 클리어 (승리)</button>
-                            <button type="button" class="coop-btn lose ${g.coopResult === 'lose' ? 'active' : ''}" onclick="setCoopResult(${gIdx}, 'lose')">💀 실패 (패배)</button>
+                            <button type="button" class="coop-btn win ${g.coopResult === 'win' ? 'active' : ''}" data-gidx="${gIdx}" data-coop="win">🎉 클리어 (승리)</button>
+                            <button type="button" class="coop-btn lose ${g.coopResult === 'lose' ? 'active' : ''}" data-gidx="${gIdx}" data-coop="lose">💀 실패 (패배)</button>
                         </div>`;
                 } else if (mode === 'compete') {
-                    const rounds = g.rounds || [{ scores: {}, winner: '' }];
-                    bodyHtml = rounds.map((r, rIdx) => `
-                        <div style="background:var(--bg-main); border:1px solid var(--border-color); border-radius:8px; padding:0.6rem; margin-bottom:0.5rem;">
-                            <div style="display:flex; justify-content:space-between; font-size:0.78rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.4rem;">
-                                <span>${rIdx + 1}판 점수 및 우승자</span>
-                                <button type="button" class="small-btn" style="color:var(--error-color); padding:0.1rem 0.3rem;" onclick="removeRound(${gIdx}, ${rIdx})">판 삭제</button>
+                    bodyHtml = g.rounds.map((r, rIdx) => `
+                        <div style="background:var(--bg-main); border:1px solid var(--border-color); border-radius:8px; padding:0.6rem; margin-top:0.5rem;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.76rem; font-weight:700; margin-bottom:0.4rem;">
+                                <span>${rIdx + 1}판 점수 입력 (최고점 자동 🏆)</span>
+                                ${g.rounds.length > 1 ? `<button type="button" class="small-btn btn-del-round" data-gidx="${gIdx}" data-ridx="${rIdx}" style="color:var(--error-color);padding:0.1rem 0.3rem;">판 삭제</button>` : ''}
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:0.35rem;">
-                                ${editState.players.map(p => `
-                                    <div style="display:flex; align-items:center; gap:0.5rem;">
-                                        <span style="font-size:0.85rem; min-width:70px; font-weight:600;">${p}</span>
-                                        <input type="number" class="filter-input" style="padding:0.3rem; height:2rem;" placeholder="점수" value="${r.scores[p] !== undefined ? r.scores[p] : ''}" oninput="setScore(${gIdx}, ${rIdx}, '${p}', this.value)">
-                                    </div>`).join('')}
+                            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(135px, 1fr)); gap:0.4rem;">
+                                ${editState.players.map((p, pIdx) => {
+                                    const sc = r.scores[p] !== undefined ? r.scores[p] : '';
+                                    const isW = (r.winners || []).includes(p);
+                                    return `<div class="score-cell" id="scell-${gIdx}-${rIdx}-${pIdx}" style="display:flex; align-items:center; gap:0.3rem; background:var(--bg-card); padding:0.3rem 0.4rem; border-radius:6px; border:1px solid ${isW ? '#f59e0b' : 'var(--border-color)'};">
+                                        <span style="font-size:0.78rem; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p)}</span>
+                                        <input type="number" class="score-input" data-gidx="${gIdx}" data-ridx="${rIdx}" data-pidx="${pIdx}" style="width:52px; padding:0.2rem; border:1px solid var(--border-color); border-radius:4px; text-align:center;" placeholder="점수" value="${escapeHtml(sc)}">
+                                        <button type="button" class="winner-toggle-btn" id="wbtn-${gIdx}-${rIdx}-${pIdx}" data-gidx="${gIdx}" data-ridx="${rIdx}" data-pidx="${pIdx}" style="border:none; background:none; cursor:pointer; opacity:${isW ? 1 : 0.25};">🏆</button>
+                                    </div>`;
+                                }).join('')}
                             </div>
-                            <input type="text" class="filter-input" style="margin-top:0.4rem; padding:0.3rem; height:2rem; font-size:0.82rem;" placeholder="우승자 (예: 승휘) 또는 판 메모" value="${escapeHtmlSafe(r.winner || '')}" oninput="setWinner(${gIdx}, ${rIdx}, this.value)">
-                        </div>`).join('') + `
-                        <button type="button" class="small-btn" style="width:100%;" onclick="addRound(${gIdx})">+ 판 추가</button>`;
+                        </div>`).join('') + `<button type="button" class="small-btn btn-add-round" data-gidx="${gIdx}" style="width:100%; margin-top:0.4rem;">+ 판 추가</button>`;
                 }
 
                 return `
-                    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:10px; padding:0.875rem;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
-                            <strong>${escapeHtmlSafe(g.gameName)}</strong>
-                            <button type="button" class="small-btn" style="color:var(--error-color);" onclick="removeEditGame(${gIdx})">게임 제거</button>
+                    <div style="border:1px solid var(--border-color); border-radius:10px; padding:0.75rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                            <strong>🎲 ${escapeHtml(g.gameName)}</strong>
+                            <button type="button" class="small-btn btn-remove-game" data-gidx="${gIdx}" style="color:var(--error-color);">제거</button>
                         </div>
-                        <div style="display:flex; gap:0.4rem; margin-bottom:0.6rem;">
-                            <button type="button" class="small-btn ${mode === 'compete' ? 'primary' : ''}" onclick="setGameMode(${gIdx}, 'compete')">🏆 경쟁(점수)</button>
-                            <button type="button" class="small-btn ${mode === 'coop' ? 'primary' : ''}" onclick="setGameMode(${gIdx}, 'coop')">🤝 협동·솔로</button>
-                            <button type="button" class="small-btn ${mode === 'none' ? 'primary' : ''}" onclick="setGameMode(${gIdx}, 'none')">🎲 승패없음</button>
+                        <div style="display:flex; gap:0.35rem;">
+                            <button type="button" class="small-btn btn-mode-switch ${mode === 'compete' ? 'primary' : ''}" data-gidx="${gIdx}" data-mode="compete">🏆 경쟁(점수)</button>
+                            <button type="button" class="small-btn btn-mode-switch ${mode === 'coop' ? 'primary' : ''}" data-gidx="${gIdx}" data-mode="coop">🤝 협동·솔로</button>
+                            <button type="button" class="small-btn btn-mode-switch ${mode === 'none' ? 'primary' : ''}" data-gidx="${gIdx}" data-mode="none">🎲 승패없음</button>
                         </div>
                         ${bodyHtml}
                     </div>`;
             }).join('');
+
+            // 안전한 이벤트 바인딩
+            box.querySelectorAll('.btn-remove-game').forEach(btn => {
+                btn.onclick = () => { editState.games.splice(Number(btn.dataset.gidx), 1); renderEditGames(); };
+            });
+            box.querySelectorAll('.btn-mode-switch').forEach(btn => {
+                btn.onclick = () => { editState.games[Number(btn.dataset.gidx)].mode = btn.dataset.mode; renderEditGames(); };
+            });
+            box.querySelectorAll('.coop-btn').forEach(btn => {
+                btn.onclick = () => { editState.games[Number(btn.dataset.gidx)].coopResult = btn.dataset.coop; renderEditGames(); };
+            });
+            box.querySelectorAll('.btn-add-round').forEach(btn => {
+                btn.onclick = () => { editState.games[Number(btn.dataset.gidx)].rounds.push({ scores: {}, winners: [] }); renderEditGames(); };
+            });
+            box.querySelectorAll('.btn-del-round').forEach(btn => {
+                btn.onclick = () => { editState.games[Number(btn.dataset.gidx)].rounds.splice(Number(btn.dataset.ridx), 1); renderEditGames(); };
+            });
+            box.querySelectorAll('.score-input').forEach(inp => {
+                inp.oninput = () => {
+                    const gIdx = Number(inp.dataset.gidx), rIdx = Number(inp.dataset.ridx), pIdx = Number(inp.dataset.pidx);
+                    const player = editState.players[pIdx];
+                    const round = editState.games[gIdx].rounds[rIdx];
+                    const val = inp.value;
+                    const n = parseFloat(val);
+                    if (val === '' || isNaN(n)) delete round.scores[player];
+                    else round.scores[player] = n;
+
+                    const entries = Object.entries(round.scores);
+                    if (entries.length > 0) {
+                        const maxScore = Math.max(...entries.map(([, s]) => s));
+                        round.winners = entries.filter(([, s]) => s === maxScore).map(([p]) => p);
+                    } else {
+                        round.winners = [];
+                    }
+                    editState.players.forEach((p, idx) => {
+                        const isW = round.winners.includes(p);
+                        const wBtn = document.getElementById(`wbtn-${gIdx}-${rIdx}-${idx}`);
+                        const cell = document.getElementById(`scell-${gIdx}-${rIdx}-${idx}`);
+                        if (wBtn) wBtn.style.opacity = isW ? '1' : '0.25';
+                        if (cell) cell.style.borderColor = isW ? '#f59e0b' : 'var(--border-color)';
+                    });
+                };
+            });
+            box.querySelectorAll('.winner-toggle-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const gIdx = Number(btn.dataset.gidx), rIdx = Number(btn.dataset.ridx), pIdx = Number(btn.dataset.pidx);
+                    const player = editState.players[pIdx];
+                    const round = editState.games[gIdx].rounds[rIdx];
+                    if (!Array.isArray(round.winners)) round.winners = [];
+                    if (round.winners.includes(player)) round.winners = round.winners.filter(x => x !== player);
+                    else round.winners.push(player);
+                    renderEditGames();
+                };
+            });
         }
 
-        function setGameMode(gIdx, mode) {
-            editState.games[gIdx].mode = mode;
-            if (mode === 'compete' && !editState.games[gIdx].rounds) {
-                editState.games[gIdx].rounds = [{ scores: {}, winner: '' }];
+        function renderGamePickerList(q) {
+            const cleanQ = (q || '').trim().toLowerCase();
+            pickerFilteredList = myGames.filter(g => (g.customFields?.['게임 이름'] || g.name || '').toLowerCase().includes(cleanQ));
+            const listEl = $('#game-picker-list');
+            if (!pickerFilteredList.length) {
+                listEl.innerHTML = `<div style="padding:1rem; text-align:center; color:var(--text-secondary);">검색 결과가 없습니다.</div>`;
+                return;
             }
-            renderEditGames();
-        }
-        function setCoopResult(gIdx, res) { editState.games[gIdx].coopResult = res; renderEditGames(); }
-        function addRound(gIdx) { editState.games[gIdx].rounds.push({ scores: {}, winner: '' }); renderEditGames(); }
-        function removeRound(gIdx, rIdx) { editState.games[gIdx].rounds.splice(rIdx, 1); renderEditGames(); }
-        function removeEditGame(gIdx) { editState.games[gIdx].splice(gIdx, 1); renderEditGames(); }
-        function setScore(gIdx, rIdx, player, val) {
-            const n = parseFloat(val);
-            if (val === '' || isNaN(n)) delete editState.games[gIdx].rounds[rIdx].scores[player];
-            else editState.games[gIdx].rounds[rIdx].scores[player] = n;
-        }
-        function setWinner(gIdx, rIdx, val) { editState.games[gIdx].rounds[rIdx].winner = val; }
+            listEl.innerHTML = pickerFilteredList.map((g, idx) => {
+                const name = g.customFields?.['게임 이름'] || g.name || '게임';
+                const thumb = resolveCoverUrl(g.customFields?.['대표 이미지'] || g.image || '') || 'https://placehold.co/38x38/6750A4/ffffff?text=BG';
+                return `<div class="picker-item" data-idx="${idx}" style="display:flex; align-items:center; gap:0.6rem; padding:0.5rem; cursor:pointer; border-bottom:1px solid var(--border-color);">
+                    <img src="${escapeHtml(thumb)}" style="width:38px; height:38px; object-fit:cover; border-radius:6px;" referrerpolicy="no-referrer">
+                    <strong>${escapeHtml(name)}</strong>
+                </div>`;
+            }).join('');
 
-        function renderGamePickerList(filterQ) {
-            const q = (filterQ || '').trim().toLowerCase();
-            const list = myGames.filter(g => (g.name || g.title || '').toLowerCase().includes(q));
-            const box = $('#game-picker-list');
-            box.innerHTML = list.map(g => {
-                const name = g.name || g.title;
-                const thumb = resolveCoverUrl(g.customFields?.['대표 이미지'] || g.image || g.thumbnail);
-                return `
-                    <div class="bottom-sheet-item" onclick="selectGameForEdit('${g.id}', '${name.replace(/'/g, "\\'")}', '${thumb}')">
-                        <img src="${thumb}" style="width:40px; height:40px; object-fit:cover; border-radius:6px;" referrerpolicy="no-referrer" onerror="this.style.display='none'">
-                        <span>${escapeHtmlSafe(name)}</span>
-                    </div>`;
-            }).join('') || '<p style="padding:1rem; color:var(--text-secondary);">검색 결과가 없습니다.</p>';
-        }
-
-        function selectGameForEdit(id, name, thumb) {
-            if (!editState.games.some(g => g.gameId === id)) {
-                editState.games.push({
-                    gameId: id,
-                    gameName: name,
-                    gameThumbnail: thumb,
-                    mode: 'compete',
-                    rounds: [{ scores: {}, winner: '' }]
-                });
-                renderEditGames();
-            }
-            $('#game-picker-overlay').style.display = 'none';
+            listEl.querySelectorAll('.picker-item').forEach(item => {
+                item.onclick = () => {
+                    const g = pickerFilteredList[Number(item.dataset.idx)];
+                    if (!g) return;
+                    editState.games.push({
+                        gameId: g.id,
+                        gameName: g.customFields?.['게임 이름'] || g.name || '게임',
+                        gameThumbnail: resolveCoverUrl(g.customFields?.['대표 이미지'] || g.image || ''),
+                        mode: 'compete',
+                        coopResult: 'win',
+                        rounds: [{ scores: {}, winners: [] }]
+                    });
+                    $('#game-picker-overlay').style.display = 'none';
+                    renderEditGames();
+                };
+            });
         }
 
         function saveSession() {
-            if (!editState) return;
-            if (editState.games.length === 0) { alert('게임을 1개 이상 추가해주세요.'); return; }
-            editState.date = $('#session-date').value;
+            if (!editState.games.length) { alert('플레이한 게임을 1개 이상 추가해주세요.'); return; }
+            editState.date = $('#session-date').value || new Date().toISOString().slice(0, 10);
             editState.memo = $('#session-memo').value.trim();
-
-            const idx = allSessions.findIndex(s => s.id === editState.id);
+            const idx = allSessions.findIndex(s => String(s.id) === String(editState.id));
             if (idx >= 0) allSessions[idx] = editState;
             else allSessions.unshift(editState);
 
             localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(allSessions));
-
-            // 책장 게임 플레이 횟수 연동
-            const rawGames = JSON.parse(localStorage.getItem(GAMES_STORAGE_KEY) || '[]');
-            editState.games.forEach(eg => {
-                const target = rawGames.find(mg => mg.id === eg.gameId || (mg.name || mg.title) === eg.gameName);
-                if (target) target.plays = (Number(target.plays) || 0) + 1;
-            });
-            localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(rawGames));
-
+            syncToGistSilent();
             closeEdit();
-            renderSessionList();
-            showMessage('게임 기록이 저장되었습니다!', 'success');
         }
 
         function deleteSession(id) {
-            allSessions = allSessions.filter(s => s.id !== id);
+            if (!confirm('이 플레이 기록을 삭제할까요?')) return;
+            allSessions = allSessions.filter(s => String(s.id) !== String(id));
             localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(allSessions));
+            syncToGistSilent();
+            renderCalendar();
             renderSessionList();
-            showMessage('기록이 삭제되었습니다.', 'success');
-        }
-
-        function resolveCoverUrl(raw) {
-            if (!raw) return '';
-            const s = String(raw).trim();
-            const m = s.match(/^(?:bl_)?(\d{1,6})$/i);
-            if (m) return `${STORAGE_BL_BASE}/bl_${m[1]}.webp`;
-            return s;
-        }
-
-        function escapeHtmlSafe(str) {
-            if (str == null) return '';
-            const div = document.createElement('div');
-            div.textContent = String(str);
-            return div.innerHTML;
-        }
-
-        function showMessage(msg, type = 'success') {
-            const box = $('.message-container');
-            if (!box) return;
-            const el = document.createElement('div');
-            el.className = `message ${type}`;
-            el.textContent = msg;
-            box.appendChild(el);
-            setTimeout(() => el.remove(), 3000);
         }
     </script>
 </body>

@@ -384,6 +384,7 @@
 
         let _cachedIdToken = null, _cachedIdTokenExp = 0;
         let allUserGames = [], allUserTags = [], currentSort = 'name-asc', currentViewMode = 'grid';
+            window.getLiveGame = (id) => allUserGames.find(g => String(g.id) === String(id)) || null;
         let debounceTimer, autoSaveDebounceTimer = null, boardLifeSearchDebounceTimer = null;
         let _stopBulkBggFetch = false;
 
@@ -2018,6 +2019,6 @@
             $('.message-container').appendChild(el); setTimeout(() => el.remove(), 3500);
         }
     </script>
-    <script src="sleeve_engine.js?v=1"></script>
+    <script src="sleeve_engine.js?v=3"></script>
 </body>
 </html>

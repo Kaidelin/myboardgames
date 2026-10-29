@@ -71,28 +71,44 @@
     }
 
     /* 2. 붙여넣기 텍스트 파서 */
-    function parsePastedSleeveText(text) {
-        const found = [];
-        const lines = String(text || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-        const dimRx = /(\d{2,3}(?:\.\d{1,2})?)\s*(?:mm)?\s*[x×X*]\s*(\d{2,3}(?:\.\d{1,2})?)\s*(?:mm)?/;
-        const qtyRx = /(\d{1,4})\s*(?:cards?|장|매|ea|pcs)/i;
-        const labelRx = /(?:qty|quantity|count|수량|매수)\s*[:：]?\s*(\d{1,4})/i;
+   function parsePastedSleeveText(text) {
+       const found = [];
+       const lines = String(text || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+       const dimRx = /(\d{2,3}(?:\.\d{1,2})?)\s*(?:mm)?\s*[x×X*]\s*(\d{2,3}(?:\.\d{1,2})?)\s*(?:mm)?/;
+       const qtyRx = /(\d{1,4})\s*(?:cards?|sleeves?|장|매|ea|pcs)(?![a-z])/i;
+       const labelRx = /(?:qty|quantity|count|cards|수량|매수)\s*[:：]?\s*(\d{1,4})/i;
+       const labelOnlyRx = /^(?:qty|quantity|count|cards|수량|매수)\s*[:：]?$/i;
+       const bareNumRx = /^(\d{1,4})$/;
+       const pickQty = s => {
+           const m = s.match(qtyRx) || s.match(labelRx);
+           return m ? parseInt(m[1], 10) : 0;
+       };
 
-        lines.forEach((line, i) => {
-            const m = line.match(dimRx);
-            if (!m) return;
-            const size = normalizeDimension(m[1], m[2]);
-            const rest = line.replace(m[0], ' ');
-            const next = lines[i + 1] || '';
-            let q = rest.match(qtyRx) || rest.match(labelRx) || rest.match(/:\s*(\d{1,4})\s*$/);
-            if (!q && !dimRx.test(next)) {
-                q = next.match(qtyRx) || next.match(labelRx) || next.match(/^(\d{1,4})$/);
-            }
-            const count = q ? parseInt(q[1], 10) : 0;
-            if (size && count > 0) found.push({ size, count });
-        });
-        return mergeSleeves(found);
-    }
+       lines.forEach((line, i) => {
+           const m = line.match(dimRx);
+           if (!m) return;
+           const size = normalizeDimension(m[1], m[2]);
+           let count = pickQty(line.replace(m[0], ' '));
+
+        // 아래로 최대 3줄 (다음 크기 줄이 나오면 중단)
+           for (let j = i + 1; !count && j < Math.min(lines.length, i + 4); j++) {
+               const l = lines[j];
+               if (dimRx.test(l)) break;
+               if (labelOnlyRx.test(l) && bareNumRx.test(lines[j + 1] || '')) {
+                   count = parseInt(lines[j + 1], 10);
+                   break;
+               }
+               count = pickQty(l) || (bareNumRx.test(l) ? parseInt(l, 10) : 0);
+           }
+           // 위로 1줄
+           if (!count && i > 0 && !dimRx.test(lines[i - 1])) {
+               count = pickQty(lines[i - 1]);
+           }
+           if (size && count > 0) found.push({ size, count });
+       });
+       return mergeSleeves(found);
+   }
+
 
     /* 3. 캐시 / 사전 / 내 DB 조회 */
     function nameKeys(game) {
@@ -276,7 +292,7 @@
             const name = game.customFields?.['게임 이름'] || game.name || '';
             const q = game.originalName || name.replace(/$[^)]*$/g, '').trim();
             const bggUrl = bggId
-                ? `https://boardgamegeek.com/boardgame/${bggId}`
+                ? `https://boardgamegeek.com/boardgame/${bggId}/sleeves`
                 : `https://boardgamegeek.com/geeksearch.php?action=search&objecttype=boardgame&q=${encodeURIComponent(q)}`;
 
             const el = document.createElement('div');
@@ -304,18 +320,23 @@
             const pv = el.querySelector('.sp-preview');
             const save = el.querySelector('.sp-save');
             let parsed = [];
+            let urlBggId = null;
+           
             const close = (result) => {
                 el.remove();
                 resolve(result);
             };
 
             ta.addEventListener('input', () => {
+                const um = ta.value.match(/boardgamegeek\.com\/boardgame(?:expansion)?\/(\d+)/i);
+                urlBggId = um ? um[1] : null;
                 parsed = parsePastedSleeveText(ta.value);
                 save.disabled = !parsed.length;
+                const idNote = urlBggId ? ` · BGG ID ${urlBggId} 인식` : '';
                 if (parsed.length) {
-                    pv.textContent = `인식 결과: ${sleevesToText(parsed)} (총 ${sleevesTotal(parsed)}장)`;
+                    pv.textContent = `인식 결과: ${sleevesToText(parsed)} (총 ${sleevesTotal(parsed)}장)${idNote}`;
                 } else {
-                    pv.textContent = ta.value.trim() ? '크기(예: 63.5x88)와 매수를 찾지 못했습니다.' : '';
+                    pv.textContent = ta.value.trim() ? `크기(예: 44x68)와 매수를 찾지 못했습니다.${idNote}` : '';
                 }
             });
 
@@ -323,10 +344,11 @@
             el.querySelector('.modal-close-btn').onclick = cancel;
             el.querySelector('.sp-cancel').onclick = cancel;
             save.onclick = () => {
-                const applied = applySleevesToGame(game, parsed, bggId);
-                global.showMessage?.(`🛡️ [${name}] 슬리브 저장 완료: ${sleevesToText(applied)}`, 'success');
-                close({ bggId, sleeves: applied, source: 'paste' });
-            };
+             const finalId = urlBggId || bggId;
+             const applied = applySleevesToGame(game, parsed, finalId);
+             global.showMessage?.(`🛡️ [${name}] 슬리브 저장 완료: ${sleevesToText(applied)}`, 'success');
+             close({ bggId: finalId, sleeves: applied, source: 'paste' });
+         };
             setTimeout(() => ta.focus(), 50);
         });
     }

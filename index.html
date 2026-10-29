@@ -6,6 +6,13 @@
     <title>나의 보드게임 책장 - myboardgames</title>
     <link rel="stylesheet" href="style.css?v=19">
     <meta name="theme-color" content="#F7F2FA">
+    <style>
+        /* M-1 일괄 편집 표 모달 스타일 */
+        .bulk-editor-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .bulk-editor-table th, .bulk-editor-table td { padding: 0.5rem; border-bottom: 1px solid var(--border-color); text-align: left; }
+        .bulk-editor-table th { background: var(--bg-secondary); color: var(--text-secondary); font-size: 0.75rem; }
+        .bulk-input { width: 100%; padding: 0.35rem 0.5rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-main); color: var(--text-primary); font-size: 0.85rem; }
+    </style>
 </head>
 <body>
 
@@ -104,6 +111,7 @@
                     </span>
                 </h1>
                 <div class="header-controls">
+                    <button id="open-bulk-editor-btn" class="action-icon-btn desktop-only-btn" title="엑셀형 일괄 편집">📝</button>
                     <button id="add-game-button" class="action-icon-btn desktop-only-btn" title="게임 추가">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -195,7 +203,7 @@
     <div id="filter-overlay" class="filter-overlay hidden"></div>
     <div class="modal hidden" id="detailModal"></div>
 
-    <!-- 게임 추가 모달 (실시간 boardlifeGames Firestore 서버 연동) -->
+    <!-- 게임 추가 모달 -->
     <div class="modal hidden" id="search-panel">
         <div class="search-panel-content">
             <button class="modal-close-btn">&times;</button>
@@ -217,17 +225,17 @@
                     <button id="open-manual-add-btn" class="add-method-card" type="button">
                         <span class="add-method-icon" aria-hidden="true">✏️</span>
                         <span class="add-method-title">직접 입력</span>
-                        <span class="add-method-desc">정보를 직접 작성</span>
+                        <span class="add-method-desc">정보 직접 작성</span>
                     </button>
                     <button id="open-boardlife-add-btn" class="add-method-card" type="button">
                         <span class="add-method-icon" aria-hidden="true">🔗</span>
                         <span class="add-method-title">URL 추가</span>
-                        <span class="add-method-desc">보드라이프 URL 붙여넣기</span>
+                        <span class="add-method-desc">보드라이프 URL</span>
                     </button>
                     <label class="add-method-card add-method-card-accent" style="cursor:pointer;">
                         <span class="add-method-icon" aria-hidden="true">📂</span>
-                        <span class="add-method-title">JSON 불러오기</span>
-                        <span class="add-method-desc">내 책장 + 실시간 키 자동등록</span>
+                        <span class="add-method-title">JSON 복원</span>
+                        <span class="add-method-desc">백업 파일 불러오기</span>
                         <input type="file" id="quick-json-import" accept=".json" style="display:none;">
                     </label>
                 </div>
@@ -250,9 +258,8 @@
                         </div>
                     </div>
                     <div class="form-group form-group-full">
-                        <label for="manual-image-url">대표 이미지 URL (보드라이프/웹 또는 파일 선택)</label>
-                        <input type="text" id="manual-image-url" class="filter-input" placeholder="https://... 또는 보드라이프 고유번호(예: 14527)">
-                        <input type="file" id="manual-image" class="filter-input" accept="image/jpeg,image/png,image/webp" style="margin-top:0.4rem; padding-top:0.4rem;">
+                        <label for="manual-image-url">대표 이미지 URL 또는 보드라이프 번호</label>
+                        <input type="text" id="manual-image-url" class="filter-input" placeholder="예: 14527 또는 https://...">
                     </div>
                     <div class="form-group">
                         <label for="manual-minplayers">최소 인원</label>
@@ -274,10 +281,6 @@
                         <label for="manual-complexity">난이도 (1-5)</label>
                         <input type="number" id="manual-complexity" class="filter-input" step="0.01" min="1" max="5" placeholder="예: 2.5">
                     </div>
-                    <div class="form-group form-group-full">
-                        <label for="manual-genre">장르 (쉼표로 구분)</label>
-                        <input type="text" id="manual-genre" class="filter-input" placeholder="예: 전략, 파티, 가족">
-                    </div>
                     <div class="form-group">
                         <label for="manual-purchase-date">구매일자</label>
                         <input type="date" id="manual-purchase-date" class="filter-input">
@@ -292,6 +295,34 @@
         </div>
     </div>
 
+    <!-- M-1 일괄 편집 모달 -->
+    <div class="modal hidden" id="bulk-editor-modal">
+        <div class="search-panel-content" style="width: 54rem; max-width: 95vw;">
+            <button class="modal-close-btn">&times;</button>
+            <h2>엑셀형 일괄 편집</h2>
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">구매일자, 구매가격, 슬리브 규격 및 매수를 표에서 한 번에 수정하고 저장하세요.</p>
+            <div style="max-height: 60vh; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+                <table class="bulk-editor-table">
+                    <thead>
+                        <tr>
+                            <th>게임 이름</th>
+                            <th>구매일자</th>
+                            <th>구매가격(원)</th>
+                            <th>슬리브 규격</th>
+                            <th>매수</th>
+                            <th>슬리브완료</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bulk-editor-tbody"></tbody>
+                </table>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;">
+                <button type="button" class="small-btn" onclick="$('#bulk-editor-modal').classList.add('hidden')">취소</button>
+                <button type="button" class="small-btn primary" id="bulk-save-btn">일괄 저장하기</button>
+            </div>
+        </div>
+    </div>
+
     <!-- BoardLife URL Modal -->
     <div class="modal hidden" id="boardlife-add-panel">
         <div class="search-panel-content">
@@ -302,49 +333,34 @@
             </p>
             <form id="boardlife-add-form">
                 <div class="search-box">
-                    <input type="text" id="boardlife-url-input" class="filter-input"
-                        placeholder="https://boardlife.co.kr/game/14527" required>
+                    <input type="text" id="boardlife-url-input" class="filter-input" placeholder="https://boardlife.co.kr/game/14527" required>
                 </div>
-                <button type="submit" class="filter-sort-btn primary-action-btn"
-                    style="text-align: center; width: 100%; margin-top: 1rem;">정보 추출 및 추가</button>
+                <button type="submit" class="filter-sort-btn primary-action-btn" style="text-align: center; width: 100%; margin-top: 1rem;">정보 추출 및 추가</button>
             </form>
         </div>
     </div>
 
     <div class="message-container"></div>
-    <div class="loading hidden" id="loading">
-        <div class="spinner"></div>
-    </div>
+    <div class="loading hidden" id="loading"><div class="spinner"></div></div>
 
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
         <a href="./" class="nav-item active" aria-label="책장">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
             <span>책장</span>
         </a>
         <a href="./sessions.html" class="nav-item" aria-label="게임 기록">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             <span>게임 기록</span>
         </a>
         <a href="./mypage.html" class="nav-item" aria-label="마이페이지">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             <span>마이페이지</span>
         </a>
     </nav>
 
     <script>
         /* =========================================================
-           1. 원본 /lib/search-keywords.js (자모 분해 & 검색 키 생성기)
+           1. 자모 분해 & 실시간 Firestore REST API 엔진
            ========================================================= */
         (function (global) {
             const HANGUL_BASE = 0xAC00, HANGUL_END = 0xD7A3, MAX_INDEXED_KEY_LENGTH = 12;
@@ -373,6 +389,15 @@
                 }
                 return out;
             }
+            function extractChosung(str) {
+                let out = '';
+                for (const ch of (str || '')) {
+                    const code = ch.charCodeAt(0);
+                    if (code >= HANGUL_BASE && code <= HANGUL_END) out += CHOSUNG_LIST[Math.floor((code - HANGUL_BASE) / 588)];
+                    else out += ch;
+                }
+                return out;
+            }
             function normalizeQuery(input) { return (input == null ? '' : String(input)).replace(/\s+/g, '').toLowerCase(); }
             function isAllChosung(s) { if (!s) return false; for (const ch of s) { if (!CHOSUNG_SET.has(ch)) return false; } return true; }
             function buildSearchKey(input) {
@@ -383,12 +408,9 @@
                 return { key: jamo.slice(0, MAX_INDEXED_KEY_LENGTH), reason: 'ok' };
             }
             function buildExactNameKey(input) { const q = normalizeQuery(input); return q ? '=' + q : ''; }
-            global.SearchKeywords = { buildSearchKey, buildExactNameKey, normalizeQuery, isAllChosung, decomposeHangul };
+            global.SearchKeywords = { buildSearchKey, buildExactNameKey, normalizeQuery, isAllChosung, decomposeHangul, extractChosung };
         })(window);
 
-        /* =========================================================
-           2. 실시간 Firestore REST API + 토큰 자동 갱신 엔진
-           ========================================================= */
         const FB_API_KEY = "AIzaSyCr3bsfOssOHnD1ART57EqpK9eaiA93ick";
         const FB_PROJECT_ID = "mybgshelf";
         const STORAGE_BL_BASE = "https://storage.googleapis.com/mybgshelf.firebasestorage.app/boardlife_games";
@@ -405,12 +427,10 @@
         let _cachedIdToken = null;
         let _cachedIdTokenExp = 0;
 
-        // refreshToken으로 실시간 Firebase ID Token 발급 (도메인 제한 없음, 50분간 캐시)
         async function getValidFirebaseIdToken() {
             if (_cachedIdToken && Date.now() < _cachedIdTokenExp) return _cachedIdToken;
             const refreshToken = (localStorage.getItem(FB_REFRESH_TOKEN_KEY) || '').trim();
             if (!refreshToken) return null;
-
             try {
                 const resp = await fetch(`https://securetoken.googleapis.com/v1/token?key=${FB_API_KEY}`, {
                     method: 'POST',
@@ -425,31 +445,29 @@
                     if (data.refresh_token) localStorage.setItem(FB_REFRESH_TOKEN_KEY, data.refresh_token);
                     return _cachedIdToken;
                 }
-            } catch (e) {
-                console.warn('Token refresh error:', e);
-            }
+            } catch (e) {}
             return null;
         }
 
-        function parseFirestoreValue(valObj) {
-            if (!valObj || typeof valObj !== 'object') return null;
-            if ('stringValue' in valObj) return valObj.stringValue;
-            if ('integerValue' in valObj) return String(valObj.integerValue);
-            if ('doubleValue' in valObj) return String(valObj.doubleValue);
-            if ('booleanValue' in valObj) return Boolean(valObj.booleanValue);
-            if ('nullValue' in valObj) return null;
-            if ('timestampValue' in valObj) return valObj.timestampValue;
-            if ('arrayValue' in valObj) return (valObj.arrayValue.values || []).map(parseFirestoreValue);
-            if ('mapValue' in valObj) {
+        function parseFirestoreValue(v) {
+            if (!v || typeof v !== 'object') return null;
+            if ('stringValue' in v) return v.stringValue;
+            if ('integerValue' in v) return String(v.integerValue);
+            if ('doubleValue' in v) return String(v.doubleValue);
+            if ('booleanValue' in v) return Boolean(v.booleanValue);
+            if ('nullValue' in v) return null;
+            if ('timestampValue' in v) return v.timestampValue;
+            if ('arrayValue' in v) return (v.arrayValue.values || []).map(parseFirestoreValue);
+            if ('mapValue' in v) {
                 const out = {};
-                const fields = valObj.mapValue.fields || {};
+                const fields = v.mapValue.fields || {};
                 for (const k in fields) out[k] = parseFirestoreValue(fields[k]);
                 return out;
             }
             return null;
         }
 
-        function parseFirestoreRestDoc(doc) {
+        function parseRestDoc(doc) {
             if (!doc || !doc.name) return null;
             const id = doc.name.split('/').pop();
             const out = { id };
@@ -458,92 +476,49 @@
             return out;
         }
 
-        // Firestore REST API :runQuery 호출 (boardlifeGames 실시간 조회)
-        async function runBoardLifeFirestoreQuery(structuredQuery, idToken) {
+        async function runRestQuery(structuredQuery, idToken) {
             const headers = { 'Content-Type': 'application/json' };
             if (idToken) headers['Authorization'] = `Bearer ${idToken}`;
             const resp = await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT_ID}/databases/(default)/documents:runQuery`, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({ structuredQuery })
+                method: 'POST', headers, body: JSON.stringify({ structuredQuery })
             });
-            if (!resp.ok) throw new Error(`Firestore HTTP ${resp.status}`);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             const rows = await resp.json();
             const docs = [];
-            (rows || []).forEach(r => {
-                if (r.document) {
-                    const parsed = parseFirestoreRestDoc(r.document);
-                    if (parsed) docs.push(parsed);
-                }
-            });
+            (rows || []).forEach(r => { if (r.document) { const p = parseRestDoc(r.document); if (p) docs.push(p); } });
             return docs;
         }
 
-        // 단건 문서 조회 (boardlifeGames/bl_14527 등)
-        async function getBoardLifeDocById(docId) {
-            const idToken = await getValidFirebaseIdToken();
-            const headers = idToken ? { 'Authorization': `Bearer ${idToken}` } : {};
-            const resp = await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT_ID}/databases/(default)/documents/boardlifeGames/${encodeURIComponent(docId)}`, { headers });
-            if (!resp.ok) return null;
-            const doc = await resp.json();
-            return parseFirestoreRestDoc(doc);
-        }
-
-        // 원본 main.js와 100% 동일한 실시간 3중 검색 (N-gram + 정확일치 + 전방일치)
-        async function searchRealtimeBoardLifeDB(rawQuery, limitCount = 20) {
+        async function searchRealtimeBoardLifeDB(rawQuery, limitCount = 25) {
             const Sk = window.SearchKeywords;
             const trimmed = (rawQuery || '').trim();
             const built = Sk.buildSearchKey(trimmed);
             if (!built.key) return { docs: [], reason: built.reason };
 
             const idToken = await getValidFirebaseIdToken();
-
-            // 1) 자모 분해 N-gram 쿼리 (where searchKeywords array-contains key)
             const qNgram = {
                 from: [{ collectionId: 'boardlifeGames' }],
-                where: {
-                    fieldFilter: {
-                        field: { fieldPath: 'searchKeywords' },
-                        op: 'ARRAY_CONTAINS',
-                        value: { stringValue: built.key }
-                    }
-                },
+                where: { fieldFilter: { field: { fieldPath: 'searchKeywords' }, op: 'ARRAY_CONTAINS', value: { stringValue: built.key } } },
                 limit: limitCount
             };
+            const queryPromises = [runRestQuery(qNgram, idToken)];
 
-            const queryPromises = [runBoardLifeFirestoreQuery(qNgram, idToken)];
-
-            // 2) 초성 전용이 아닌 경우 정확 일치(=이름) 및 이름 전방 일치(startAt~endAt) 동시 실행
             if (!Sk.isAllChosung(Sk.normalizeQuery(trimmed))) {
                 const qExact = {
                     from: [{ collectionId: 'boardlifeGames' }],
-                    where: {
-                        fieldFilter: {
-                            field: { fieldPath: 'searchKeywords' },
-                            op: 'ARRAY_CONTAINS',
-                            value: { stringValue: Sk.buildExactNameKey(trimmed) }
-                        }
-                    },
+                    where: { fieldFilter: { field: { fieldPath: 'searchKeywords' }, op: 'ARRAY_CONTAINS', value: { stringValue: Sk.buildExactNameKey(trimmed) } } },
                     limit: 5
                 };
                 const qPrefix = {
                     from: [{ collectionId: 'boardlifeGames' }],
-                    where: {
-                        compositeFilter: {
-                            op: 'AND',
-                            filters: [
-                                { fieldFilter: { field: { fieldPath: 'name' }, op: 'GREATER_THAN_OR_EQUAL', value: { stringValue: trimmed } } },
-                                { fieldFilter: { field: { fieldPath: 'name' }, op: 'LESS_THAN_OR_EQUAL', value: { stringValue: trimmed + '\uf8ff' } } }
-                            ]
-                        }
-                    },
+                    where: { compositeFilter: { op: 'AND', filters: [
+                        { fieldFilter: { field: { fieldPath: 'name' }, op: 'GREATER_THAN_OR_EQUAL', value: { stringValue: trimmed } } },
+                        { fieldFilter: { field: { fieldPath: 'name' }, op: 'LESS_THAN_OR_EQUAL', value: { stringValue: trimmed + '\uf8ff' } } }
+                    ]}},
                     orderBy: [{ field: { fieldPath: 'name' }, direction: 'ASCENDING' }],
                     limit: 10
                 };
-                queryPromises.push(
-                    runBoardLifeFirestoreQuery(qExact, idToken).catch(() => []),
-                    runBoardLifeFirestoreQuery(qPrefix, idToken).catch(() => [])
-                );
+                queryPromises.push(runRestQuery(qExact, idToken).catch(() => []), runRestQuery(qPrefix, idToken).catch(() => []));
             }
 
             const [ngramDocs, exactDocs = [], prefixDocs = []] = await Promise.all(queryPromises);
@@ -560,29 +535,39 @@
                 const sa = boardLifeMatchRank(a.name, normQ);
                 const sb = boardLifeMatchRank(b.name, normQ);
                 if (sa !== sb) return sa - sb;
-                const la = (a.name || '').length, lb = (b.name || '').length;
-                if (sa <= 1 && la !== lb) return la - lb;
-                return (a.name || '').localeCompare(b.name || '', 'ko');
+                return (a.name || '').length - (b.name || '').length;
             });
 
             return { docs: merged, reason: 'ok' };
+        }
+
+        async function findBestGameInDb(rawTitle) {
+            if (!rawTitle) return null;
+            const clean = rawTitle.replace(/\([^)]*\)/g, '').trim() || rawTitle.trim();
+            const numMatch = clean.match(/^(?:bl_)?(\d{1,6})$/i);
+            if (numMatch) {
+                const targetId = `bl_${numMatch[1]}`;
+                return { id: targetId, boardlifeNumId: numMatch[1], name: `보드라이프 #${numMatch[1]}`, image: `${STORAGE_BL_BASE}/${targetId}.webp` };
+            }
+            try {
+                const { docs } = await searchRealtimeBoardLifeDB(clean, 5);
+                if (docs.length > 0) return docs[0];
+            } catch (e) {}
+            return null;
         }
 
         function updateRtStatusUI() {
             const el = document.getElementById('rt-db-status');
             if (!el) return;
             const hasToken = !!(localStorage.getItem(FB_REFRESH_TOKEN_KEY) || '').trim();
-            if (hasToken) {
-                el.innerHTML = '🟢 <strong>실시간 보드라이프 마스터 DB 연동 활성화됨</strong> (신작 및 전체 게임 실시간 검색)';
-                el.style.color = 'var(--success-color)';
-            } else {
-                el.innerHTML = '🟠 실시간 DB 키 미등록 (우측 상단 <strong>[🔑 실시간 DB 키 설정]</strong> 또는 <strong>[📂 JSON 불러오기]</strong>를 해주세요)';
-                el.style.color = 'var(--error-color)';
-            }
+            el.innerHTML = hasToken
+                ? '🟢 <strong>실시간 boardlifeGames 마스터 DB 연동 완료</strong> (글룸헤이븐 등 모든 신작 실시간 검색)'
+                : '🟠 실시간 DB 키 미등록 (상단 <strong>[🔑 실시간 DB 키 설정]</strong> 또는 <strong>[📂 JSON 복원]</strong>을 해주세요)';
+            el.style.color = hasToken ? 'var(--success-color)' : 'var(--error-color)';
         }
 
         /* =========================================================
-           3. 상태 및 데이터 정규화
+           2. 상태 및 정규화
            ========================================================= */
         let allUserGames = [];
         let allUserTags = [];
@@ -594,7 +579,6 @@
         let boardLifeSearchDebounceTimer = null;
         let _searchSeq = 0;
 
-        const $ = (sel) => document.querySelector(sel);
         const dom = {
             userNicknameLine1: $('#user-nickname-line1'),
             gameListContainer: $('#gameListContainer'),
@@ -640,16 +624,6 @@
             fabAddGame: $('#fab-add-game')
         };
 
-        function resolveCoverUrl(rawInput) {
-            if (!rawInput) return '';
-            const s = String(rawInput).trim();
-            const idMatch = s.match(/^(?:bl_)?(\d{1,6})$/i);
-            if (idMatch) return `${STORAGE_BL_BASE}/bl_${idMatch[1]}.webp`;
-            const urlMatch = s.match(/boardlife\.co\.kr\/(?:game\/|bbs_detail\.php\?[^#]*bbs_num=)(\d+)/i);
-            if (urlMatch) return `${STORAGE_BL_BASE}/bl_${urlMatch[1]}.webp`;
-            return s;
-        }
-
         function normalizeGameRecord(raw) {
             if (!raw) return null;
             const custom = { ...(raw.customFields || {}) };
@@ -680,6 +654,9 @@
                 memo: raw.memo || '',
                 memoPublic: raw.memoPublic !== false,
                 myRating: raw.myRating ?? null,
+                // [M-2] 슬리브 규격 및 매수 필드 추가
+                sleeveSize: raw.sleeveSize || custom['슬리브규격'] || '',
+                sleeveCount: parseInt(raw.sleeveCount || custom['슬리브매수'] || '0', 10) || 0,
                 customFields: custom,
                 createdAt: raw.createdAt?.seconds ? raw.createdAt.seconds * 1000 : (raw.createdAt || Date.now())
             };
@@ -734,7 +711,7 @@
                 }
                 if (Array.isArray(parsed.tags)) {
                     allUserTags = parsed.tags;
-                    localStorage.setItem(TAGS_STORAGE_KEY, JSON.stringify(allUserTags));
+                    localStorage.setItem(TAGS_STORAGE_KEY, JSON.stringify(parsed.tags));
                 }
                 if (Array.isArray(parsed.sessions)) {
                     allPlayRecords = parsed.sessions;
@@ -747,7 +724,7 @@
         }
 
         /* =========================================================
-           4. 앱 초기화
+           3. 앱 초기화
            ========================================================= */
         document.addEventListener('DOMContentLoaded', async () => {
             initDarkMode();
@@ -757,7 +734,6 @@
             allPlayRecords = JSON.parse(localStorage.getItem(SESSIONS_STORAGE_KEY) || '[]');
             allUserTags = JSON.parse(localStorage.getItem(TAGS_STORAGE_KEY) || '[]');
 
-            // 저장소 루트에 myboardgames_my_data.json 이 있으면 실시간 키와 초기 데이터 자동 로드
             try {
                 const r = await fetch('./myboardgames_my_data.json');
                 if (r.ok) {
@@ -778,6 +754,21 @@
             const savedGames = localStorage.getItem(GAMES_STORAGE_KEY);
             if (savedGames) {
                 allUserGames = JSON.parse(savedGames).map(normalizeGameRecord);
+            } else {
+                allUserGames = [
+                    normalizeGameRecord({
+                        id: 'bl_14527',
+                        name: '보이드폴',
+                        image: `${STORAGE_BL_BASE}/bl_14527.webp`,
+                        minplayers: '1', maxplayers: '4', minplaytime: '90', maxplaytime: '240',
+                        complexity: '4.59', bestplayercounts: ['1', '3'],
+                        categories: ['전략', 'SF'],
+                        plays: 6,
+                        sleeveSize: '63.5x88', sleeveCount: 160,
+                        customFields: { '구매일자': '2026-10-20', '구매가격': '168000', '슬리브': 'O' }
+                    })
+                ];
+                persistData();
             }
 
             initFilterListeners();
@@ -791,15 +782,17 @@
             renderTagFilters();
             renderFilteredGames();
 
+            // [E-4] 책장 -> 기록 페이지 직행 지원 (sessionAddGame 파라미터 처리)
             try {
                 const qp = new URLSearchParams(window.location.search);
-                if (qp.get('openTagManager') === '1') {
-                    setTimeout(() => {
-                        openGlobalTagManager();
-                        const url = new URL(window.location);
-                        url.searchParams.delete('openTagManager');
-                        history.replaceState({}, '', url);
-                    }, 300);
+                if (qp.get('sessionAddGame') === '1') {
+                    // 세션 페이지로 리다이렉트하면서 해당 게임 선택
+                    const gameId = qp.get('gameId');
+                    if (gameId) {
+                        localStorage.setItem('bgs_quick_add_game', gameId);
+                        location.href = './sessions.html';
+                        return;
+                    }
                 }
             } catch (_) {}
 
@@ -815,19 +808,8 @@
         }
 
         /* =========================================================
-           5. 실시간 검색 UI 핸들러
+           4. 실시간 검색 UI 핸들러
            ========================================================= */
-        function getBlNumId(g) {
-            if (!g) return null;
-            if (g.boardlifeNumId != null && g.boardlifeNumId !== '') return String(g.boardlifeNumId);
-            for (const c of [g.boardlifeId, g.bggId, g.id]) {
-                if (!c) continue;
-                const m = String(c).match(/(?:bl_|boardlife_)?(\d+)/);
-                if (m) return m[1];
-            }
-            return null;
-        }
-
         function boardLifeMatchRank(name, normQ) {
             const n = (name || '').replace(/\s+/g, '').toLowerCase();
             return n === normQ ? 0 : n.startsWith(normQ) ? 1 : n.includes(normQ) ? 2 : 3;
@@ -851,7 +833,7 @@
             resultsEl.innerHTML = '<div class="spinner" style="margin: 1rem auto;"></div>';
 
             try {
-                const { docs } = await searchRealtimeBoardLifeDB(queryField, 25);
+                const { docs } = await searchRealtimeBoardLifeDB(queryField, 30);
                 if (mySeq !== _searchSeq) return;
 
                 if (docs.length === 0) {
@@ -885,10 +867,9 @@
                     resultsEl.appendChild(item);
                 });
             } catch (err) {
-                console.warn('Realtime DB search error:', err);
                 resultsEl.innerHTML = `
                     <div style="text-align:center; padding:1rem; color:var(--error-color); font-size:0.9rem;">
-                        실시간 DB 조회를 위해 상단의 <strong>[🔑 실시간 DB 키 설정]</strong> 또는 <strong>[📂 JSON 불러오기]</strong>로 인증 키를 1회 등록해주세요.
+                        실시간 DB 조회를 위해 상단의 <strong>[🔑 실시간 DB 키 설정]</strong> 또는 <strong>[📂 JSON 복원]</strong>으로 인증 키를 등록해주세요.
                     </div>`;
             }
         }
@@ -918,6 +899,59 @@
         }
 
         /* =========================================================
+           5. 엑셀형 일괄 편집 모드 (M-1)
+           ========================================================= */
+        function openBulkEditorModal() {
+            const tbody = $('#bulk-editor-tbody');
+            tbody.innerHTML = allUserGames.map((g, idx) => `
+                <tr data-game-idx="${idx}">
+                    <td style="font-weight:600;">${escapeHtmlSafe(g.name)}</td>
+                    <td><input type="date" class="bulk-input b-date" value="${parseDateYMD(g)}"></td>
+                    <td><input type="number" class="bulk-input b-price" value="${parsePrice(g)}" placeholder="0"></td>
+                    <td><input type="text" class="bulk-input b-sleeve-size" value="${escapeHtmlSafe(g.sleeveSize || '')}" placeholder="예: 63.5x88"></td>
+                    <td><input type="number" class="bulk-input b-sleeve-count" value="${g.sleeveCount || ''}" placeholder="매수"></td>
+                    <td style="text-align:center;"><input type="checkbox" class="b-sleeve-done" ${(g.customFields && (g.customFields['슬리브'] === 'O' || g.customFields['슬리브'] === 'true')) ? 'checked' : ''}></td>
+                </tr>`).join('');
+            $('#bulk-editor-modal').classList.remove('hidden');
+        }
+
+        function saveBulkEditorChanges() {
+            const rows = $$('#bulk-editor-tbody tr');
+            rows.forEach(row => {
+                const idx = parseInt(row.dataset.gameIdx, 10);
+                const g = allUserGames[idx];
+                if (!g) return;
+                const d = row.querySelector('.b-date').value;
+                const p = row.querySelector('.b-price').value;
+                const sSize = row.querySelector('.b-sleeve-size').value.trim();
+                const sCnt = parseInt(row.querySelector('.b-sleeve-count').value, 10) || 0;
+                const sDone = row.querySelector('.b-sleeve-done').checked;
+
+                if (!g.customFields) g.customFields = {};
+                g.customFields['구매일자'] = d;
+                g.customFields['구매가격'] = p;
+                g.customFields['슬리브'] = sDone ? 'O' : '';
+                g.purchaseDate = d;
+                g.purchasePrice = parseInt(p, 10) || 0;
+                g.sleeveSize = sSize;
+                g.sleeveCount = sCnt;
+            });
+            persistData();
+            renderFilteredGames();
+            $('#bulk-editor-modal').classList.add('hidden');
+            showMessage('모든 변경사항이 일괄 저장되었습니다.', 'success');
+        }
+
+        function parsePrice(g) {
+            const raw = (g.customFields && g.customFields['구매가격']) ?? g.purchasePrice ?? 0;
+            return parseInt(String(raw).replace(/[^0-9]/g, ''), 10) || 0;
+        }
+        function parseDateYMD(g) {
+            const raw = (g.customFields && g.customFields['구매일자']) || g.purchaseDate || '';
+            return String(raw).trim().slice(0, 10);
+        }
+
+        /* =========================================================
            6. 필터링 및 그리드/리스트 렌더링
            ========================================================= */
         function initFilterListeners() {
@@ -943,6 +977,9 @@
             initRangeSlider(dom.difficultyMin, dom.difficultyMax, dom.difficultyRange, dom.difficultyMinValue, dom.difficultyMaxValue, 1, 5, 0.1, v => v.toFixed(1));
             initRangeSlider(dom.timeMin, dom.timeMax, dom.timeRange, dom.timeMinValue, dom.timeMaxValue, 0, 240, 10, v => v >= 240 ? "240분+" : `${v}분`);
             dom.openGlobalTagManagerBtn.addEventListener('click', openGlobalTagManager);
+            $('#open-bulk-editor-btn').onclick = openBulkEditorModal;
+            $('#bulk-save-btn').onclick = saveBulkEditorChanges;
+            $('#bulk-editor-modal').querySelector('.modal-close-btn').onclick = () => $('#bulk-editor-modal').classList.add('hidden');
         }
 
         function initRangeSlider(minInput, maxInput, rangeEl, minValEl, maxValEl, min, max, step, formatCallback) {
@@ -1153,8 +1190,9 @@
                         <div class="list-detail-item"><strong>베스트 인원</strong><span>${(game.bestplayercounts && game.bestplayercounts.join(', ')) || '-'}</span></div>
                         <div class="list-detail-item"><strong>플레이 시간</strong><span>${formatTimeRange(game) || '-'}</span></div>
                         <div class="list-detail-item"><strong>난이도</strong><span>${game.complexity || 0}/5</span></div>
-                        <div class="list-detail-item"><strong>구매일자</strong><span>${custom['구매일자'] || '-'}</span></div>
+                        <div class="list-detail-item"><strong>구매일자</strong><span>${parseDateYMD(game) || '-'}</span></div>
                         <div class="list-detail-item"><strong>구매가격</strong><span>${priceTxt}</span></div>
+                        ${game.sleeveSize ? `<div class="list-detail-item"><strong>슬리브</strong><span>${game.sleeveSize} (${game.sleeveCount || 0}장)</span></div>` : ''}
                     </div>`;
             }
             item.addEventListener('click', () => openDetailModal(game.id));
@@ -1162,27 +1200,12 @@
         }
 
         /* =========================================================
-           7. 상세 모달 (클릭 시 실시간 커버 자동 매칭 포함)
+           7. 상세 모달 ( [E-4] 오늘 플레이 기록 남기기 버튼 포함 )
            ========================================================= */
         async function openDetailModal(docId) {
             dom.detailModal.classList.remove('hidden');
             const game = allUserGames.find(g => g.id === docId);
             if (!game) { dom.detailModal.classList.add('hidden'); return; }
-
-            // 커버 이미지가 비어있으면 실시간 boardlifeGames DB에서 자동 매칭
-            const curImg = (game.customFields && game.customFields['대표 이미지']) || game.image || '';
-            if (!curImg || curImg.includes('placehold')) {
-                try {
-                    const { docs } = await searchRealtimeBoardLifeDB(game.name, 5);
-                    if (docs.length > 0 && docs[0].image) {
-                        game.image = docs[0].image;
-                        if (!game.customFields) game.customFields = {};
-                        game.customFields['대표 이미지'] = docs[0].image;
-                        persistData();
-                        renderFilteredGames();
-                    }
-                } catch (e) {}
-            }
             renderModalContent(game);
         }
 
@@ -1242,22 +1265,26 @@
                         ${mkCheckbox('컴포 업그레이드', '컴포')}
                         ${mkCheckbox('확장판', '확장판')}
                     </div>
-                    <div class="management-subhead" style="margin-top: 1rem;">구매 및 커버 정보</div>
-                    ${mkInput('구매 시기', '구매일자', 'YYYY-MM-DD 또는 20261028', 'text')}
+                    <div class="management-subhead" style="margin-top: 1rem;">구매 및 슬리브 정보</div>
+                    ${mkInput('구매 시기', '구매일자', 'YYYY-MM-DD', 'date')}
                     ${mkInput('구매 금액', '구매가격', '0', 'number', '원')}
-                    ${mkInput('언어판', '언어판', '예: 한국어판, 영문판', 'text')}
-                    ${mkInput('대표 커버 이미지 URL (보드라이프 번호 또는 주소)', '대표 이미지', '예: 14527 또는 https://...', 'text')}
+                    <div class="management-row column">
+                        <span class="management-label" style="font-size: 0.9em; color: var(--text-secondary);"><strong>슬리브 규격 &amp; 매수 ([M-2])</strong></span>
+                        <div style="display:flex; gap:0.5rem;">
+                            <input type="text" id="modal-sleeve-size" class="filter-input" placeholder="예: 63.5x88" value="${escapeHtmlSafe(game.sleeveSize || '')}" style="flex:1;">
+                            <input type="number" id="modal-sleeve-count" class="filter-input" placeholder="매수" value="${game.sleeveCount || ''}" style="width:5.5rem;">
+                        </div>
+                    </div>
+                    ${mkInput('대표 커버 이미지 URL', '대표 이미지', 'https://...', 'text')}
                 </div>`;
-
-            const imageManageBtnHtml = '<button class="image-manage-icon-btn" id="image-manage-icon-btn" title="실시간 커버 다시 매칭 / 변경">📸</button>';
-            const imageSliderHtml = `
-                <img src="${coverImage}" alt="${escapeHtmlSafe(displayName)}" referrerpolicy="no-referrer" onerror="this.src='https://placehold.co/400x400/6750A4/ffffff?text=BG'">
-                ${imageManageBtnHtml}`;
 
             dom.detailModal.innerHTML = `
                 <div class="detail-content detail-content-v2" data-doc-id="${game.id}">
                     <button class="modal-close-btn" style="z-index:100;">&times;</button>
-                    <div class="modal-left">${imageSliderHtml}</div>
+                    <div class="modal-left">
+                        <img src="${coverImage}" alt="${escapeHtmlSafe(displayName)}" referrerpolicy="no-referrer" onerror="this.src='https://placehold.co/400x400/6750A4/ffffff?text=BG'">
+                        <button class="image-manage-icon-btn" id="image-manage-icon-btn" title="커버 다시 매칭">📸</button>
+                    </div>
                     <div class="modal-right">
                         <div class="dashboard-content">
                             <div class="detail-header-block">
@@ -1269,6 +1296,7 @@
                                     ${ratingStr ? `<span class="detail-action-pill detail-action-pill-info">${ratingStr}</span>` : ''}
                                     <button id="my-rating-btn" class="detail-action-pill my-rating-btn" type="button">${ratingBtnLabel}</button>
                                     <button id="manage-tags-btn" class="detail-action-pill" type="button">🏷️ 태그</button>
+                                    <a href="./sessions.html?sessionAddGame=1&gameId=${game.id}" class="detail-action-pill" style="text-decoration:none; background:var(--md-primary); color:var(--md-on-primary);">📅 오늘 플레이 기록</a>
                                 </div>
                             </div>
 
@@ -1280,14 +1308,14 @@
                             </div>
 
                             <div class="detail-tab-bar" role="tablist">
-                                <button type="button" class="detail-tab-btn active" data-tab="memo" role="tab">메모</button>
-                                <button type="button" class="detail-tab-btn" data-tab="purchase" role="tab">구매/관리</button>
+                                <button type="button" class="detail-tab-btn active" data-tab="purchase" role="tab">구매/슬리브</button>
+                                <button type="button" class="detail-tab-btn" data-tab="memo" role="tab">메모</button>
                                 <button type="button" class="detail-tab-btn" data-tab="play" role="tab">플레이</button>
                             </div>
 
                             <div class="detail-tab-panels">
-                                <div class="detail-tab-panel active" data-tab="memo">${memoTabHtml}</div>
-                                <div class="detail-tab-panel" data-tab="purchase">${purchaseTabHtml}</div>
+                                <div class="detail-tab-panel active" data-tab="purchase">${purchaseTabHtml}</div>
+                                <div class="detail-tab-panel" data-tab="memo">${memoTabHtml}</div>
                                 <div class="detail-tab-panel" data-tab="play"><div class="play-tab-loading">불러오는 중…</div></div>
                             </div>
                         </div>
@@ -1303,9 +1331,9 @@
         }
 
         function renderPlayTabForGame(game, panelEl) {
-            allPlayRecords = JSON.parse(localStorage.getItem(SESSIONS_STORAGE_KEY) || '[]');
-            const matchesGame = (g) => g.gameId === game.id || g.gameName === game.name || (Array.isArray(g.expansionIds) && g.expansionIds.includes(game.id));
-            const matching = allPlayRecords.filter(rec => (rec.games || rec.gameResults || []).some(matchesGame));
+            const allRecs = JSON.parse(localStorage.getItem(SESSIONS_STORAGE_KEY) || '[]');
+            const matchesGame = (g) => g.gameId === game.id || g.gameName === game.name;
+            const matching = allRecs.filter(rec => (rec.games || rec.gameResults || []).some(matchesGame));
 
             if (matching.length === 0) {
                 panelEl.innerHTML = `
@@ -1313,7 +1341,7 @@
                         <div class="play-tab-empty-icon">🎲</div>
                         <div class="play-tab-empty-msg">아직 이 게임의 플레이 기록이 없어요.</div>
                     </div>
-                    <a href="./sessions.html" class="play-tab-link-btn">📅 게임 기록 페이지에서 추가</a>`;
+                    <a href="./sessions.html?sessionAddGame=1&gameId=${game.id}" class="play-tab-link-btn">📅 오늘 기록 남기러 가기</a>`;
                 return;
             }
 
@@ -1365,6 +1393,11 @@
                 newCustom['대표 이미지'] = resolveCoverUrl(newCustom['대표 이미지']);
                 game.image = newCustom['대표 이미지'];
             }
+
+            const sSizeEl = modalContentEl.querySelector('#modal-sleeve-size');
+            const sCntEl = modalContentEl.querySelector('#modal-sleeve-count');
+            if (sSizeEl) game.sleeveSize = sSizeEl.value.trim();
+            if (sCntEl) game.sleeveCount = parseInt(sCntEl.value, 10) || 0;
 
             const memoArea = modalContentEl.querySelector('#memo-textarea');
             const pubToggle = modalContentEl.querySelector('#memo-public-toggle');
@@ -1437,19 +1470,19 @@
                     openRatingModal(docId, game.myRating || null);
                 } else if (e.target.matches('#image-manage-icon-btn') || e.target.closest('#image-manage-icon-btn')) {
                     try {
-                        const { docs } = await searchRealtimeBoardLifeDB(game.name, 5);
-                        if (docs.length > 0 && docs[0].image) {
-                            game.image = docs[0].image;
+                        const hit = await findBestGameInDb(game.name);
+                        if (hit && hit.image) {
+                            game.image = hit.image;
                             if (!game.customFields) game.customFields = {};
-                            game.customFields['대표 이미지'] = docs[0].image;
+                            game.customFields['대표 이미지'] = hit.image;
                             persistData();
                             renderFilteredGames();
                             renderModalContent(game);
-                            showMessage(`✅ '${docs[0].name}' 커버 이미지로 자동 업데이트되었습니다!`, 'success');
+                            showMessage(`✅ '${hit.name}' 커버 이미지로 업데이트되었습니다!`, 'success');
                             return;
                         }
                     } catch (err) {}
-                    const newUrl = prompt('새 커버 이미지 URL 또는 보드라이프 번호(예: 14527)를 입력하세요:', (game.customFields && game.customFields['대표 이미지']) || game.image || '');
+                    const newUrl = prompt('새 커버 이미지 URL 또는 보드라이프 번호(예: 14527):', (game.customFields && game.customFields['대표 이미지']) || game.image || '');
                     if (newUrl !== null && newUrl.trim() !== '') {
                         const resolved = resolveCoverUrl(newUrl.trim());
                         game.image = resolved;
@@ -1465,79 +1498,10 @@
                     modalContentEl.querySelectorAll('.detail-tab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === targetTab));
                 }
             });
-
-            dom.detailModal.addEventListener('input', (e) => {
-                const modalContentEl = e.target.closest('.detail-content');
-                const docId = modalContentEl?.dataset.docId;
-                if (!docId) return;
-                clearTimeout(autoSaveDebounceTimer);
-                autoSaveDebounceTimer = setTimeout(() => saveModalData(docId, modalContentEl), 1000);
-            });
-        }
-
-        function openRatingModal(docId, currentRating) {
-            const modalEl = document.createElement('div');
-            modalEl.className = 'modal rating-modal';
-            let starsHtml = '';
-            for (let i = 1; i <= 5; i++) {
-                starsHtml += `
-                    <div class="star-wrap" data-star="${i}">
-                        <span class="star-char star-bg">&#9733;</span>
-                        <span class="star-fg-wrap" id="star-fgw-${i}"><span class="star-char star-fg">&#9733;</span></span>
-                        <button class="star-half star-left" data-value="${(i - 0.5).toFixed(1)}"></button>
-                        <button class="star-half star-right" data-value="${i.toFixed(1)}"></button>
-                    </div>`;
-            }
-            modalEl.innerHTML = `
-                <div class="search-panel-content rating-modal-content">
-                    <button class="modal-close-btn">&times;</button>
-                    <h2>내 별점</h2>
-                    <div class="star-rating-ui">
-                        <div class="stars-row">${starsHtml}</div>
-                        <div class="rating-current-label" id="rating-current-label">${currentRating ? `${currentRating} / 5` : '별점을 선택하세요'}</div>
-                    </div>
-                    <div class="rating-modal-footer">
-                        ${currentRating ? '<button id="rating-clear-btn" class="rating-clear-btn">별점 초기화</button>' : ''}
-                    </div>
-                </div>`;
-            modalEl.querySelector('.modal-close-btn').onclick = () => modalEl.remove();
-
-            const setStarDisplay = (rating) => {
-                for (let i = 1; i <= 5; i++) {
-                    const wrap = modalEl.querySelector(`#star-fgw-${i}`);
-                    if (!wrap) continue;
-                    wrap.style.width = rating >= i ? '100%' : rating >= i - 0.5 ? '50%' : '0%';
-                }
-            };
-            if (currentRating) setStarDisplay(currentRating);
-
-            const saveRating = (val) => {
-                const game = allUserGames.find(g => g.id === docId);
-                if (game) {
-                    if (val === null) delete game.myRating;
-                    else game.myRating = val;
-                    persistData();
-                    renderFilteredGames();
-                    renderModalContent(game);
-                }
-                modalEl.remove();
-            };
-
-            modalEl.querySelectorAll('.star-half').forEach(btn => {
-                btn.onmouseenter = () => {
-                    const v = parseFloat(btn.dataset.value);
-                    setStarDisplay(v);
-                    modalEl.querySelector('#rating-current-label').textContent = `${v} / 5`;
-                };
-                btn.onclick = () => saveRating(parseFloat(btn.dataset.value));
-            });
-            const clearBtn = modalEl.querySelector('#rating-clear-btn');
-            if (clearBtn) clearBtn.onclick = () => saveRating(null);
-            document.body.appendChild(modalEl);
         }
 
         /* =========================================================
-           8. 추가 모달 및 태그 관리
+           8. 추가 모달 및 실시간 토큰 설정
            ========================================================= */
         function initAddGameModals() {
             dom.addGameButton.onclick = () => {
@@ -1548,8 +1512,7 @@
             };
             dom.searchPanel.querySelector('.modal-close-btn').onclick = () => dom.searchPanel.classList.add('hidden');
 
-            // 실시간 DB 키 수동 입력 버튼
-            $('#set-rt-token-btn').onclick = async () => {
+            $('#set-rt-token-btn').onclick = () => {
                 const cur = localStorage.getItem(FB_REFRESH_TOKEN_KEY) || '';
                 const input = prompt('mybgshelf.web.app 콘솔에서 추출한 실시간 검색 키(refreshToken)를 붙여넣으세요:', cur);
                 if (input !== null) {
@@ -1557,13 +1520,7 @@
                     _cachedIdToken = null;
                     _cachedIdTokenExp = 0;
                     updateRtStatusUI();
-                    const token = await getValidFirebaseIdToken();
-                    if (token) {
-                        showMessage('✅ 실시간 보드라이프 DB 연동이 활성화되었습니다!', 'success');
-                        syncToGistSilent();
-                    } else if (input.trim()) {
-                        showMessage('키가 유효하지 않습니다. 다시 확인해주세요.', 'error');
-                    }
+                    showMessage('✅ 실시간 DB 연동 키가 저장되었습니다.', 'success');
                 }
             };
 
@@ -1571,11 +1528,47 @@
             if (blDbInput) {
                 blDbInput.addEventListener('input', () => {
                     clearTimeout(boardLifeSearchDebounceTimer);
-                    boardLifeSearchDebounceTimer = setTimeout(handleBoardLifeDBSearch, 150);
+                    boardLifeSearchDebounceTimer = setTimeout(async () => {
+                        const q = blDbInput.value.trim();
+                        const resBox = $('#bl-db-search-results');
+                        if (!q) { resBox.innerHTML = ''; return; }
+                        resBox.innerHTML = '<div class="spinner" style="margin: 1rem auto;"></div>';
+                        try {
+                            const { docs } = await searchRealtimeBoardLifeDB(q, 30);
+                            if (docs.length === 0) {
+                                resBox.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:1rem;">검색 결과가 없습니다.</p>';
+                                return;
+                            }
+                            resBox.innerHTML = '';
+                            docs.forEach(g => {
+                                const dbNumId = getBlNumId(g);
+                                const isAdded = (dbNumId && allUserGames.some(ug => getBlNumId(ug) === dbNumId)) || allUserGames.some(ug => ug.id === g.id);
+                                const item = document.createElement('div');
+                                item.className = 'search-result-item';
+                                item.style.cssText = 'display:grid; grid-template-columns:40px 1fr auto; gap:10px; align-items:center;';
+                                const thumbUrl = g.image || g.thumbnail || './placeholder.png';
+                                item.innerHTML = `
+                                    <img src="${thumbUrl}" alt="${escapeHtmlSafe(g.name)}" referrerpolicy="no-referrer" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid var(--border-color);">
+                                    <div style="display:flex; flex-direction:column; overflow:hidden;">
+                                        <span class="name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtmlSafe(g.name)}</span>
+                                        <span class="year" style="font-size:0.8em; color:var(--text-secondary);">${g.yearPublished || ''}</span>
+                                    </div>
+                                    <button class="add-btn" ${isAdded ? 'disabled' : ''}>${isAdded ? '추가됨' : '추가'}</button>`;
+                                if (!isAdded) {
+                                    item.querySelector('.add-btn').onclick = (e) => {
+                                        e.target.disabled = true;
+                                        handleAddBoardLifeDBGame(g, e.target);
+                                    };
+                                }
+                                resBox.appendChild(item);
+                            });
+                        } catch (e) {
+                            resBox.innerHTML = '<div style="text-align:center; padding:1rem; color:var(--error-color);">실시간 검색 키(refreshToken)를 상단 버튼에서 설정해주세요.</div>';
+                        }
+                    }, 150);
                 });
             }
 
-            // 빠른 JSON 불러오기 (내 책장 + 실시간 키 동시 등록)
             $('#quick-json-import').addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -1583,12 +1576,9 @@
                 reader.onload = ev => {
                     try {
                         const parsed = JSON.parse(ev.target.result);
-                        if (parsed.firebaseRefreshToken) {
-                            localStorage.setItem(FB_REFRESH_TOKEN_KEY, parsed.firebaseRefreshToken);
-                            _cachedIdToken = null;
-                        }
-                        const gamesArr = Array.isArray(parsed) ? parsed : (parsed.games || []);
-                        allUserGames = gamesArr.map(normalizeGameRecord);
+                        if (parsed.firebaseRefreshToken) localStorage.setItem(FB_REFRESH_TOKEN_KEY, parsed.firebaseRefreshToken);
+                        const gArr = Array.isArray(parsed) ? parsed : (parsed.games || []);
+                        allUserGames = gArr.map(normalizeGameRecord);
                         if (parsed.tags) allUserTags = parsed.tags;
                         if (parsed.sessions) localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(parsed.sessions));
                         if (parsed.players) localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(parsed.players));
@@ -1597,7 +1587,7 @@
                         renderTagFilters();
                         renderFilteredGames();
                         dom.searchPanel.classList.add('hidden');
-                        showMessage(`🎉 총 ${allUserGames.length}개 게임 및 실시간 DB 연동 키 등록 완료!`, 'success');
+                        showMessage(`🎉 총 ${allUserGames.length}개 게임 복원 완료!`, 'success');
                     } catch (err) { showMessage('올바른 JSON 파일이 아닙니다.', 'error'); }
                 };
                 reader.readAsText(file);
@@ -1613,23 +1603,17 @@
             $('#manual-match-btn').onclick = async () => {
                 const name = $('#manual-name').value.trim();
                 if (!name) return;
-                try {
-                    const { docs } = await searchRealtimeBoardLifeDB(name, 5);
-                    if (docs.length > 0) {
-                        const hit = docs[0];
-                        $('#manual-image-url').value = hit.image || '';
-                        $('#manual-minplayers').value = hit.minplayers || '1';
-                        $('#manual-maxplayers').value = hit.maxplayers || '4';
-                        $('#manual-minplaytime').value = hit.minplaytime || '30';
-                        $('#manual-maxplaytime').value = hit.maxplaytime || '60';
-                        $('#manual-complexity').value = hit.complexity || '2.5';
-                        if (hit.categories) $('#manual-genre').value = hit.categories.join(', ');
-                        showMessage(`✅ 실시간 DB에서 '${hit.name}' 정보를 매칭했습니다!`, 'success');
-                    } else {
-                        showMessage('일치하는 게임이 없습니다.', 'error');
-                    }
-                } catch (e) {
-                    showMessage('실시간 DB 키를 먼저 등록해주세요.', 'error');
+                const hit = await findBestGameInDb(name);
+                if (hit) {
+                    $('#manual-image-url').value = hit.image || '';
+                    $('#manual-minplayers').value = hit.minplayers || '1';
+                    $('#manual-maxplayers').value = hit.maxplayers || '4';
+                    $('#manual-minplaytime').value = hit.minplaytime || '30';
+                    $('#manual-maxplaytime').value = hit.maxplaytime || '60';
+                    $('#manual-complexity').value = hit.complexity || '2.5';
+                    showMessage(`✅ '${hit.name}' 매칭 완료!`, 'success');
+                } else {
+                    showMessage('일치하는 게임이 없습니다.', 'error');
                 }
             };
 
@@ -1637,18 +1621,11 @@
                 e.preventDefault();
                 const name = $('#manual-name').value.trim();
                 if (!name) return;
-
                 let imgUrl = resolveCoverUrl($('#manual-image-url').value.trim());
-                const fileInput = $('#manual-image');
-                if (fileInput.files && fileInput.files[0]) {
-                    imgUrl = await fileToWebpDataUrl(fileInput.files[0]);
-                } else if (!imgUrl) {
-                    try {
-                        const { docs } = await searchRealtimeBoardLifeDB(name, 3);
-                        if (docs.length > 0 && docs[0].image) imgUrl = docs[0].image;
-                    } catch (err) {}
+                if (!imgUrl) {
+                    const hit = await findBestGameInDb(name);
+                    if (hit && hit.image) imgUrl = hit.image;
                 }
-
                 const newGame = normalizeGameRecord({
                     id: `manual_${Date.now()}`,
                     name,
@@ -1658,7 +1635,6 @@
                     minplaytime: $('#manual-minplaytime').value || '30',
                     maxplaytime: $('#manual-maxplaytime').value || '60',
                     complexity: $('#manual-complexity').value || '2.5',
-                    categories: ($('#manual-genre').value || '').split(',').map(s => s.trim()).filter(Boolean),
                     isManual: true,
                     createdAt: Date.now(),
                     customFields: {
@@ -1667,7 +1643,6 @@
                         '대표 이미지': imgUrl
                     }
                 });
-
                 allUserGames.unshift(newGame);
                 persistData();
                 renderFilteredGames();
@@ -1681,91 +1656,6 @@
                 dom.boardlifeAddPanel.classList.remove('hidden');
             };
             dom.boardlifeAddPanel.querySelector('.modal-close-btn').onclick = () => dom.boardlifeAddPanel.classList.add('hidden');
-
-            dom.boardlifeAddForm.onsubmit = async (e) => {
-                e.preventDefault();
-                const rawUrl = dom.boardlifeUrlInput.value.trim();
-                const m = rawUrl.match(/(?:game\/|bbs_num=|bl_)(\d+)/i);
-                if (m) {
-                    const doc = await getBoardLifeDocById(`bl_${m[1]}`);
-                    if (doc) {
-                        handleAddBoardLifeDBGame(doc);
-                        dom.boardlifeUrlInput.value = '';
-                        dom.boardlifeAddPanel.classList.add('hidden');
-                        return;
-                    }
-                }
-                const resolved = resolveCoverUrl(rawUrl);
-                dom.boardlifeAddPanel.classList.add('hidden');
-                $('#manual-image-url').value = resolved;
-                dom.manualAddPanel.classList.remove('hidden');
-            };
-        }
-
-        function fileToWebpDataUrl(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = ev => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const max = 360;
-                        let w = img.width, h = img.height;
-                        if (w > h && w > max) { h = Math.round(h * max / w); w = max; }
-                        else if (h > max) { w = Math.round(w * max / h); h = max; }
-                        canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/webp', 0.85));
-                    };
-                    img.src = ev.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function openTagApplyModal(docId, currentGameTags) {
-            let currentTags = [...currentGameTags];
-            const modalEl = document.createElement('div');
-            modalEl.className = 'modal tag-manage-modal';
-            const tagsListHtml = allUserTags.map(tag => {
-                const isSel = currentTags.includes(tag.id);
-                return `<button type="button" class="tag-apply-chip ${isSel ? 'selected' : ''}" data-tag-id="${tag.id}" style="--tag-color:${tag.color};">
-                    <span class="tag-apply-check">✓</span>
-                    <span class="tag-apply-dot" style="background-color:${tag.color};"></span>
-                    <span class="tag-apply-name">${escapeHtmlSafe(tag.name)}</span>
-                </button>`;
-            }).join('');
-
-            modalEl.innerHTML = `<div class="search-panel-content tag-apply-panel">
-                <button class="modal-close-btn">&times;</button>
-                <h2>태그 적용/해제</h2>
-                <div class="tag-apply-grid">${tagsListHtml || '<p class="tag-apply-empty">생성된 태그가 없습니다.</p>'}</div>
-                <div class="tag-apply-footer">
-                    <button id="cancel-tags-btn" class="tag-apply-cancel-btn">취소</button>
-                    <button id="save-tags-btn" class="tag-apply-save-btn">적용</button>
-                </div>
-            </div>`;
-            modalEl.querySelector('.modal-close-btn').onclick = () => modalEl.remove();
-            modalEl.querySelector('#cancel-tags-btn').onclick = () => modalEl.remove();
-            modalEl.querySelectorAll('.tag-apply-chip').forEach(chip => {
-                chip.onclick = () => {
-                    const tid = chip.dataset.tagId;
-                    if (currentTags.includes(tid)) currentTags = currentTags.filter(id => id !== tid);
-                    else currentTags.push(tid);
-                    chip.classList.toggle('selected');
-                };
-            });
-            modalEl.querySelector('#save-tags-btn').onclick = () => {
-                const game = allUserGames.find(g => g.id === docId);
-                if (game) {
-                    game.tags = currentTags;
-                    persistData();
-                    renderFilteredGames();
-                    renderModalContent(game);
-                }
-                modalEl.remove();
-            };
-            document.body.appendChild(modalEl);
         }
 
         function openGlobalTagManager() {
